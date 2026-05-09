@@ -3,29 +3,29 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>VIX & Paro Semanal EE.UU.</title>
+  <title>1-VIX</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js">
   </script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100vh; background: #0d1117; color: #e6edf3; font-family: sans-serif; display: flex; flex-direction: column; }
-
+    
     #global-header { padding: 16px 24px 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
     #global-updated { font-size: 11px; color: #6b7280; }
-
+    
     #ranges-container { padding: 8px 24px 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
     #ranges { display: flex; gap: 8px; flex-wrap: wrap; }
     .rbtn { background: none; border: 1px solid #30363d; border-radius: 6px; color: #8b949e; font-size: 12px; padding: 4px 12px; cursor: pointer; }
     .rbtn.active { background: #22c55e; border-color: #22c55e; color: #000; font-weight: 700; }
-
+    
     #vix-indicator { display: flex; align-items: center; gap: 8px; background: #111820; border: 1px solid #1a2332; border-radius: 8px; padding: 8px 14px; font-size: 13px; white-space: nowrap; }
     #vix-dot { width: 12px; height: 12px; border-radius: 50%; background: #6b7280; transition: background 0.3s; }
     #vix-dot.calm { background: #22c55e; box-shadow: 0 0 8px rgba(34, 197, 94, 0.5); }
     #vix-dot.stress { background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.5); }
     #vix-status { color: #8b949e; }
-
-    #grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; gap: 16px; padding: 0 24px 24px; min-height: 0; }
-
+    
+    #grid { flex: 1; display: grid; grid-template-columns: 1fr; grid-template-rows: 1fr; gap: 16px; padding: 0 24px 24px; min-height: 0; }
+    
     .panel { background: #111820; border: 1px solid #1a2332; border-radius: 10px; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
     .panel-header { padding: 12px 16px 4px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
     .panel-header h2 { font-size: 14px; font-weight: 600; }
@@ -35,13 +35,12 @@
     .panel-chart canvas { width: 100% !important; height: 100% !important; }
     .panel-msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #6b7280; text-align: center; }
     .panel-msg.hidden { display: none; }
-
+    
     .up { color: #22c55e; }
     .down { color: #ef4444; }
-
+    
     @media (max-width: 768px) {
       #ranges-container { flex-direction: column; align-items: flex-start; }
-      #grid { grid-template-columns: 1fr; grid-template-rows: auto; }
       .panel { min-height: 300px; }
     }
   </style>
@@ -55,6 +54,7 @@
 <div id="ranges-container">
   <div id="ranges">
     <button class="rbtn" data-r="1d" data-i="5m">1D</button>
+    <button class="rbtn" data-r="5d" data-i="15m">5D</button>
     <button class="rbtn active" data-r="1mo" data-i="1d">1M</button>
     <button class="rbtn" data-r="6mo" data-i="1d">6M</button>
     <button class="rbtn" data-r="1y" data-i="1wk">1A</button>
@@ -69,22 +69,9 @@
 
 <div id="grid">
   <!-- VIX -->
-  <div class="panel" data-symbol="%5EVIX" data-name="VIX" data-type="yahoo">
+  <div class="panel" data-symbol="%5EVIX" data-name="VIX">
     <div class="panel-header">
       <h2>VIX</h2>
-      <span class="panel-price">—</span>
-      <span class="panel-change">—</span>
-    </div>
-    <div class="panel-chart">
-      <canvas></canvas>
-      <div class="panel-msg">Cargando...</div>
-    </div>
-  </div>
-
-  <!-- Subsidio por desempleo -->
-  <div class="panel" data-symbol="ICSA" data-name="Subsidio Desempleo" data-type="fred">
-    <div class="panel-header">
-      <h2>Subsidio Desempleo</h2>
       <span class="panel-price">—</span>
       <span class="panel-change">—</span>
     </div>
@@ -110,6 +97,7 @@ function updateVixIndicator(value) {
   const dot = document.getElementById('vix-dot');
   const status = document.getElementById('vix-status');
   
+  // Limpiar clases anteriores
   dot.classList.remove('calm', 'stress');
   
   if (value === null || value === undefined) {
@@ -130,7 +118,6 @@ function updateVixIndicator(value) {
   }
 }
 
-// Fetch para Yahoo Finance (VIX)
 async function fetchYahoo(symbol, range, interval) {
   const yhUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=${range}&interval=${interval}&includePrePost=false&events=history`;
 
@@ -164,93 +151,19 @@ async function fetchYahoo(symbol, range, interval) {
   throw new Error('Todos los proxies fallaron');
 }
 
-// Fetch para FRED (Subsidio por desempleo) - usando la API de FRED
-async function fetchFred(symbol, range, interval) {
-  // Mapeo de rangos a días aproximados para FRED
-  const rangeDays = {
-    '1mo': 30,
-    '6mo': 180,
-    '1y': 365,
-    '5y': 1825,
-    'max': 3650
-  };
-  
-  const days = rangeDays[range] || 180;
-  
-  // Calcular fechas
-  const endDate = new Date();
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - days);
-  
-  const startStr = startDate.toISOString().split('T')[0];
-  const endStr = endDate.toISOString().split('T')[0];
-  
-  // API de FRED (gratuita, requiere registro pero el endpoint de observations es abierto para lectura)
-  const fredUrl = `https://api.stlouisfed.org/fred/series/observations?series_id=ICSA&api_key=fred_api_key&file_type=json&observation_start=${startStr}&observation_end=${endStr}&sort_order=asc`;
-  
-  // Nota: La API de FRED requiere clave. Como no podemos exponerla en frontend,
-  // usamos un enfoque alternativo: CSV público de FRED
-  const fredCsvUrl = `https://fred.stlouisfed.org/graph/fredgraph.csv?bgcolor=%23e1e9f0&chart_type=line&drp=0&fo=open%20sans&graph_bgcolor=%23ffffff&height=450&mode=fred&recession_bars=on&txtcolor=%23444444&ts=12&tts=12&width=1168&nt=0&thu=0&trc=0&show_legend=yes&show_axis_titles=yes&show_tooltip=yes&id=ICSA&scale=left&cosd=${startStr}&coed=${endStr}&line_color=%234572a7&link_values=false&line_style=solid&mark_type=none&mw=3&lw=2&ost=-99999&oet=99999&mma=0&fml=a&fq=Weekly&fam=avg&fgst=lin&fgsnd=2020-02-01&line_index=1&transformation=lin&vintage_date=${endStr}&revision_date=${endStr}&nd=${startStr}`;
-  
-  for (const makeProxy of PROXIES) {
-    try {
-      const res = await fetch(makeProxy(fredCsvUrl), { signal: AbortSignal.timeout(15000) });
-      if (!res.ok) continue;
-      const text = await res.text();
-      
-      // Parsear CSV
-      const lines = text.trim().split('\n');
-      const pairs = [];
-      
-      // Saltar la primera línea (cabecera)
-      for (let i = 1; i < lines.length; i++) {
-        const parts = lines[i].split(',');
-        if (parts.length >= 2) {
-          const dateStr = parts[0].trim();
-          const value = parseFloat(parts[1].trim());
-          
-          if (!isNaN(value) && dateStr) {
-            const dateObj = new Date(dateStr + 'T00:00:00');
-            const timestamp = Math.floor(dateObj.getTime() / 1000);
-            
-            // Ajustar intervalo según rango para no sobrecargar
-            if (range === '1mo' || range === '6mo') {
-              // Mantener datos semanales (FRED ya da semanal)
-              pairs.push({ t: timestamp, c: value });
-            } else if (range === '1y' || range === '5y' || range === 'max') {
-              // Para rangos largos, tomar uno de cada 4 (mensual aproximado)
-              if (i % 4 === 1) {
-                pairs.push({ t: timestamp, c: value });
-              }
-            } else {
-              pairs.push({ t: timestamp, c: value });
-            }
-          }
-        }
-      }
-      
-      if (pairs.length === 0) continue;
-      return { pairs, meta: {} };
-    } catch (_) { /* try next proxy */ }
-  }
-  
-  // Si todo falla, intentar con datos de ejemplo
-  throw new Error('No se pudieron cargar los datos de FRED');
-}
-
 function fmtDate(ts, range) {
   const d = new Date(ts * 1000);
-  if (range === 'max' || range === '5y') {
+  if (range === '1d' || range === '5d') {
+    return d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  }
+  if (range === 'max') {
     return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
   }
-  return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+  return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: range === '5y' ? 'numeric' : undefined });
 }
 
 function fmtNum(n) {
-  if (n >= 1000000) {
-    return (n / 1000000).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + 'M';
-  }
-  return n.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  return n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function getMaxTicksLimit(range) {
@@ -267,25 +180,15 @@ function renderPanel(panel, { pairs, meta }, range) {
   const pct = ((last - first) / first * 100);
   const isUp = pct >= 0;
   const color = isUp ? '#22c55e' : '#ef4444';
-  const isVix = panel.dataset.type === 'yahoo';
 
-  // Actualizar indicador del VIX solo para el panel VIX
-  if (isVix) {
-    updateVixIndicator(last);
-  }
+  // Actualizar indicador del VIX
+  updateVixIndicator(last);
 
   // Actualizar header del panel
   const priceEl = panel.querySelector('.panel-price');
   const changeEl = panel.querySelector('.panel-change');
-  
-  if (isVix) {
-    priceEl.textContent = fmtNum(last).replace('M', '');
-    changeEl.textContent = (isUp ? '+' : '') + (last - first).toFixed(2) + ' (' + (isUp ? '+' : '') + pct.toFixed(2) + '%)';
-  } else {
-    priceEl.textContent = fmtNum(last);
-    changeEl.textContent = (isUp ? '↑ ' : '↓ ') + Math.abs(pct).toFixed(1) + '% desde inicio';
-  }
-  
+  priceEl.textContent = fmtNum(last);
+  changeEl.textContent = (isUp ? '+' : '') + fmtNum(last - first) + ' (' + (isUp ? '+' : '') + pct.toFixed(2) + '%)';
   changeEl.className = 'panel-change ' + (isUp ? 'up' : 'down');
 
   // Ocultar mensaje de carga
@@ -331,9 +234,7 @@ function renderPanel(panel, { pairs, meta }, range) {
           borderWidth: 1,
           titleColor: '#8b949e',
           bodyColor: color,
-          callbacks: { 
-            label: c => ' ' + (isVix ? c.raw.toFixed(2) + ' pts' : c.raw.toLocaleString('es-ES') + ' solicitudes')
-          }
+          callbacks: { label: c => ' ' + fmtNum(c.raw) + ' pts' }
         }
       },
       scales: {
@@ -343,11 +244,7 @@ function renderPanel(panel, { pairs, meta }, range) {
         },
         y: {
           position: 'right',
-          ticks: { 
-            color: '#6b7280', 
-            font: { size: 10 }, 
-            callback: v => isVix ? v.toFixed(0) : v.toLocaleString('es-ES')
-          },
+          ticks: { color: '#6b7280', font: { size: 10 }, callback: v => v.toLocaleString('es-ES') },
           grid: { color: '#161b22' }
         }
       }
@@ -360,29 +257,18 @@ function showPanelError(panel) {
   panel.querySelector('.panel-msg').classList.remove('hidden');
   panel.querySelector('.panel-price').textContent = '—';
   panel.querySelector('.panel-change').textContent = '—';
-  
-  if (panel.dataset.type === 'yahoo') {
-    updateVixIndicator(null);
-  }
+  updateVixIndicator(null);
 }
 
 async function loadPanel(panel, range, interval) {
   const symbol = panel.dataset.symbol;
-  const type = panel.dataset.type;
-  
   panel.querySelector('.panel-msg').textContent = 'Cargando...';
   panel.querySelector('.panel-msg').classList.remove('hidden');
   
   try {
-    let data;
-    if (type === 'yahoo') {
-      data = await fetchYahoo(symbol, range, interval);
-    } else if (type === 'fred') {
-      data = await fetchFred(symbol, range, interval);
-    }
+    const data = await fetchYahoo(symbol, range, interval);
     renderPanel(panel, data, range);
   } catch (e) {
-    console.error('Error cargando ' + symbol + ':', e);
     showPanelError(panel);
   }
 }
