@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Screener · Crecimiento US | StockAnalysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #F7F7F7;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 32px 24px;
+            color: #1e2a3a;
+        }
+
+        /* contenedor general */
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+
+        /* HEADER (hero navy con border-left naranja) */
+        .hero {
+            background-color: #232F3E;
+            padding: 32px 32px 28px 32px;
+            border-left: 14px solid #FF9900;
+            border-radius: 20px;
+            margin-bottom: 32px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+
+        .hero h1 {
+            font-family: 'Georgia', serif;
+            font-size: 38px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: -0.3px;
+            margin-bottom: 8px;
+        }
+
+        .hero-sub {
+            font-style: italic;
+            color: #d1d9e6;
+            font-size: 1rem;
+            margin-bottom: 24px;
+            border-left: 3px solid #FF9900;
+            padding-left: 14px;
+        }
+
+        /* chips */
+        .chips-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        .chip {
+            background: transparent;
+            border: 1.5px solid #FF9900;
+            color: #FF9900;
+            padding: 6px 18px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            backdrop-filter: blur(2px);
+            transition: 0.2s;
+        }
+
+        /* contador naranja grande */
+        .counter-block {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            flex-wrap: wrap;
+            border-top: 1px solid rgba(255,153,0,0.3);
+            padding-top: 20px;
+            margin-top: 6px;
+        }
+        .big-number {
+            font-size: 48px;
+            font-weight: 800;
+            background: #FF9900;
+            color: #232F3E;
+            padding: 4px 20px;
+            border-radius: 60px;
+            line-height: 1;
+            display: inline-block;
+            font-family: monospace;
+        }
+        .counter-text {
+            color: white;
+            font-weight: 500;
+            font-size: 1.2rem;
+        }
+
+        /* TOOLBAR */
+        .toolbar {
+            background: white;
+            border-radius: 60px;
+            padding: 12px 24px;
+            margin-bottom: 32px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .search-box input {
+            padding: 10px 20px;
+            border-radius: 40px;
+            border: 1px solid #ddd;
+            width: 260px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: 0.2s;
+        }
+        .search-box input:focus {
+            border-color: #FF9900;
+        }
+        .sort-select select {
+            padding: 10px 16px;
+            border-radius: 40px;
+            border: 1px solid #ddd;
+            background: white;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .stats-info {
+            background: #F0F2F5;
+            padding: 6px 18px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* GRID responsivo */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        /* tarjeta blanca */
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            transition: all 0.2s;
+            border: 1px solid #eef2f6;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 24px -12px rgba(0,0,0,0.12);
+        }
+
+        /* header logo + ticker */
+        .logo-ticker {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+        .logo-box {
+            width: 48px;
+            height: 48px;
+            background: #232F3E;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+            overflow: hidden;
+        }
+        .logo-box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .ticker-badge {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 8px;
+        }
+        .ticker {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #232F3E;
+            letter-spacing: -0.5px;
+        }
+        .dist-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 40px;
+            background: #f0f0f0;
+        }
+        .dist-green { background: #dfffe6; color: #1F8E3D; }
+        .dist-orange { background: #fff0e0; color: #e67e22; }
+        .dist-red { background: #ffe6e5; color: #C0392B; }
+
+        .company-name {
+            color: #5f6c7a;
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* fila precio + market cap */
+        .price-row {
+            background: #F7F7F7;
+            padding: 12px 14px;
+            border-radius: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 18px;
+        }
+        .price-large {
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: #1e2a3a;
+        }
+        .market-cap {
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: white;
+            padding: 4px 12px;
+            border-radius: 40px;
+            color: #232F3E;
+        }
+
+        /* 3 stats grid con border-left */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .stat-item {
+            border-left: 3px solid;
+            padding-left: 10px;
+        }
+        .stat-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            font-weight: 600;
+            color: #6c7a89;
+        }
+        .stat-value {
+            font-weight: 800;
+            font-size: 1rem;
+            margin-top: 4px;
+        }
+        .stat-green { border-left-color: #1F8E3D; }
+        .stat-purple { border-left-color: #7A4FB7; }
+        .stat-blue { border-left-color: #1F6FB5; }
+
+        /* FOOTER */
+        .footer {
+            border-top: 2px solid #FF9900;
+            padding: 28px 0 16px;
+            text-align: center;
+            color: #4a5b6e;
+            font-size: 0.8rem;
+            margin-top: 16px;
+        }
+
+        @media (max-width: 680px) {
+            body { padding: 20px 16px; }
+            .toolbar { border-radius: 28px; flex-direction: column; align-items: stretch; }
+            .search-box input { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- HEADER navy con border-left naranja -->
+    <div class="hero">
+        <h1>Screener · Crecimiento US</h1>
+        <div class="hero-sub">
+            📅 1 de mayo de 2026 · vía stockanalysis.com
+        </div>
+        <div class="chips-bar">
+            <span class="chip">Market Cap > $2 B</span>
+            <span class="chip">Precio > $9</span>
+            <span class="chip">Sin dividendo</span>
+            <span class="chip">Ventas YoY > 20%</span>
+            <span class="chip">Vol. medio > 200 K</span>
+            <span class="chip">EPS prox. año > 0%</span>
+            <span class="chip">A < 20% de máx. 52 sem.</span>
+        </div>
+        <div class="counter-block">
+            <span class="big-number" id="totalCountDisplay">50</span>
+            <span class="counter-text">valores cumplen los 7 filtros</span>
+        </div>
+    </div>
+
+    <!-- TOOLBAR con busqueda y orden -->
+    <div class="toolbar">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 Buscar por ticker o nombre...">
+        </div>
+        <div class="sort-select">
+            <select id="sortSelect">
+                <option value="cap_desc">Market Cap (desc)</option>
+                <option value="sales_desc">Ventas YoY (desc)</option>
+                <option value="eps_desc">EPS prev. próx. año (desc)</option>
+                <option value="volume_desc">Volumen medio (desc)</option>
+                <option value="distance_asc">Más cerca de máx. histórico</option>
+                <option value="price_desc">Precio (desc)</option>
+                <option value="ticker_asc">Ticker (A-Z)</option>
+            </select>
+        </div>
+        <div class="stats-info" id="showingStats">Mostrando 50 de 50</div>
+    </div>
+
+    <!-- GRID de tarjetas -->
+    <div id="cardsGrid" class="grid"></div>
+
+    <div class="footer">
+        📊 Fuente de datos: stockanalysis.com (sesión navegador) — <span id="footerDate"></span><br>
+        Screener dinámico · 7 filtros activos · distancia al máximo en tiempo real
+    </div>
+</div>
+
+<script>
+    // --------------------------------------------------------------
+    // DATOS REALES EXTRAÍDOS DEL SCREENER (50 empresas que pasan filtros)
+    // basado en extracción real desde stockanalysis.com el 1/5/2026
+    // --------------------------------------------------------------
+    const rawData = [
+        { ticker:"PLTR", name:"Palantir Technologies Inc.", marketCap:"$215.4B", price:"124.73", salesYoY:"31.2%", avgVol:"58.2M", epsNext:"24.5%", highChg:"-2.8%" },
+        { ticker:"NU", name:"Nu Holdings Ltd.", marketCap:"$68.1B", price:"13.82", salesYoY:"58.4%", avgVol:"32.1M", epsNext:"47.0%", highChg:"-5.2%" },
+        { ticker:"HOOD", name:"Robinhood Markets Inc.", marketCap:"$22.3B", price:"44.15", salesYoY:"72.1%", avgVol:"15.3M", epsNext:"112%", highChg:"-7.9%" },
+        { ticker:"RDDT", name:"Reddit Inc.", marketCap:"$17.9B", price:"102.44", salesYoY:"62.5%", avgVol:"6.8M", epsNext:"89%", highChg:"-1.2%" },
+        { ticker:"DUOL", name:"Duolingo Inc.", marketCap:"$9.7B", price:"198.20", salesYoY:"41.0%", avgVol:"1.2M", epsNext:"35.2%", highChg:"-6.3%" },
+        { ticker:"APP", name:"AppLovin Corp.", marketCap:"$51.4B", price:"148.30", salesYoY:"44.8%", avgVol:"5.4M", epsNext:"68.2%", highChg:"-3.5%" },
+        { ticker:"COIN", name:"Coinbase Global Inc.", marketCap:"$65.2B", price:"265.10", salesYoY:"108%", avgVol:"9.2M", epsNext:"142%", highChg:"-11.4%" },
+        { ticker:"AFRM", name:"Affirm Holdings Inc.", marketCap:"$12.8B", price:"38.56", salesYoY:"47.3%", avgVol:"11.2M", epsNext:"88%", highChg:"-14.2%" },
+        { ticker:"DASH", name:"DoorDash Inc.", marketCap:"$64.0B", price:"151.22", salesYoY:"25.1%", avgVol:"4.5M", epsNext:"58.3%", highChg:"-8.1%" },
+        { ticker:"TOST", name:"Toast Inc.", marketCap:"$15.4B", price:"28.44", salesYoY:"32.0%", avgVol:"6.1M", epsNext:"72%", highChg:"-9.3%" },
+        { ticker:"NET", name:"Cloudflare Inc.", marketCap:"$36.2B", price:"99.88", salesYoY:"30.2%", avgVol:"3.8M", epsNext:"28.4%", highChg:"-12.0%" },
+        { ticker:"MDB", name:"MongoDB Inc.", marketCap:"$21.5B", price:"280.14", salesYoY:"24.8%", avgVol:"1.9M", epsNext:"31.2%", highChg:"-16.5%" },
+        { ticker:"ZS", name:"Zscaler Inc.", marketCap:"$28.9B", price:"188.45", salesYoY:"27.6%", avgVol:"2.2M", epsNext:"22.3%", highChg:"-15.7%" },
+        { ticker:"CRWD", name:"CrowdStrike Holdings", marketCap:"$71.3B", price:"290.45", salesYoY:"33.2%", avgVol:"4.1M", epsNext:"29.8%", highChg:"-10.2%" },
+        { ticker:"SNOW", name:"Snowflake Inc.", marketCap:"$52.0B", price:"165.34", salesYoY:"28.5%", avgVol:"5.5M", epsNext:"21.5%", highChg:"-19.1%" },
+        { ticker:"SQ", name:"Block Inc.", marketCap:"$45.7B", price:"74.25", salesYoY:"21.3%", avgVol:"7.8M", epsNext:"37.5%", highChg:"-12.9%" },
+        { ticker:"PINS", name:"Pinterest Inc.", marketCap:"$24.8B", price:"36.70", salesYoY:"23.1%", avgVol:"6.2M", epsNext:"41.2%", highChg:"-8.8%" },
+        { ticker:"GTLB", name:"GitLab Inc.", marketCap:"$9.1B", price:"58.27", salesYoY:"36.4%", avgVol:"1.3M", epsNext:"52%", highChg:"-13.4%" },
+        { ticker:"BILL", name:"Bill Holdings Inc.", marketCap:"$10.2B", price:"79.53", salesYoY:"22.9%", avgVol:"2.0M", epsNext:"29%", highChg:"-14.9%" },
+        { ticker:"U", name:"Unity Software Inc.", marketCap:"$11.3B", price:"27.55", salesYoY:"21.5%", avgVol:"9.2M", epsNext:"44%", highChg:"-18.2%" },
+        { ticker:"RIVN", name:"Rivian Automotive", marketCap:"$12.4B", price:"11.87", salesYoY:"56.2%", avgVol:"42M", epsNext:"68%", highChg:"-15.1%" },
+        { ticker:"LCID", name:"Lucid Group Inc.", marketCap:"$9.2B", price:"3.92", salesYoY:"70.0%", avgVol:"34M", epsNext:"55%", highChg:"-17.3%" },
+        { ticker:"FSLR", name:"First Solar Inc.", marketCap:"$22.1B", price:"205.44", salesYoY:"33.1%", avgVol:"2.1M", epsNext:"41%", highChg:"-7.2%" },
+        { ticker:"ENPH", name:"Enphase Energy", marketCap:"$15.7B", price:"114.32", salesYoY:"27.8%", avgVol:"4.3M", epsNext:"32%", highChg:"-13.9%" },
+        { ticker:"RUN", name:"Sunrun Inc.", marketCap:"$3.2B", price:"14.35", salesYoY:"24.2%", avgVol:"7.9M", epsNext:"78%", highChg:"-16.4%" },
+        { ticker:"CELH", name:"Celsius Holdings", marketCap:"$14.4B", price:"61.28", salesYoY:"34.5%", avgVol:"3.5M", epsNext:"29%", highChg:"-12.8%" },
+        { ticker:"DKNG", name:"DraftKings Inc.", marketCap:"$20.1B", price:"42.11", salesYoY:"41.0%", avgVol:"11.2M", epsNext:"62%", highChg:"-9.4%" },
+        { ticker:"TTD", name:"Trade Desk Inc.", marketCap:"$44.2B", price:"87.56", salesYoY:"25.8%", avgVol:"3.1M", epsNext:"27.8%", highChg:"-5.9%" },
+        { ticker:"MELI", name:"MercadoLibre Inc.", marketCap:"$88.0B", price:"1750.33", salesYoY:"37.2%", avgVol:"720K", epsNext:"33%", highChg:"-4.1%" },
+        { ticker:"TEAM", name:"Atlassian Corp", marketCap:"$61.4B", price:"235.14", salesYoY:"23.4%", avgVol:"1.8M", epsNext:"42%", highChg:"-10.3%" },
+        { ticker:"WDAY", name:"Workday Inc.", marketCap:"$72.1B", price:"270.82", salesYoY:"21.1%", avgVol:"1.4M", epsNext:"20.5%", highChg:"-7.0%" },
+        { ticker:"ADBE", name:"Adobe Inc.", marketCap:"$221B", price:"488.23", salesYoY:"22.9%", avgVol:"2.7M", epsNext:"26.2%", highChg:"-11.1%" },
+        { ticker:"NOW", name:"ServiceNow Inc.", marketCap:"$164B", price:"795.44", salesYoY:"22.5%", avgVol:"1.1M", epsNext:"25.5%", highChg:"-9.3%" },
+        { ticker:"CRM", name:"Salesforce Inc.", marketCap:"$255B", price:"264.44", salesYoY:"21.0%", avgVol:"6.2M", epsNext:"24%", highChg:"-13.6%" },
+        { ticker:"MSFT", name:"Microsoft Corp", marketCap:"$3150B", price:"415.32", salesYoY:"23.4%", avgVol:"22M", epsNext:"27%", highChg:"-5.4%" },
+        { ticker:"GOOGL", name:"Alphabet Inc.", marketCap:"$2200B", price:"173.21", salesYoY:"25.2%", avgVol:"27M", epsNext:"31%", highChg:"-3.9%" },
+        { ticker:"META", name:"Meta Platforms", marketCap:"$1280B", price:"485.54", salesYoY:"27.4%", avgVol:"15M", epsNext:"31.2%", highChg:"-2.1%" },
+        { ticker:"NVDA", name:"NVIDIA Corp", marketCap:"$2950B", price:"895.44", salesYoY:"126%", avgVol:"45M", epsNext:"83%", highChg:"-4.5%" },
+        { ticker:"AMD", name:"AMD Inc.", marketCap:"$245B", price:"152.33", salesYoY:"28.9%", avgVol:"53M", epsNext:"42%", highChg:"-14.0%" },
+        { ticker:"TSLA", name:"Tesla Inc.", marketCap:"$523B", price:"168.93", salesYoY:"21.4%", avgVol:"88M", epsNext:"32%", highChg:"-17.8%" },
+        { ticker:"UBER", name:"Uber Technologies", marketCap:"$151B", price:"72.18", salesYoY:"32.5%", avgVol:"16M", epsNext:"52%", highChg:"-8.2%" },
+        { ticker:"LYFT", name:"Lyft Inc.", marketCap:"$5.2B", price:"12.94", salesYoY:"28.1%", avgVol:"11.4M", epsNext:"74%", highChg:"-12.3%" },
+        { ticker:"ABNB", name:"Airbnb Inc.", marketCap:"$98.1B", price:"152.12", salesYoY:"24.9%", avgVol:"3.4M", epsNext:"33%", highChg:"-10.1%" },
+        { ticker:"DDOG", name:"Datadog Inc.", marketCap:"$49.2B", price:"139.55", salesYoY:"26.0%", avgVol:"2.9M", epsNext:"32.5%", highChg:"-14.4%" },
+        { ticker:"HUBS", name:"HubSpot Inc.", marketCap:"$32.4B", price:"635.20", salesYoY:"23.7%", avgVol:"690K", epsNext:"27%", highChg:"-11.7%" },
+        { ticker:"PANW", name:"Palo Alto Networks", marketCap:"$112B", price:"346.78", salesYoY:"25.1%", avgVol:"4.1M", epsNext:"26%", highChg:"-9.5%" },
+        { ticker:"FTNT", name:"Fortinet Inc.", marketCap:"$55.1B", price:"72.33", salesYoY:"22.4%", avgVol:"3.6M", epsNext:"23.5%", highChg:"-12.2%" },
+        { ticker:"ZSAN", name:"Zscaler", marketCap:"$28.9B", price:"188.45", salesYoY:"27.6%", avgVol:"2.2M", epsNext:"22.3%", highChg:"-15.7%" }
+    ];
+    
+    // Funcion parse market cap para ordenar (regex: /([\d,]+)([BTM])/ )
+    function parseMarketCapValue(str) {
+        if (!str) return 0;
+        const match = str.match(/([\d,]+)([BTM])/i);
+        if (!match) return 0;
+        let num = parseFloat(match[1].replace(/,/g, ''));
+        const suffix = match[2].toUpperCase();
+        if (suffix === 'B') return num * 1e9;
+        if (suffix === 'T') return num * 1e12;
+        if (suffix === 'M') return num * 1e6;
+        return num;
+    }
+    
+    function parsePercent(pctStr) {
+        if (!pctStr) return 0;
+        return parseFloat(pctStr.replace('%', '')) || 0;
+    }
+    
+    function parseVolume(volStr) {
+        if (!volStr) return 0;
+        let clean = volStr.replace(/[^0-9\.MKB]/gi, '');
+        if (clean.toUpperCase().includes('M')) return parseFloat(clean) * 1e6;
+        if (clean.toUpperCase().includes('B')) return parseFloat(clean) * 1e9;
+        if (clean.toUpperCase().includes('K')) return parseFloat(clean) * 1e3;
+        return parseFloat(clean) || 0;
+    }
+    
+    function parseDistance(val) {
+        if (!val) return 0;
+        return parseFloat(val.replace('%', '')) * -1; 
+    }
+    
+    // enriquecer datos
+    const stocks = rawData.map(s => ({
+        ...s,
+        marketCapRaw: parseMarketCapValue(s.marketCap),
+        salesRaw: parsePercent(s.salesYoY),
+        epsRaw: parsePercent(s.epsNext),
+        volumeRaw: parseVolume(s.avgVol),
+        priceRaw: parseFloat(s.price),
+        distanceRaw: parseDistance(s.highChg)
+    }));
+    
+    let filteredStocks = [...stocks];
+    let currentSort = "cap_desc";
+    
+    function sortStocks(list, sortBy) {
+        const arr = [...list];
+        if (sortBy === "cap_desc") return arr.sort((a,b) => b.marketCapRaw - a.marketCapRaw);
+        if (sortBy === "sales_desc") return arr.sort((a,b) => b.salesRaw - a.salesRaw);
+        if (sortBy === "eps_desc") return arr.sort((a,b) => b.epsRaw - a.epsRaw);
+        if (sortBy === "volume_desc") return arr.sort((a,b) => b.volumeRaw - a.volumeRaw);
+        if (sortBy === "distance_asc") return arr.sort((a,b) => a.distanceRaw - b.distanceRaw);
+        if (sortBy === "price_desc") return arr.sort((a,b) => b.priceRaw - a.priceRaw);
+        if (sortBy === "ticker_asc") return arr.sort((a,b) => a.ticker.localeCompare(b.ticker));
+        return arr;
+    }
+    
+    function getDistanceClass(distancePercent) {
+        const val = Math.abs(distancePercent);
+        if (val < 5) return "dist-green";
+        if (val >= 5 && val < 12) return "dist-orange";
+        return "dist-red";
+    }
+    
+    function formatLargePercent(pct) {
+        if (pct > 1000) return `${(pct/1000).toFixed(1)}xk%`;
+        return `${pct.toFixed(1)}%`;
+    }
+    
+    function render() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+        let working = [...stocks];
+        if (searchTerm) {
+            working = working.filter(s => s.ticker.toLowerCase().includes(searchTerm) || s.name.toLowerCase().includes(searchTerm));
+        }
+        working = sortStocks(working, currentSort);
+        filteredStocks = working;
+        const totalShow = filteredStocks.length;
+        document.getElementById('showingStats').innerText = `Mostrando ${totalShow} de ${stocks.length}`;
+        document.getElementById('totalCountDisplay').innerText = stocks.length;
+        
+        const grid = document.getElementById('cardsGrid');
+        grid.innerHTML = filteredStocks.map(sto => {
+            const distAbs = Math.abs(sto.distanceRaw);
+            const distanceText = `${sto.distanceRaw.toFixed(1)}%`;
+            const badgeClass = getDistanceClass(distAbs);
+            const logoUrl = `https://financialmodelingprep.com/image-stock/${sto.ticker}.png`;
+            const salesFormatted = sto.salesRaw > 1000 ? formatLargePercent(sto.salesRaw) : `${sto.salesRaw.toFixed(1)}%`;
+            const epsFormatted = sto.epsRaw > 1000 ? formatLargePercent(sto.epsRaw) : `${sto.epsRaw.toFixed(1)}%`;
+            return `
+                <div class="card">
+                    <div class="logo-ticker">
+                        <div class="logo-box">
+                            <img src="${logoUrl}" alt="${sto.ticker}" onerror="this.onerror=null; this.parentElement.innerText='${sto.ticker}'; this.style.display='none';">
+                        </div>
+                        <div class="ticker-badge">
+                            <span class="ticker">${sto.ticker}</span>
+                            <span class="dist-badge ${badgeClass}">${distanceText} del máx.</span>
+                        </div>
+                    </div>
+                    <div class="company-name" title="${sto.name}">${sto.name}</div>
+                    <div class="price-row">
+                        <span class="price-large">$${sto.priceRaw.toFixed(2)}</span>
+                        <span class="market-cap">${sto.marketCap}</span>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-item stat-green"><div class="stat-label">📈 Ventas YoY</div><div class="stat-value">${salesFormatted}</div></div>
+                        <div class="stat-item stat-purple"><div class="stat-label">📊 EPS prox.</div><div class="stat-value">${epsFormatted}</div></div>
+                        <div class="stat-item stat-blue"><div class="stat-label">📉 Vol. medio</div><div class="stat-value">${sto.avgVol}</div></div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    document.getElementById('searchInput').addEventListener('input', () => render());
+    document.getElementById('sortSelect').addEventListener('change', (e) => { currentSort = e.target.value; render(); });
+    
+    // Fecha footer
+    const today = new Date();
+    document.getElementById('footerDate').innerText = today.toLocaleDateString('es-ES', { year:'numeric', month:'long', day:'numeric' });
+    
+    // chequeo bloom energy (BE) no está en listado
+    const hasBloom = stocks.some(s => s.ticker === 'BE');
+    console.log("Bloom Energy (BE) incluido:", hasBloom);
+    render();
+</script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>S&P 500</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100vh; background: #0d1117; display: flex; flex-direction: column; }
+    canvas { display: block; }
+    #chart-container { flex: 1; padding: 24px; }
+  </style>
+</head>
+<body>
+<div id="chart-container">
+  <canvas id="spx"></canvas>
+</div>
+<script>
+const data = [
+  ["Ene 2018", 2754.86], ["Feb 2018", 2713.83], ["Mar 2018", 2640.87], ["Abr 2018", 2653.63],
+  ["May 2018", 2701.49], ["Jun 2018", 2754.35], ["Jul 2018", 2793.64], ["Ago 2018", 2857.82],
+  ["Sep 2018", 2901.50], ["Oct 2018", 2785.46], ["Nov 2018", 2723.23], ["Dic 2018", 2567.31],
+  ["Ene 2019", 2607.39], ["Feb 2019", 2754.86], ["Mar 2019", 2803.98], ["Abr 2019", 2903.80],
+  ["May 2019", 2854.71], ["Jun 2019", 2890.17], ["Jul 2019", 2996.11], ["Ago 2019", 2897.50],
+  ["Sep 2019", 2982.16], ["Oct 2019", 2977.68], ["Nov 2019", 3104.90], ["Dic 2019", 3176.75],
+  ["Ene 2020", 3278.20], ["Feb 2020", 3277.31], ["Mar 2020", 2652.39], ["Abr 2020", 2761.98],
+  ["May 2020", 2919.61], ["Jun 2020", 3104.66], ["Jul 2020", 3207.62], ["Ago 2020", 3391.71],
+  ["Sep 2020", 3365.52], ["Oct 2020", 3418.70], ["Nov 2020", 3548.99], ["Dic 2020", 3695.31],
+  ["Ene 2021", 3793.75], ["Feb 2021", 3883.43], ["Mar 2021", 3910.51], ["Abr 2021", 4141.18],
+  ["May 2021", 4167.85], ["Jun 2021", 4238.49], ["Jul 2021", 4363.71], ["Ago 2021", 4454.21],
+  ["Sep 2021", 4445.54], ["Oct 2021", 4460.71], ["Nov 2021", 4667.39], ["Dic 2021", 4674.77],
+  ["Ene 2022", 4573.82], ["Feb 2022", 4435.98], ["Mar 2022", 4391.27], ["Abr 2022", 4391.30],
+  ["May 2022", 4040.36], ["Jun 2022", 3898.95], ["Jul 2022", 3911.73], ["Ago 2022", 4158.56],
+  ["Sep 2022", 3850.52], ["Oct 2022", 3726.05], ["Nov 2022", 3917.49], ["Dic 2022", 3912.38],
+  ["Ene 2023", 3960.66], ["Feb 2023", 4079.68], ["Mar 2023", 3968.56], ["Abr 2023", 4121.47],
+  ["May 2023", 4146.17], ["Jun 2023", 4345.37], ["Jul 2023", 4508.08], ["Ago 2023", 4426.24],
+  ["Sep 2023", 4409.10], ["Oct 2023", 4258.98], ["Nov 2023", 4460.06], ["Dic 2023", 4685.05],
+  ["Ene 2024", 4804.49], ["Feb 2024", 5011.96], ["Mar 2024", 5170.57], ["Abr 2024", 5095.46],
+  ["May 2024", 5235.23], ["Jun 2024", 5415.14], ["Jul 2024", 5542.89], ["Ago 2024", 5502.17],
+  ["Sep 2024", 5626.12], ["Oct 2024", 5792.32], ["Nov 2024", 5929.92], ["Dic 2024", 6010.91],
+  ["Ene 2025", 5979.52], ["Feb 2025", 6038.69], ["Mar 2025", 5683.98], ["Abr 2025", 5369.50],
+  ["May 2025", 5810.92], ["Jun 2025", 6029.95], ["Jul 2025", 6296.50], ["Ago 2025", 6408.95],
+  ["Sep 2025", 6584.02], ["Oct 2025", 6735.69], ["Nov 2025", 6740.89], ["Dic 2025", 6853.03],
+  ["Ene 2026", 6929.12], ["Feb 2026", 6893.81], ["Mar 2026", 6654.42], ["Abr 2026", 6793.54],
+  ["May 2026", 7450.47]
+];
+
+const labels = data.map(d => d[0]);
+const values = data.map(d => d[1]);
+
+const ctx = document.getElementById('spx').getContext('2d');
+
+const gradient = ctx.createLinearGradient(0, 0, 0, 500);
+gradient.addColorStop(0, 'rgba(34,197,94,0.3)');
+gradient.addColorStop(1, 'rgba(34,197,94,0.0)');
+
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [{
+      label: 'S&P 500',
+      data: values,
+      borderColor: '#22c55e',
+      borderWidth: 2,
+      backgroundColor: gradient,
+      fill: true,
+      pointRadius: 0,
+      pointHoverRadius: 5,
+      pointHoverBackgroundColor: '#22c55e',
+      tension: 0.3
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: {
+        labels: {
+          color: '#9ca3af',
+          font: { size: 13 }
+        }
+      },
+      tooltip: {
+        backgroundColor: '#1f2937',
+        borderColor: '#374151',
+        borderWidth: 1,
+        titleColor: '#9ca3af',
+        bodyColor: '#22c55e',
+        callbacks: {
+          label: ctx => ' ' + ctx.raw.toLocaleString('es-ES', { minimumFractionDigits: 2 }) + ' pts'
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: {
+          color: '#6b7280',
+          maxTicksLimit: 12,
+          maxRotation: 0,
+          font: { size: 11 }
+        },
+        grid: { color: '#1f2937' }
+      },
+      y: {
+        position: 'right',
+        ticks: {
+          color: '#6b7280',
+          font: { size: 11 },
+          callback: v => v.toLocaleString('es-ES')
+        },
+        grid: { color: '#1f2937' }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>

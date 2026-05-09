@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gráfico de cotización - AAPL</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: #ffffff;
+      color: #111827;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .chart-wrapper {
+      width: 100%;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #ffffff;
+    }
+
+    iframe {
+      width: 100%;
+      height: 560px;
+      border: 0;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Gráfico de cotización</h1>
+
+    <div class="chart-wrapper">
+      <iframe
+        src="https://s.tradingview.com/widgetembed/?symbol=NASDAQ%3AAAPL&amp;interval=W&amp;theme=light&amp;style=1&amp;locale=es&amp;toolbarbg=F1F3F6&amp;hideideas=1&amp;range=24M&amp;hidetoptoolbar=0&amp;hidesidetoolbar=1&amp;saveimage=0&amp;studies=%5B%5D"
+        loading="lazy"
+        allowtransparency="true">
+      </iframe>
+    </div>
+  </div>
+</body>
+</html>

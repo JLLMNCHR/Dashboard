@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AMZN_analisis</title>
+<style>
+:root{--navy:#232F3E;--accent:#FF9900;--light:#F7F7F7;--text:#1f2937;--muted:#6b7280;--green:#168a3e;}
+*{box-sizing:border-box} body{margin:0;background:var(--light);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Calibri,Arial,sans-serif}
+.container{max-width:1300px;margin:0 auto;padding:22px}
+.hero{background:linear-gradient(135deg,#1d2633,#232f3e);color:#fff;border-left:14px solid var(--accent);border-radius:22px;padding:22px;display:flex;gap:20px;align-items:center;flex-wrap:nowrap}
+.logo{width:110px;height:110px;background:#fff;border-radius:16px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;overflow:hidden}
+.title-row{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+h1{font-family:Georgia,serif;font-size:44px;line-height:1.05;margin:0}
+.badge{border:1.5px solid var(--accent);color:#fff;padding:6px 12px;border-radius:999px;font-weight:700;letter-spacing:.04em}
+.sub{opacity:.9;margin-top:6px;font-size:15px}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:18px;width:100%}
+.stat{background:rgba(255,255,255,.08);border:1px solid rgba(255,153,0,.45);border-radius:16px;padding:14px}
+.stat .k{font-size:12px;opacity:.88}.stat .v{font-size:24px;font-weight:800;margin-top:6px}
+.section{margin-top:18px;background:#fff;border-radius:20px;padding:20px;box-shadow:0 10px 30px rgba(15,23,42,.06)}
+.section h2{font-family:Georgia,serif;font-size:30px;margin:0 0 12px}
+.accent{color:var(--accent)}
+.grid2{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.grid4{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card{background:#fff;border-radius:16px;padding:16px;border:1px solid #e5e7eb}
+.subcard{border-left:6px solid var(--accent)}
+.dark{background:var(--navy);color:#fff;border-radius:18px;padding:18px}
+.mini{font-size:14px;line-height:1.5}.muted{color:var(--muted)}
+.tablewrap{display:grid;grid-template-columns:1fr 1fr;gap:14px}.tbl{width:100%;border-collapse:collapse;font-size:14px}.tbl th,.tbl td{padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:left}.tbl th{background:var(--navy);color:#fff}.tbl thead.accent th{background:var(--accent);color:#fff}.pos{color:var(--green);font-weight:700}.tech{display:grid;grid-template-columns:.9fr 1.1fr;gap:16px;align-items:stretch}.techbig{background:var(--navy);color:#fff;border-radius:18px;padding:24px;display:flex;flex-direction:column;justify-content:center}.techbig .pct{font-family:Georgia,serif;font-size:96px;line-height:.9;margin:0}.iframewrap{background:#fff;border-radius:18px;padding:8px;border:1px solid #e5e7eb} iframe{width:100%;height:560px;border:0;border-radius:12px}.footer{font-size:12px;color:var(--muted);margin:18px 4px 6px}.ribbon{height:4px;background:linear-gradient(90deg,var(--accent),#ffbf47);border-radius:999px 999px 0 0;margin:-20px -20px 16px}
+@media (max-width:640px){.hero{flex-wrap:wrap}.stats,.grid2,.grid3,.grid4,.tablewrap,.tech{grid-template-columns:1fr}.logo{width:96px;height:96px}.h1{font-size:34px}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="hero">
+    <div class="logo">
+      <svg viewBox="0 0 110 110" width="110" height="110" aria-label="Amazon logo">
+        <rect width="110" height="110" rx="16" fill="#ffffff"/>
+        <text x="20" y="60" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#232F3E">a</text>
+        <path d="M22 72 C38 86, 72 86, 88 72" fill="none" stroke="#FF9900" stroke-width="8" stroke-linecap="round"/>
+        <polygon points="89,72 82,69 84,77" fill="#FF9900"/>
+      </svg>
+    </div>
+    <div style="flex:1">
+      <div class="title-row"><h1>Amazon.com, Inc.</h1><span class="badge">AMZN</span></div>
+      <div class="sub">Análisis fundamental y técnico · Mayo 2026</div>
+      <div class="stats">
+        <div class="stat"><div class="k">Cotización</div><div class="v">$272.51</div></div>
+        <div class="stat"><div class="k">Market Cap</div><div class="v">$2.93T</div></div>
+        <div class="stat"><div class="k">Ventas Q-último YoY</div><div class="v">+17%</div></div>
+        <div class="stat"><div class="k">EPS Q-último YoY</div><div class="v">+75%</div></div>
+        <div class="stat"><div class="k">Distancia ATH</div><div class="v">-0.5%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>¿A qué se dedica?</h2>
+    <div class="card mini">Amazon es un conglomerado de <span class="accent">comercio electrónico</span>, <span class="accent">servicios cloud</span> y <span class="accent">publicidad digital</span>. Sus motores principales son el retail online, <span class="accent">AWS</span>, la logística, la suscripción Prime y un negocio publicitario de alto margen. La combinación de escala, red logística y capacidad de cómputo la convierte en una de las plataformas más diversificadas del mercado.</div>
+  </div>
+
+  <div class="section">
+    <h2>Posición competitiva</h2>
+    <div class="grid2">
+      <div class="grid2" style="grid-template-columns:1fr 1fr">
+        <div class="card subcard"><b>Cloud pública</b><br>#1 · cuota aprox. 30%<br><span class="muted">Competidor clave: Microsoft Azure, con fuerte presión en IA empresarial.</span></div>
+        <div class="card subcard"><b>Publicidad retail</b><br>#2 · cuota aprox. 12-15%<br><span class="muted">Competidor: Google Ads, especialmente en intención de compra y search.</span></div>
+        <div class="card subcard"><b>E-commerce EEUU</b><br>#1 · cuota aprox. 37-40%<br><span class="muted">Competidor: Walmart, que aprieta en food, grocery y marketplace.</span></div>
+        <div class="card subcard"><b>Logística para terceros</b><br>#1 · cuota líder<br><span class="muted">Competidor: UPS/FedEx, aunque con distinta propuesta de valor.</span></div>
+      </div>
+      <div class="dark">
+        <div style="font-family:Georgia,serif;font-size:28px;margin-bottom:4px">Rival principal</div>
+        <div style="color:var(--accent);font-weight:700;margin-bottom:10px">Microsoft Azure · La mayor amenaza estructural</div>
+        <ul style="margin:0;padding-left:18px;line-height:1.6">
+          <li>Compite directamente por cargas de trabajo cloud, IA y presupuestos enterprise.</li>
+          <li>Tiene ventaja en suite corporativa, distribución y contratos de larga duración.</li>
+          <li>Puede capturar inversión incremental en IA antes que AWS si acelera el lock-in.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Potencial futuro del sector</h2>
+    <div class="grid3">
+      <div class="card" style="border-top:4px solid var(--accent)"><b>▲ IA y cloud híbrida</b><p class="mini">La demanda de inferencia, entrenamiento y servicios gestionados seguirá impulsando AWS. La combinación de chips propios, infraestructura global y herramientas para empresas puede sostener crecimiento y mejorar márgenes.</p></div>
+      <div class="card" style="border-top:4px solid var(--accent)"><b>● Publicidad de alto margen</b><p class="mini">Amazon monetiza tráfico con intención de compra muy valiosa. El inventario publicitario dentro de retail y vídeo puede seguir creciendo por encima del grupo y elevar la rentabilidad consolidada.</p></div>
+      <div class="card" style="border-top:4px solid var(--accent)"><b>■ Automatización logística</b><p class="mini">Más robots, rutas optimizadas y centros regionales reducen coste por entrega. Si el consumo se mantiene firme, la eficiencia operativa puede traducirse en más margen libre para reinversión.</p></div>
+    </div>
+    <div class="dark" style="margin-top:14px"><b>Riesgos a vigilar:</b> <span class="accent">capex</span> muy elevado · compresión de margen en retail · competencia de <span class="accent">Azure</span> y Google Cloud · regulación antitrust · sensibilidad al consumo discrecional</div>
+  </div>
+
+  <div class="section">
+    <h2>Datos fundamentales</h2>
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:20px"><div><div class="muted">Market Cap</div><div style="font-family:Georgia,serif;font-size:42px;font-weight:700">$2.93T</div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;width:65%"><div><div class="muted">Precio</div><div style="font-size:24px;font-weight:800">$272.51</div></div><div><div class="muted">52W High</div><div style="font-size:24px;font-weight:800">$273.88</div></div><div><div class="muted">Último Q EPS</div><div style="font-size:24px;font-weight:800">$2.78</div></div></div></div>
+    <div class="tablewrap" style="margin-top:14px">
+      <table class="tbl"><thead><tr><th colspan="3">Q1 2026 · Último trimestre reportado</th></tr></thead><tbody><tr><td>Ventas</td><td>$181.5B</td><td class="pos">+17% YoY</td></tr><tr><td>EPS</td><td>$2.78</td><td class="pos">+75% YoY</td></tr><tr><td>AWS</td><td>$36.8B aprox.</td><td class="pos">+25% YoY aprox.</td></tr><tr><td>Guidance</td><td colspan="2">Q2: ventas $194-199B; op. income $20-24B</td></tr></tbody></table>
+      <table class="tbl"><thead class="accent"><tr><th colspan="3">Q2 2026 · Previsión (reporta julio 2026)</th></tr></thead><tbody><tr><td>Ventas</td><td>$196.3B consenso</td><td class="pos">+16-19% YoY</td></tr><tr><td>EPS</td><td>$1.57 consenso</td><td class="pos">crecimiento esperado</td></tr><tr><td>Segmentos clave</td><td colspan="2">AWS ~ $36.8B; publicidad > $17B</td></tr><tr><td>Guidance propio</td><td colspan="2">Ya dado: rango de ventas y op. income</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Análisis técnico — Distancia a máximos históricos</h2>
+    <div class="tech">
+      <div class="techbig"><div class="pct">≈ -0.5%</div><div style="margin-top:12px;font-size:15px;line-height:1.7">Cierre actual: $272.51<br>ATH cierre: $273.88 · 30 abr 2026<br>Máximo intradía 52 semanas: $273.88</div></div>
+      <div class="card subcard"><ul style="margin:0;padding-left:18px;line-height:1.75"><li>La acción está prácticamente en máximo histórico, con sesgo técnico claramente alcista.</li><li>La zona de $260-$265 funciona como soporte inmediato tras la ruptura.</li><li>Mientras mantenga $250, la estructura favorece continuación tendencial.</li><li>El próximo catalizador es el siguiente reporte y cualquier sorpresa en AWS, capex e IA.</li></ul></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Gráfico de cotización</h2>
+    <div class="iframewrap"><iframe src="https://s.tradingview.com/widgetembed/?symbol=NASDAQ%3AAMZN&interval=W&theme=light&style=1&locale=es&toolbarbg=F1F3F6&hideideas=1&range=24M&hidetoptoolbar=0&hidesidetoolbar=1&saveimage=0&studies=%5B%5D"></iframe></div>
+  </div>
+
+  <div class="footer">Fecha del análisis: 01/05/2026. Fuentes consultadas: <a href="https://www.aboutamazon.com/news/company-news/amazon-earnings-q1-2026-report">About Amazon Q1 2026</a> · <a href="https://finance.yahoo.com/markets/stocks/articles/amazon-q1-2026-earnings-beat-203149838.html">Yahoo Finance</a> · <a href="https://www.spglobal.com/market-intelligence/en/news-insights/research/2026/04/amazon-earnings-preview-q1-2026">S&P Global</a> · <a href="https://www.morningstar.com/stocks/xnas/amzn/quote">Morningstar</a> · <a href="https://www.etoro.com/es/markets/amzn">eToro</a></div>
+</div>
+</body>
+</html>

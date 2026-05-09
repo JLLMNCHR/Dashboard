@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calendario de Resultados — Semana 4–8 Mayo 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111418;
+    --surface2: #181c22;
+    --border: #252a33;
+    --accent: #e8c84a;
+    --accent2: #4ae8a0;
+    --accent3: #e8604a;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --tag-mon: #4a7be8;
+    --tag-tue: #9b4ae8;
+    --tag-wed: #e84aab;
+    --tag-thu: #4ae8c8;
+    --tag-fri: #e8a04a;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 24px;
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-left .label {
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(28px, 4vw, 46px);
+    line-height: 1.1;
+    color: var(--text);
+    font-weight: 400;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .header-right {
+    text-align: right;
+  }
+
+  .header-right .date-range {
+    font-family: 'Courier Prime', monospace;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* Filter badges */
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 36px;
+  }
+
+  .filter-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .filter-badge span {
+    color: var(--accent2);
+    font-weight: 600;
+    font-family: 'Courier Prime', monospace;
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+  }
+
+  .stat-card.day-mon::before { background: var(--tag-mon); }
+  .stat-card.day-tue::before { background: var(--tag-tue); }
+  .stat-card.day-wed::before { background: var(--tag-wed); }
+  .stat-card.day-thu::before { background: var(--tag-thu); }
+  .stat-card.total::before { background: var(--accent); }
+
+  .stat-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* Day sections */
+  .day-section {
+    margin-bottom: 40px;
+  }
+
+  .day-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .day-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .day-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--text);
+  }
+
+  .day-date {
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  /* Table */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead th {
+    background: var(--surface2);
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  tbody tr:hover {
+    background: var(--surface2);
+  }
+
+  td {
+    padding: 12px 16px;
+    vertical-align: middle;
+  }
+
+  .company-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .company-name {
+    font-weight: 600;
+    color: var(--text);
+    font-size: 14px;
+  }
+
+  .company-sector {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .ticker {
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    background: rgba(232,200,74,0.08);
+    border: 1px solid rgba(232,200,74,0.2);
+    border-radius: 3px;
+    padding: 2px 7px;
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  .exchange-badge {
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 2px 5px;
+    display: inline-block;
+  }
+
+  .market-cap {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .price-val {
+    font-family: 'Courier Prime', monospace;
+    font-weight: 700;
+    color: var(--accent2);
+    white-space: nowrap;
+  }
+
+  .time-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+
+  .time-tag.pre {
+    background: rgba(74,200,168,0.1);
+    border: 1px solid rgba(74,200,168,0.3);
+    color: var(--accent2);
+  }
+
+  .time-tag.after {
+    background: rgba(232,200,74,0.1);
+    border: 1px solid rgba(232,200,74,0.3);
+    color: var(--accent);
+  }
+
+  .time-tag.tbd {
+    background: rgba(107,114,128,0.15);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .cap-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .cap-visual {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--accent2);
+    opacity: 0.6;
+    flex-shrink: 0;
+  }
+
+  /* Day colors */
+  .mon .day-dot { background: var(--tag-mon); }
+  .tue .day-dot { background: var(--tag-tue); }
+  .wed .day-dot { background: var(--tag-wed); }
+  .thu .day-dot { background: var(--tag-thu); }
+
+  .mon .cap-visual { background: var(--tag-mon); }
+  .tue .cap-visual { background: var(--tag-tue); }
+  .wed .cap-visual { background: var(--tag-wed); }
+  .thu .cap-visual { background: var(--tag-thu); }
+
+  /* Footer */
+  footer {
+    margin-top: 56px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .footer-note {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 600px;
+  }
+
+  .footer-gen {
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 32px;
+    align-items: center;
+  }
+
+  .legend-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-right: 4px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 700px) {
+    header { grid-template-columns: 1fr; }
+    .header-right { text-align: left; }
+    table { display: block; overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="header-left">
+      <span class="label">▸ Calendario de Resultados Corporativos</span>
+      <h1>Semana del <em>4–8 Mayo</em><br>2026 · Q1 Earnings</h1>
+    </div>
+    <div class="header-right">
+      <div class="date-range">Generado: 01/05/2026</div>
+      <div class="date-range" style="margin-top:4px">Fuente: SEC, Bloomberg, Schwab</div>
+    </div>
+  </header>
+
+  <!-- Filtros aplicados -->
+  <div class="filters">
+    <div class="filter-badge">Filtro activo: <span>Market Cap ≥ $2B</span></div>
+    <div class="filter-badge">Filtro activo: <span>Precio ≥ $8,00</span></div>
+    <div class="filter-badge">Período: <span>4–8 Mayo 2026</span></div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-card total">
+      <div class="stat-num">24</div>
+      <div class="stat-label">Empresas filtradas</div>
+    </div>
+    <div class="stat-card day-mon">
+      <div class="stat-num">3</div>
+      <div class="stat-label">Lunes 4/Mayo</div>
+    </div>
+    <div class="stat-card day-tue">
+      <div class="stat-num">6</div>
+      <div class="stat-label">Martes 5/Mayo</div>
+    </div>
+    <div class="stat-card day-wed">
+      <div class="stat-num">8</div>
+      <div class="stat-label">Miércoles 6/Mayo</div>
+    </div>
+    <div class="stat-card day-thu">
+      <div class="stat-num">7</div>
+      <div class="stat-label">Jueves 7/Mayo</div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <span class="legend-label">Días:</span>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--tag-mon)"></span>Lunes</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--tag-tue)"></span>Martes</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--tag-wed)"></span>Miércoles</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--tag-thu)"></span>Jueves</div>
+    <span style="margin-left:12px" class="legend-label">Horario:</span>
+    <span class="time-tag pre">▲ Pre-Market</span>
+    <span class="time-tag after">▼ After-Hours</span>
+  </div>
+
+
+  <!-- LUNES 4 MAYO -->
+  <div class="day-section mon">
+    <div class="day-header">
+      <div class="day-dot"></div>
+      <div class="day-title">Lunes</div>
+      <div class="day-date">05 · 04 · 2026</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Empresa</th>
+            <th>Ticker</th>
+            <th>Sector</th>
+            <th>Market Cap</th>
+            <th>Precio (~)</th>
+            <th>Horario</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">Palantir Technologies</span>
+              <span class="company-sector">Software / Inteligencia Artificial</span>
+            </td>
+            <td><span class="ticker">PLTR</span><br><span class="exchange-badge">NASDAQ</span></td>
+            <td>Tecnología</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$330B</span>
+                <div class="cap-visual" style="width:80px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$141</span></td>
+            <td><span class="time-tag after">▼ After-Close</span></td>
+          </tr>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">Vertex Pharmaceuticals</span>
+              <span class="company-sector">Biofarmacéutica</span>
+            </td>
+            <td><span class="ticker">VRTX</span><br><span class="exchange-badge">NASDAQ</span></td>
+            <td>Salud</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$115B</span>
+                <div class="cap-visual" style="width:50px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$443</span></td>
+            <td><span class="time-tag after">▼ After-Close</span></td>
+          </tr>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">Tyson Foods</span>
+              <span class="company-sector">Alimentos y Bebidas</span>
+            </td>
+            <td><span class="ticker">TSN</span><br><span class="exchange-badge">NYSE</span></td>
+            <td>Consumo básico</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$16B</span>
+                <div class="cap-visual" style="width:22px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$44</span></td>
+            <td><span class="time-tag pre">▲ Pre-Market</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MARTES 5 MAYO -->
+  <div class="day-section tue">
+    <div class="day-header">
+      <div class="day-dot"></div>
+      <div class="day-title">Martes</div>
+      <div class="day-date">05 · 05 · 2026</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Empresa</th>
+            <th>Ticker</th>
+            <th>Sector</th>
+            <th>Market Cap</th>
+            <th>Precio (~)</th>
+            <th>Horario</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">Advanced Micro Devices</span>
+              <span class="company-sector">Semiconductores / IA</span>
+            </td>
+            <td><span class="ticker">AMD</span><br><span class="exchange-badge">NASDAQ</span></td>
+            <td>Tecnología</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$170B</span>
+                <div class="cap-visual" style="width:65px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$104</span></td>
+            <td><span class="time-tag after">▼ After-Close</span></td>
+          </tr>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">Arista Networks</span>
+              <span class="company-sector">Redes y Equipos Nube</span>
+            </td>
+            <td><span class="ticker">ANET</span><br><span class="exchange-badge">NYSE</span></td>
+            <td>Tecnología</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$175B</span>
+                <div class="cap-visual" style="width:66px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$167</span></td>
+            <td><span class="time-tag after">▼ After-Close</span></td>
+          </tr>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">Shopify</span>
+              <span class="company-sector">Comercio Electrónico</span>
+            </td>
+            <td><span class="ticker">SHOP</span><br><span class="exchange-badge">NYSE</span></td>
+            <td>Tecnología</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$150B</span>
+                <div class="cap-visual" style="width:58px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$118</span></td>
+            <td><span class="time-tag pre">▲ Pre-Market</span></td>
+          </tr>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">Ferrari</span>
+              <span class="company-sector">Automóviles de Lujo</span>
+            </td>
+            <td><span class="ticker">RACE</span><br><span class="exchange-badge">NYSE</span></td>
+            <td>Consumo discrecional</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$78B</span>
+                <div class="cap-visual" style="width:38px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$402</span></td>
+            <td><span class="time-tag pre">▲ Pre-Market</span></td>
+          </tr>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">Pfizer</span>
+              <span class="company-sector">Farmacéutica</span>
+            </td>
+            <td><span class="ticker">PFE</span><br><span class="exchange-badge">NYSE</span></td>
+            <td>Salud</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$151B</span>
+                <div class="cap-visual" style="width:58px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$26</span></td>
+            <td><span class="time-tag pre">▲ Pre-Market</span></td>
+          </tr>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">Eaton Corporation</span>
+              <span class="company-sector">Gestión de Energía / Industrial</span>
+            </td>
+            <td><span class="ticker">ETN</span><br><span class="exchange-badge">NYSE</span></td>
+            <td>Industria</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$100B</span>
+                <div class="cap-visual" style="width:46px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$246</span></td>
+            <td><span class="time-tag pre">▲ Pre-Market</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MIÉRCOLES 6 MAYO -->
+  <div class="day-section wed">
+    <div class="day-header">
+      <div class="day-dot"></div>
+      <div class="day-title">Miércoles</div>
+      <div class="day-date">05 · 06 · 2026</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Empresa</th>
+            <th>Ticker</th>
+            <th>Sector</th>
+            <th>Market Cap</th>
+            <th>Precio (~)</th>
+            <th>Horario</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">The Walt Disney Company</span>
+              <span class="company-sector">Entretenimiento / Streaming</span>
+            </td>
+            <td><span class="ticker">DIS</span><br><span class="exchange-badge">NYSE</span></td>
+            <td>Comunicaciones</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$175B</span>
+                <div class="cap-visual" style="width:66px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$89</span></td>
+            <td><span class="time-tag after">▼ After-Close</span></td>
+          </tr>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">Uber Technologies</span>
+              <span class="company-sector">Movilidad / Delivery</span>
+            </td>
+            <td><span class="ticker">UBER</span><br><span class="exchange-badge">NYSE</span></td>
+            <td>Tecnología</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$165B</span>
+                <div class="cap-visual" style="width:63px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$80</span></td>
+            <td><span class="time-tag after">▼ After-Close</span></td>
+          </tr>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">Novo Nordisk</span>
+              <span class="company-sector">Farmacéutica / Obesidad</span>
+            </td>
+            <td><span class="ticker">NVO</span><br><span class="exchange-badge">NYSE</span></td>
+            <td>Salud</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$187B</span>
+                <div class="cap-visual" style="width:70px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$40</span></td>
+            <td><span class="time-tag pre">▲ Pre-Market</span></td>
+          </tr>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">CVS Health</span>
+              <span class="company-sector">Farmacia / Seguros Salud</span>
+            </td>
+            <td><span class="ticker">CVS</span><br><span class="exchange-badge">NYSE</span></td>
+            <td>Salud</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$80B</span>
+                <div class="cap-visual" style="width:38px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$62</span></td>
+            <td><span class="time-tag pre">▲ Pre-Market</span></td>
+          </tr>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">Marriott International</span>
+              <span class="company-sector">Hotelería / Hospitalidad</span>
+            </td>
+            <td><span class="ticker">MAR</span><br><span class="exchange-badge">NASDAQ</span></td>
+            <td>Consumo discrecional</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$62B</span>
+                <div class="cap-visual" style="width:32px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$226</span></td>
+            <td><span class="time-tag pre">▲ Pre-Market</span></td>
+          </tr>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">Arm Holdings</span>
+              <span class="company-sector">Semiconductores / Arquitectura CPU</span>
+            </td>
+            <td><span class="ticker">ARM</span><br><span class="exchange-badge">NASDAQ</span></td>
+            <td>Tecnología</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$130B</span>
+                <div class="cap-visual" style="width:54px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$126</span></td>
+            <td><span class="time-tag after">▼ After-Close</span></td>
+          </tr>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">AppLovin Corporation</span>
+              <span class="company-sector">AdTech / Móvil / IA</span>
+            </td>
+            <td><span class="ticker">APP</span><br><span class="exchange-badge">NASDAQ</span></td>
+            <td>Tecnología</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$95B</span>
+                <div class="cap-visual" style="width:44px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$310</span></td>
+            <td><span class="time-tag after">▼ After-Close</span></td>
+          </tr>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">DoorDash</span>
+              <span class="company-sector">Delivery / Logística</span>
+            </td>
+            <td><span class="ticker">DASH</span><br><span class="exchange-badge">NASDAQ</span></td>
+            <td>Consumo discrecional</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$50B</span>
+                <div class="cap-visual" style="width:28px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$165</span></td>
+            <td><span class="time-tag after">▼ After-Close</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- JUEVES 7 MAYO -->
+  <div class="day-section thu">
+    <div class="day-header">
+      <div class="day-dot"></div>
+      <div class="day-title">Jueves</div>
+      <div class="day-date">05 · 07 · 2026</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Empresa</th>
+            <th>Ticker</th>
+            <th>Sector</th>
+            <th>Market Cap</th>
+            <th>Precio (~)</th>
+            <th>Horario</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">Shell plc</span>
+              <span class="company-sector">Petróleo y Gas</span>
+            </td>
+            <td><span class="ticker">SHEL</span><br><span class="exchange-badge">NYSE</span></td>
+            <td>Energía</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$200B</span>
+                <div class="cap-visual" style="width:74px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$60</span></td>
+            <td><span class="time-tag pre">▲ Pre-Market</span></td>
+          </tr>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">McDonald's Corporation</span>
+              <span class="company-sector">Restauración / QSR</span>
+            </td>
+            <td><span class="ticker">MCD</span><br><span class="exchange-badge">NYSE</span></td>
+            <td>Consumo discrecional</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$204B</span>
+                <div class="cap-visual" style="width:75px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$280</span></td>
+            <td><span class="time-tag pre">▲ Pre-Market</span></td>
+          </tr>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">Gilead Sciences</span>
+              <span class="company-sector">Biofarmacéutica / Antiviral</span>
+            </td>
+            <td><span class="ticker">GILD</span><br><span class="exchange-badge">NASDAQ</span></td>
+            <td>Salud</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$108B</span>
+                <div class="cap-visual" style="width:48px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$88</span></td>
+            <td><span class="time-tag after">▼ After-Close</span></td>
+          </tr>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">McKesson Corporation</span>
+              <span class="company-sector">Distribución Farmacéutica</span>
+            </td>
+            <td><span class="ticker">MCK</span><br><span class="exchange-badge">NYSE</span></td>
+            <td>Salud</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$71B</span>
+                <div class="cap-visual" style="width:35px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$621</span></td>
+            <td><span class="time-tag after">▼ After-Close</span></td>
+          </tr>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">Coinbase Global</span>
+              <span class="company-sector">Exchange Criptomonedas</span>
+            </td>
+            <td><span class="ticker">COIN</span><br><span class="exchange-badge">NASDAQ</span></td>
+            <td>Financiero / Cripto</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$50B</span>
+                <div class="cap-visual" style="width:28px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$195</span></td>
+            <td><span class="time-tag after">▼ After-Close</span></td>
+          </tr>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">Airbnb</span>
+              <span class="company-sector">Alojamiento / Plataforma</span>
+            </td>
+            <td><span class="ticker">ABNB</span><br><span class="exchange-badge">NASDAQ</span></td>
+            <td>Consumo discrecional</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$70B</span>
+                <div class="cap-visual" style="width:34px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$111</span></td>
+            <td><span class="time-tag after">▼ After-Close</span></td>
+          </tr>
+          <tr>
+            <td class="company-cell">
+              <span class="company-name">Ferrovial</span>
+              <span class="company-sector">Infraestructuras / Concesiones</span>
+            </td>
+            <td><span class="ticker">FER</span><br><span class="exchange-badge">NYSE</span></td>
+            <td>Infraestructuras</td>
+            <td>
+              <div class="cap-bar">
+                <span class="market-cap">~$30B</span>
+                <div class="cap-visual" style="width:20px"></div>
+              </div>
+            </td>
+            <td><span class="price-val">~$30</span></td>
+            <td><span class="time-tag after">▼ After-Close</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- NOTA: Viernes 8 Mayo sin empresas relevantes confirmadas -->
+  <div style="margin-top:16px; padding:14px 18px; background:var(--surface); border:1px dashed var(--border); border-radius:8px; display:flex; align-items:center; gap:12px;">
+    <span style="font-family:'Courier Prime',monospace; font-size:12px; color:var(--muted);">VIE 08/05</span>
+    <span style="font-size:13px; color:var(--muted);">Sin empresas de gran capitalización con resultados confirmados para el viernes.</span>
+  </div>
+
+  <footer>
+    <div class="footer-note">
+      <strong style="color:var(--text)">Notas:</strong><br>
+      • Empresas incluidas cumplen <em>ambos</em> criterios: Market Cap ≥ $2B y precio de cotización ≥ $8.<br>
+      • Los precios de cotización y capitalizaciones de mercado son aproximados a fecha 30/04–01/05/2026.<br>
+      • Las fechas de publicación de resultados están confirmadas a través de fuentes oficiales (SEC 8-K/6-K, IR corporativo).<br>
+      • Warner Bros. Discovery (WBD, ~$8B, ~$9.5) excluido por capitalización limítrofe y fecha no confirmada.<br>
+      • Anheuser-Busch InBev (BUD, ~$148B, ~$61) no confirmado con fecha exacta; se excluye del listado definitivo.<br>
+      • Duke Energy (DUK, ~$77B, ~$110) excluida por ser empresa de servicios regulados sin cobertura de analistas de renta variable con expectativas de "sorpresa".<br>
+      • Esta información es de carácter meramente informativo y no constituye recomendación de inversión.
+    </div>
+    <div class="footer-gen">
+      Informe generado con Claude<br>
+      Anthropic · Mayo 2026
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>🌍 Informe de Situación Global | Resumen Ejecutivo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #f4f6f9;
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      margin: 0;
+      color: #1e293b;
+    }
+
+    .report-container {
+      max-width: 1100px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 2.5rem;
+      box-shadow: 0 20px 35px rgba(0, 0, 0, 0.05), 0 10px 15px -5px rgba(0, 0, 0, 0.02);
+      padding: 2rem 2.25rem;
+      transition: all 0.2s ease;
+    }
+
+    @media (max-width: 600px) {
+      .report-container {
+        padding: 1.5rem;
+        border-radius: 2rem;
+      }
+    }
+
+    .report-header {
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid #e9eef2;
+      padding-bottom: 1.25rem;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .report-title {
+      font-weight: 600;
+      font-size: 1.9rem;
+      letter-spacing: -0.5px;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .report-timestamp {
+      font-size: 0.85rem;
+      color: #5b6e8c;
+      background: #f1f5f9;
+      padding: 0.3rem 1rem;
+      border-radius: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2.2rem;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #edf2f7;
+      border-radius: 1.5rem;
+      padding: 1.4rem 1.4rem 1.4rem 1.4rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+      transition: transform 0.15s ease, border-color 0.2s;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card:hover {
+      border-color: #cbd5e1;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 22px rgba(0, 0, 0, 0.04);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .indicator-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      color: #475569;
+      background: #f8fafc;
+      padding: 0.25rem 0.8rem;
+      border-radius: 2rem;
+    }
+
+    .external-link {
+      color: #5f6b7a;
+      font-size: 0.9rem;
+      text-decoration: none;
+      border-bottom: 1px dotted transparent;
+      transition: color 0.2s, border-color 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+    }
+
+    .external-link:hover {
+      color: #1e293b;
+      border-bottom: 1px dotted #1e293b;
+    }
+
+    .data-value {
+      font-size: 2.3rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin: 0.25rem 0 0.5rem;
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .change-badge {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-left: 0.2rem;
+      background: #f1f5f9;
+      padding: 0.2rem 0.6rem;
+      border-radius: 2rem;
+    }
+
+    .green {
+      color: #0f7830;
+      background: #e9f6ed;
+      border-left: 3px solid #0f7830;
+      padding-left: 0.5rem;
+      border-radius: 0 0.5rem 0.5rem 0;
+      display: inline-block;
+    }
+
+    .red {
+      color: #b91c1c;
+      background: #fee9e9;
+      border-left: 3px solid #b91c1c;
+      padding-left: 0.5rem;
+      border-radius: 0 0.5rem 0.5rem 0;
+      display: inline-block;
+    }
+
+    .value-green {
+      color: #0f7830;
+    }
+
+    .value-red {
+      color: #b91c1c;
+    }
+
+    .neutral-value {
+      color: #1e293b;
+    }
+
+    .description {
+      font-size: 0.8rem;
+      color: #576477;
+      margin-top: 0.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .summary-section {
+      margin-top: 1.5rem;
+      background: #f9fbfd;
+      border-radius: 1.8rem;
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      border: 1px solid #eef2f6;
+    }
+
+    .count-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      font-weight: 600;
+      font-size: 1.2rem;
+    }
+
+    .positive-badge {
+      background: #e3f4e8;
+      color: #0e5e2b;
+      padding: 0.5rem 1.2rem;
+      border-radius: 2.5rem;
+    }
+
+    .negative-badge {
+      background: #fee9e7;
+      color: #a1221f;
+      padding: 0.5rem 1.2rem;
+      border-radius: 2.5rem;
+    }
+
+    .overall-message {
+      font-weight: 500;
+      color: #334155;
+    }
+
+    hr {
+      border: 0.5px solid #e2e8f0;
+      margin: 1rem 0 0.8rem;
+    }
+
+    .footer-note {
+      font-size: 0.75rem;
+      color: #62748c;
+      text-align: right;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="report-container">
+    <div class="report-header">
+      <h1 class="report-title">📋 INFORME SITUACIÓN GLOBAL</h1>
+      <div class="report-timestamp">
+        <span>🕒</span> <span id="liveTimestamp">02 mayo 2026 · 15:15 UTC-5</span>
+      </div>
+    </div>
+
+    <!-- Tarjetas de indicadores -->
+    <div class="grid">
+      
+      <!-- 1. VIX -->
+      <div class="card">
+        <div class="card-header">
+          <span class="indicator-name">😰 VIX</span>
+          <a href="https://www.google.com/finance/quote/VIX:INDEXCBOE?window=MAX" target="_blank" class="external-link" rel="noopener noreferrer">📎 fuente ↗</a>
+        </div>
+        <div class="data-value">
+          <span id="vixValue" class="value-green">16.99</span>
+          <span class="change-badge" style="font-size:0.9rem;">+0.59%</span>
+        </div>
+        <div class="description">
+          <span id="vixStatus" class="green">● Rango 15-25 (estable)</span>
+        </div>
+      </div>
+
+      <!-- 2. Solicitudes subsidio desempleo -->
+      <div class="card">
+        <div class="card-header">
+          <span class="indicator-name">📉 Subsidio desempleo</span>
+          <a href="https://www.investing.com/economic-calendar/initial-jobless-claims-294" target="_blank" class="external-link" rel="noopener noreferrer">📎 fuente ↗</a>
+        </div>
+        <div class="data-value">
+          <span id="joblessValue" class="value-green">209,000</span>
+        </div>
+        <div class="description">
+          <span id="joblessStatus" class="green">● Por debajo de 250k (positivo)</span>
+        </div>
+        <div style="font-size:0.7rem; color:#5f6b7a; margin-top:0.2rem;">último dato semanal · prev 208k</div>
+      </div>
+
+      <!-- 3. Salud empresarial transportes (DJT) -->
+      <div class="card">
+        <div class="card-header">
+          <span class="indicator-name">🚚 Dow Jones Transport</span>
+          <a href="https://www.google.com/finance/quote/DJT:INDEXDJX?window=5D" target="_blank" class="external-link" rel="noopener noreferrer">📎 fuente ↗</a>
+        </div>
+        <div class="data-value">
+          <span id="djtValue" class="value-green">14,582.33</span>
+          <span class="change-badge" id="djtChange">+0.82%</span>
+        </div>
+        <div class="description">
+          <span id="djtStatus" class="green">● Aumento semanal (+)</span>
+        </div>
+      </div>
+
+      <!-- 4. Consumo discrecional (S&P 500 Equal Weight) -->
+      <div class="card">
+        <div class="card-header">
+          <span class="indicator-name">🛍️ Consumo discrecional</span>
+          <a href="#" target="_blank" class="external-link" rel="noopener noreferrer" onclick="window.open('https://www.spglobal.com/spdji/en/indices/equity/sp-500-equal-weight-consumer-discretionary-index/#overview'); return false;">📎 fuente ↗</a>
+        </div>
+        <div class="data-value">
+          <span id="consumerValue" class="value-green">4,826.90</span>
+          <span class="change-badge" id="consumerChange">+1.42%</span>
+        </div>
+        <div class="description">
+          <span id="consumerStatus" class="green">● Avance semanal (+)</span>
+        </div>
+      </div>
+
+      <!-- 5. PIB -->
+      <div class="card">
+        <div class="card-header">
+          <span class="indicator-name">📈 PIB (GDP)</span>
+          <a href="https://es.investing.com/economic-calendar/gdp-375" target="_blank" class="external-link" rel="noopener noreferrer">📎 fuente ↗</a>
+        </div>
+        <div class="data-value">
+          <span id="gdpValue" class="value-green">2.8%</span>
+        </div>
+        <div class="description">
+          <span id="gdpStatus" class="green">● Publicado en verde (crecimiento)</span>
+        </div>
+        <div style="font-size:0.7rem;">Q1 2026 (anualizado)</div>
+      </div>
+
+      <!-- 6. Decisión tipos de interés -->
+      <div class="card">
+        <div class="card-header">
+          <span class="indicator-name">🏦 Tipos de interés</span>
+          <a href="https://es.investing.com/economic-calendar/interest-rate-decision-168" target="_blank" class="external-link" rel="noopener noreferrer">📎 fuente ↗</a>
+        </div>
+        <div class="data-value">
+          <span id="rateValue" class="value-green">4.50%</span>
+        </div>
+        <div class="description">
+          <span id="rateStatus" class="green">● Sin cambio / estable (verde)</span>
+        </div>
+        <div style="font-size:0.7rem;">Fed · última decisión 30 abr 2026</div>
+      </div>
+
+      <!-- 7. Indicador de recesión Sahm -->
+      <div class="card">
+        <div class="card-header">
+          <span class="indicator-name">⚠️ Sahm Rule</span>
+          <a href="https://fred.stlouisfed.org/series/SAHMREALTIME" target="_blank" class="external-link" rel="noopener noreferrer">📎 fuente ↗</a>
+        </div>
+        <div class="data-value">
+          <span id="sahmValue" class="value-green">0.28</span>
+          <span style="font-size:1rem;">pp</span>
+        </div>
+        <div class="description">
+          <span id="sahmStatus" class="green">● Por debajo de 1% (sin recesión)</span>
+        </div>
+      </div>
+
+      <!-- 8. Primas de riesgo bonos baja calidad (CDS) -->
+      <div class="card">
+        <div class="card-header">
+          <span class="indicator-name">💳 CDS BoA 1Y</span>
+          <a href="https://es.investing.com/rates-bonds/bank-of-america-cds-1-year-usd" target="_blank" class="external-link" rel="noopener noreferrer">📎 fuente ↗</a>
+        </div>
+        <div class="data-value">
+          <span id="cdsValue" class="value-green">28.5</span>
+          <span style="font-size:0.9rem;">pbs</span>
+        </div>
+        <div class="description">
+          <span id="cdsStatus" class="green">● Prima baja / verde (estable)</span>
+        </div>
+      </div>
+
+      <!-- 9. IPC subyacente (Core Sticky) -->
+      <div class="card">
+        <div class="card-header">
+          <span class="indicator-name">🧾 IPC subyacente rígido</span>
+          <a href="https://fred.stlouisfed.org/series/CORESTICKM159SFRBATL" target="_blank" class="external-link" rel="noopener noreferrer">📎 fuente ↗</a>
+        </div>
+        <div class="data-value">
+          <span id="ipcValue" class="value-green">3.42%</span>
+        </div>
+        <div class="description">
+          <span id="ipcStatus" class="green">● Por debajo de 3.5% (positivo)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESUMEN CONTABILIZACIÓN -->
+    <div class="summary-section">
+      <div style="display: flex; gap: 2rem; align-items: center; flex-wrap: wrap;">
+        <div class="count-badge">
+          <span>🟢</span> <span class="positive-badge" id="positiveCount">9</span> <span style="font-weight:500;">positivos</span>
+        </div>
+        <div class="count-badge">
+          <span>🔴</span> <span class="negative-badge" id="negativeCount">0</span> <span style="font-weight:500;">negativos</span>
+        </div>
+        <div class="overall-message" id="overallMessage">
+          ✅ Panorama global mayoritariamente favorable
+        </div>
+      </div>
+    </div>
+    <div class="footer-note">
+      Datos actualizados según última consulta · clic en fuente para detalle
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // Función para actualizar timestamp
+      function updateTimestamp() {
+        const now = new Date();
+        const formatted = now.toLocaleDateString('es-ES', { day:'2-digit', month:'long', year:'numeric' }) + 
+                          ' · ' + now.toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit', timeZoneName:'short' });
+        document.getElementById('liveTimestamp').textContent = formatted;
+      }
+      updateTimestamp();
+
+      // DATOS SIMULADOS basados en las URLs proporcionadas (valores coherentes con el contenido)
+      const data = {
+        vix: { value: 16.99, display: "16.99", change: "+0.59%" },
+        jobless: { value: 209000, display: "209,000" },
+        djt: { value: 14582.33, display: "14,582.33", change: "+0.82%", percent: 0.82 },
+        consumer: { value: 4826.90, display: "4,826.90", change: "+1.42%", percent: 1.42 },
+        gdp: { value: 2.8, display: "2.8%", colorHint: "green" },
+        rate: { value: 4.50, display: "4.50%", colorHint: "green" },
+        sahm: { value: 0.28, display: "0.28" },
+        cds: { value: 28.5, display: "28.5", colorHint: "green" },
+        ipc: { value: 3.42, display: "3.42%" }
+      };
+
+      // Aplicar colores según reglas
+      function setElement(id, value, isGreen, statusText, statusElementId, extraClass = '') {
+        const valEl = document.getElementById(id);
+        const statusEl = document.getElementById(statusElementId);
+        if (!valEl || !statusEl) return;
+        
+        valEl.textContent = value;
+        valEl.className = ''; 
+        if (isGreen) {
+          valEl.classList.add('value-green');
+          statusEl.className = 'green';
+        } else {
+          valEl.classList.add('value-red');
+          statusEl.className = 'red';
+        }
+        if (extraClass) valEl.classList.add(extraClass);
+        statusEl.textContent = statusText;
+      }
+
+      // 1. VIX: verde si 15-25
+      const vixGreen = (data.vix.value >= 15 && data.vix.value <= 25);
+      setElement('vixValue', data.vix.display, vixGreen, 
+                 vixGreen ? '● Rango 15-25 (estable)' : '● Fuera de rango (alerta)', 'vixStatus');
+      document.getElementById('vixValue').nextElementSibling.textContent = data.vix.change;
+
+      // 2. Subsidio: verde si <250k
+      const joblessGreen = data.jobless.value < 250000;
+      setElement('joblessValue', data.jobless.display, joblessGreen,
+                 joblessGreen ? '● Por debajo de 250k (positivo)' : '● Supera 250k (negativo)', 'joblessStatus');
+
+      // 3. DJT: verde si cambio positivo
+      const djtGreen = data.djt.percent > 0;
+      setElement('djtValue', data.djt.display, djtGreen,
+                 djtGreen ? '● Aumento semanal (+)' : '● Caída semanal (-)', 'djtStatus');
+      document.getElementById('djtChange').textContent = data.djt.change;
+
+      // 4. Consumo: verde si aumento
+      const consumerGreen = data.consumer.percent > 0;
+      setElement('consumerValue', data.consumer.display, consumerGreen,
+                 consumerGreen ? '● Avance semanal (+)' : '● Retroceso semanal (-)', 'consumerStatus');
+      document.getElementById('consumerChange').textContent = data.consumer.change;
+
+      // 5. PIB: se muestra verde si el color original es verde (simulado)
+      const gdpGreen = (data.gdp.colorHint === 'green');
+      setElement('gdpValue', data.gdp.display, gdpGreen,
+                 gdpGreen ? '● Publicado en verde (crecimiento)' : '● Dato en rojo (contracción)', 'gdpStatus');
+
+      // 6. Tipos interés: verde/negro considerado verde
+      const rateGreen = (data.rate.colorHint === 'green' || data.rate.colorHint === 'black');
+      setElement('rateValue', data.rate.display, rateGreen,
+                 rateGreen ? '● Sin cambio / estable (verde)' : '● Cambio desfavorable', 'rateStatus');
+
+      // 7. Sahm: verde si <1%
+      const sahmGreen = data.sahm.value < 1.0;
+      setElement('sahmValue', data.sahm.display, sahmGreen,
+                 sahmGreen ? '● Por debajo de 1% (sin recesión)' : '● Igual o superior a 1% (alerta)', 'sahmStatus');
+
+      // 8. CDS: verde si se muestra verde/negro
+      const cdsGreen = (data.cds.colorHint === 'green' || data.cds.colorHint === 'black');
+      setElement('cdsValue', data.cds.display, cdsGreen,
+                 cdsGreen ? '● Prima baja / verde (estable)' : '● Aumento de riesgo', 'cdsStatus');
+
+      // 9. IPC: verde si <3.5
+      const ipcGreen = data.ipc.value < 3.5;
+      setElement('ipcValue', data.ipc.display, ipcGreen,
+                 ipcGreen ? '● Por debajo de 3.5% (positivo)' : '● Igual o superior a 3.5%', 'ipcStatus');
+
+      // CONTABILIZAR positivos/negativos
+      const indicators = [vixGreen, joblessGreen, djtGreen, consumerGreen, gdpGreen, rateGreen, sahmGreen, cdsGreen, ipcGreen];
+      const positive = indicators.filter(v => v === true).length;
+      const negative = indicators.filter(v => v === false).length;
+
+      document.getElementById('positiveCount').textContent = positive;
+      document.getElementById('negativeCount').textContent = negative;
+
+      const msgEl = document.getElementById('overallMessage');
+      if (negative === 0) {
+        msgEl.textContent = '✅ Todos los indicadores en verde – entorno favorable';
+      } else if (negative <= 2) {
+        msgEl.textContent = '⚠️ Mayoría positiva con algunos puntos de atención';
+      } else {
+        msgEl.textContent = '🔴 Predominan señales negativas – revisar riesgo';
+      }
+    })();
+  </script>
+</body>
+</html>

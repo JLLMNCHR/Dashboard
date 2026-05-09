@@ -1,0 +1,223 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe Situación Global</title>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --main: #1e293b;
+            --sub: #64748b;
+            --green: #10b981;
+            --red: #ef4444;
+            --border: #e2e8f0;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--main);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+        .wrapper {
+            max-width: 1000px;
+            width: 100%;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: -0.025em;
+        }
+        .date {
+            color: var(--sub);
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .card:hover {
+            border-color: var(--sub);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--sub);
+            margin-bottom: 1rem;
+        }
+        .value {
+            font-size: 1.875rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        .value.GREEN { color: var(--green); }
+        .value.RED { color: var(--red); }
+        
+        .criterio {
+            font-size: 0.75rem;
+            color: var(--sub);
+            margin-bottom: 1rem;
+            background: #f1f5f9;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            display: inline-block;
+            width: fit-content;
+        }
+        .info {
+            font-size: 0.875rem;
+            line-height: 1.5;
+            color: var(--main);
+        }
+        .summary {
+            display: flex;
+            background: var(--main);
+            color: white;
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+        .summary-box {
+            flex: 1;
+            padding: 2rem;
+            text-align: center;
+        }
+        .summary-box:first-child { border-right: 1px solid #334155; }
+        .summary-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+        .summary-count {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-top: 0.5rem;
+        }
+        .summary-count.pos { color: var(--green); }
+        .summary-count.neg { color: var(--red); }
+        
+        @media (max-width: 640px) {
+            .grid { grid-template-columns: 1fr; }
+            .summary { flex-direction: column; }
+            .summary-box:first-child { border-right: none; border-bottom: 1px solid #334155; }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+            <h1>Informe Situación Global</h1>
+            <div class="date">Datos actualizados al 02/05/2026 17:18</div>
+        </header>
+
+        <div class="grid">
+
+            <a href="https://www.google.com/finance/quote/VIX:INDEXCBOE?window=MAX" class="card" target="_blank">
+                <div class="label">VIX (Volatilidad)</div>
+                <div class="value GREEN">16.99</div>
+                <div class="criterio">Meta: 15 a 25</div>
+                <div class="info">El índice de volatilidad se mantiene en niveles moderados, indicando estabilidad relativa.</div>
+            </a>
+    
+            <a href="https://www.investing.com/economic-calendar/initial-jobless-claims-294" class="card" target="_blank">
+                <div class="label">Solicitudes Subsidio Desempleo</div>
+                <div class="value GREEN">189,000</div>
+                <div class="criterio">Meta: < 250,000</div>
+                <div class="info">Las solicitudes de subsidio por desempleo están por debajo del umbral de alerta.</div>
+            </a>
+    
+            <a href="https://www.google.com/finance/quote/DJT:INDEXDJX?window=5D" class="card" target="_blank">
+                <div class="label">Salud Sector Transportes (DJT)</div>
+                <div class="value RED">-1.41%</div>
+                <div class="criterio">Meta: Aumento (+)</div>
+                <div class="info">El sector de transportes muestra una contracción en los últimos 5 días.</div>
+            </a>
+    
+            <a href="https://www.spglobal.com/spdji/en/indices/equity/sp-500-equal-weighted-consumer-discretionary-sector/" class="card" target="_blank">
+                <div class="label">Salud Sector Consumo (S&P 500 EW)</div>
+                <div class="value RED">-9.13% (Mensual)</div>
+                <div class="criterio">Meta: Aumento (+)</div>
+                <div class="info">El sector de consumo discrecional (equiponderado) presenta caídas significativas recientemente.</div>
+            </a>
+    
+            <a href="https://es.investing.com/economic-calendar/gdp-375" class="card" target="_blank">
+                <div class="label">Producto Interior Bruto (PIB)</div>
+                <div class="value RED">2.0%</div>
+                <div class="criterio">Meta: Publicación Positiva (Verde)</div>
+                <div class="info">El crecimiento económico se situó por debajo de lo esperado por el consenso.</div>
+            </a>
+    
+            <a href="https://es.investing.com/economic-calendar/interest-rate-decision-168" class="card" target="_blank">
+                <div class="label">Decisión Tipos de Interés</div>
+                <div class="value GREEN">3.75%</div>
+                <div class="criterio">Meta: Verde o Negro</div>
+                <div class="info">Los tipos de interés se mantuvieron sin cambios, ofreciendo previsibilidad al mercado.</div>
+            </a>
+    
+            <a href="https://fred.stlouisfed.org/series/SAHMREALTIME" class="card" target="_blank">
+                <div class="label">Indicador de Recesión de Sahm</div>
+                <div class="value GREEN">0.20</div>
+                <div class="criterio">Meta: < 1%</div>
+                <div class="info">El indicador está lejos del nivel de alerta de recesión (0.50).</div>
+            </a>
+    
+            <a href="https://es.investing.com/rates-bonds/bank-of-america-cds-1-year-usd" class="card" target="_blank">
+                <div class="label">Primas de Riesgo (BofA CDS 1Y)</div>
+                <div class="value GREEN">34.76 (-0.69%)</div>
+                <div class="criterio">Meta: Verde o Negro</div>
+                <div class="info">El coste de asegurar el riesgo crediticio ha disminuido ligeramente.</div>
+            </a>
+    
+            <a href="https://fred.stlouisfed.org/series/CORESTICKM159SFRBATL" class="card" target="_blank">
+                <div class="label">Índice de Precios (CPI Sticky)</div>
+                <div class="value GREEN">2.93%</div>
+                <div class="criterio">Meta: < 3.5</div>
+                <div class="info">La inflación de precios 'pegajosos' se sitúa en un rango controlado.</div>
+            </a>
+    
+        </div>
+
+        <div class="summary">
+            <div class="summary-box">
+                <div class="summary-label">Puntos Positivos (Verdes)</div>
+                <div class="summary-count pos">6</div>
+            </div>
+            <div class="summary-box">
+                <div class="summary-label">Puntos Negativos (Rojos)</div>
+                <div class="summary-count neg">3</div>
+            </div>
+        </div>
+        
+        <div style="text-align:center; margin-top:3rem; font-size:0.75rem; color:var(--sub);">
+            Informe generado automáticamente. Haz clic en cualquier tarjeta para ver la fuente original.
+        </div>
+    </div>
+</body>
+</html>

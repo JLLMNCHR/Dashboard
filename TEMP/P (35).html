@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMZN · Amazon.com Inc. — Análisis Fundamental y Técnico</title>
+    <style>
+        :root {
+            --navy: #232F3E;
+            --accent: #FF9900;
+            --light: #F7F7F7;
+            --white: #FFFFFF;
+            --text: #1A1A1A;
+            --text-secondary: #555;
+            --border: #E0E0E0;
+            --green: #1B8552;
+            --red: #D1323E;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, "Segoe UI", Calibri, Arial, sans-serif;
+            background: var(--light);
+            color: var(--text);
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* HERO */
+        .hero {
+            background: var(--navy);
+            color: var(--white);
+            padding: 40px 32px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            position: relative;
+            border-left: 14px solid var(--accent);
+            flex-wrap: nowrap;
+        }
+
+        .hero-logo-box {
+            width: 110px;
+            height: 110px;
+            min-width: 110px;
+            background: var(--white);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .hero-info {
+            flex: 1;
+        }
+
+        .hero-info h1 {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 44px;
+            font-weight: bold;
+            line-height: 1;
+            display: inline;
+            margin-right: 12px;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            border: 1.5px solid var(--accent);
+            color: var(--accent);
+            padding: 4px 14px;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            vertical-align: middle;
+            position: relative;
+            top: -6px;
+        }
+
+        .hero-subtitle {
+            margin-top: 8px;
+            font-size: 16px;
+            color: #CCCCCC;
+            font-family: Georgia, 'Times New Roman', serif;
+        }
+
+        /* STAT STRIP */
+        .stat-strip {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 12px;
+            background: var(--white);
+            padding: 20px 32px;
+            border-bottom: 3px solid var(--border);
+        }
+
+        .stat-card {
+            flex: 1;
+            border: 1.5px solid var(--accent);
+            border-radius: 10px;
+            padding: 14px 16px;
+            text-align: center;
+            background: var(--white);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--navy);
+            font-family: Georgia, 'Times New Roman', serif;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+
+        /* SECTION CARDS */
+        .section {
+            background: var(--white);
+            margin: 20px auto;
+            max-width: 1160px;
+            border-radius: 10px;
+            padding: 28px 32px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--navy);
+            margin-bottom: 16px;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 8px;
+            display: inline-block;
+        }
+
+        .highlight {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .dark-block {
+            background: var(--navy);
+            color: var(--white);
+            padding: 20px 24px;
+            border-radius: 10px;
+            margin-top: 16px;
+        }
+
+        /* POSICIÓN COMPETITIVA */
+        .competitive-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .subsector-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .subsector-card {
+            border-left: 6px solid var(--accent);
+            background: var(--light);
+            padding: 14px 18px;
+            border-radius: 4px;
+        }
+
+        .subsector-card .ss-name {
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--navy);
+        }
+
+        .subsector-card .ss-position {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--accent);
+            margin: 2px 0;
+        }
+
+        .rival-block {
+            background: var(--navy);
+            color: var(--white);
+            padding: 24px;
+            border-radius: 10px;
+            height: fit-content;
+        }
+
+        .rival-block h3 {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 22px;
+            margin-bottom: 4px;
+        }
+
+        .rival-slogan {
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+
+        .rival-block ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .rival-block ul li {
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            font-size: 14px;
+        }
+
+        .rival-block ul li::before {
+            content: "▸ ";
+            color: var(--accent);
+        }
+
+        /* FUTURO */
+        .future-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .future-card {
+            background: var(--white);
+            border-top: 4px solid var(--accent);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+
+        .future-card .icon {
+            font-size: 28px;
+            color: var(--accent);
+        }
+
+        .future-card h3 {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 17px;
+            margin: 8px 0;
+            color: var(--navy);
+        }
+
+        .risks-line {
+            background: var(--navy);
+            color: var(--white);
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-top: 16px;
+            font-size: 14px;
+        }
+
+        .risks-line .risk-accent {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* DATOS FUNDAMENTALES */
+        .fundamentals-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .fund-card {
+            background: var(--light);
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            grid-column: 1 / -1;
+        }
+
+        .fund-card .mcap-big {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 46px;
+            font-weight: bold;
+            color: var(--navy);
+        }
+
+        .fund-card .mcap-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table-dark th {
+            background: var(--navy);
+            color: var(--white);
+        }
+
+        .table-accent th {
+            background: var(--accent);
+            color: #1A1A1A;
+        }
+
+        .green-text {
+            color: var(--green);
+            font-weight: 600;
+        }
+
+        .red-text {
+            color: var(--red);
+            font-weight: 600;
+        }
+
+        /* TÉCNICO */
+        .technicals-grid {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 20px;
+            min-height: 280px;
+        }
+
+        .ath-block {
+            background: var(--navy);
+            color: var(--white);
+            padding: 32px 24px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ath-percent {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 96px;
+            font-weight: bold;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        .ath-detail {
+            font-size: 13px;
+            color: #CCC;
+            margin-top: 4px;
+            text-align: center;
+        }
+
+        .analysis-card {
+            background: var(--white);
+            border-left: 6px solid var(--accent);
+            padding: 24px;
+            border-radius: 4px;
+        }
+
+        .analysis-card ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .analysis-card ul li {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .analysis-card ul li::before {
+            content: "● ";
+            color: var(--accent);
+            font-size: 10px;
+        }
+
+        /* IFRAME */
+        .chart-iframe {
+            width: 100%;
+            height: 560px;
+            border: none;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        /* FOOTER */
+        .footer {
+            background: var(--white);
+            padding: 24px 32px;
+            margin: 20px auto;
+            max-width: 1160px;
+            border-radius: 10px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        @media (max-width: 640px) {
+            .hero {
+                flex-wrap: wrap;
+                text-align: center;
+            }
+            .hero-info h1 {
+                font-size: 30px;
+            }
+            .stat-strip {
+                flex-wrap: wrap;
+            }
+            .stat-card {
+                flex: 1 1 40%;
+                min-width: 130px;
+            }
+            .competitive-grid,
+            .technicals-grid {
+                grid-template-columns: 1fr;
+            }
+            .future-cards {
+                grid-template-columns: 1fr;
+            }
+            .fundamentals-grid {
+                grid-template-columns: 1fr;
+            }
+            .ath-percent {
+                font-size: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+    <div class="hero-logo-box">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 40" width="80" height="32">
+            <defs>
+                <linearGradient id="amazonGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:#FF9900;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#232F3E;stop-opacity:1" />
+                </linearGradient>
+            </defs>
+            <text x="0" y="28" font-family="Arial Black, sans-serif" font-size="28" font-weight="900" fill="url(#amazonGrad)" letter-spacing="1">amazon</text>
+        </svg>
+    </div>
+    <div class="hero-info">
+        <h1>Amazon.com Inc.</h1>
+        <span class="hero-badge">AMZN</span>
+        <div class="hero-subtitle">Análisis fundamental y técnico - Mayo 2026</div>
+    </div>
+</div>
+
+<!-- STAT STRIP -->
+<div class="stat-strip">
+    <div class="stat-card">
+        <div class="stat-value">$230.17</div>
+        <div class="stat-label">Cotización</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">$2.41 Bn</div>
+        <div class="stat-label">Market Cap</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value green-text">+16.6%</div>
+        <div class="stat-label">Ventas Q1 YoY</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value green-text">+176%</div>
+        <div class="stat-label">EPS Q1 YoY</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">-3.7%</div>
+        <div class="stat-label">Dist. ATH</div>
+    </div>
+</div>
+
+<!-- ¿A QUÉ SE DEDICA? -->
+<div class="section">
+    <div class="section-title">¿A qué se dedica?</div>
+    <p>
+        Amazon es un <span class="highlight">conglomerado tecnológico multinacional</span> con presencia dominante en comercio electrónico, computación en la nube, publicidad digital, streaming y dispositivos inteligentes. Su mercado principal es la tienda online más grande del mundo occidental, pero el motor real de beneficios es <span class="highlight">Amazon Web Services (AWS)</span>, líder indiscutible en infraestructura cloud. Además, opera una red logística global, el marketplace para terceros vendedores, el servicio de suscripción Prime (con más de 300 millones de miembros), el negocio publicitario (tercero tras Google y Meta), dispositivos Echo/Alexa, y la división de entretenimiento Prime Video y MGM Studios.
+    </p>
+</div>
+
+<!-- POSICIÓN COMPETITIVA -->
+<div class="section">
+    <div class="section-title">Posición competitiva</div>
+    <div class="competitive-grid">
+        <div class="subsector-cards">
+            <div class="subsector-card">
+                <div class="ss-name">Cloud Computing (IaaS/PaaS)</div>
+                <div class="ss-position">#1 — 33% cuota</div>
+                <div>Rival: Microsoft Azure (~25%). AWS mantiene liderazgo pero Azure crece más rápido en IA empresarial.</div>
+            </div>
+            <div class="subsector-card">
+                <div class="ss-name">E-commerce (EE.UU.)</div>
+                <div class="ss-position">#1 — 39% cuota</div>
+                <div>Rival: Walmart (~8% online). La ventaja logística de Amazon es difícil de replicar.</div>
+            </div>
+            <div class="subsector-card">
+                <div class="ss-name">Publicidad Digital</div>
+                <div class="ss-position">#3 — ~12% cuota EE.UU.</div>
+                <div>Rival: Meta. Amazon crece rápido gracias a datos de compra directa y retail media.</div>
+            </div>
+            <div class="subsector-card">
+                <div class="ss-name">Streaming (Prime Video)</div>
+                <div class="ss-position">#3 — ~9% tiempo visionado</div>
+                <div>Rival: Netflix. Difícil superarlo sin un cambio radical de estrategia o adquisición relevante.</div>
+            </div>
+        </div>
+        <div class="rival-block">
+            <h3>Microsoft</h3>
+            <div class="rival-slogan">La mayor amenaza estructural</div>
+            <ul>
+                <li>Azure integra IA de OpenAI directamente, erosionando ventaja técnica de AWS.</li>
+                <li>Ecosistema empresarial (Office, Teams, Dynamics) ofrece venta cruzada que Amazon no iguala.</li>
+                <li>Copilot + Azure está redefiniendo la productividad empresarial en la nube.</li>
+                <li>Si Microsoft sigue ganando cuota en cloud, los márgenes consolidados de Amazon se verán presionados.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- POTENCIAL FUTURO -->
+<div class="section">
+    <div class="section-title">Potencial futuro del sector</div>
+    <div class="future-cards">
+        <div class="future-card">
+            <div class="icon">▲</div>
+            <h3>Explosión de la IA Generativa en la Nube</h3>
+            <p>Se espera que el gasto empresarial en IA generativa multiplique por 4 la demanda de infraestructura cloud para 2029. AWS está bien posicionada con Bedrock, Trainium y su asociación con Anthropic. El negocio de IA de AWS ya supera los $90 mil millones en tasa de ejecución anualizada.</p>
+        </div>
+        <div class="future-card">
+            <div class="icon">●</div>
+            <h3>Publicidad como motor de margen</h3>
+            <p>El negocio publicitario de Amazon crece por encima del 40% interanual, con márgenes estimados superiores al 40%. La expansión a Prime Video Ads y el patrocinio de productos apalancan la ventaja de datos únicos de compra del ecosistema.</p>
+        </div>
+        <div class="future-card">
+            <div class="icon">■</div>
+            <h3>Logística como foso competitivo</h3>
+            <p>La red de fulfillment de Amazon (más de 2.000 instalaciones) sigue siendo una barrera de entrada masiva. La entrega en el mismo día ya alcanza a más del 70% de la población de EE.UU., reforzando la fidelidad de los clientes Prime y dificultando que los rivales igualen los tiempos de entrega.</p>
+        </div>
+    </div>
+    <div class="risks-line">
+        <span style="font-weight:bold;">Riesgos a vigilar:</span>
+        <span class="risk-accent">Regulación antimonopolio</span> en EE.UU. y la UE · 
+        <span class="risk-accent">Gasto masivo en Capex de IA</span> ($43.2B en Q1) sin garantías de retorno · 
+        <span class="risk-accent">Presión de márgenes</span> en retail por inflación salarial y logística · 
+        <span class="risk-accent">Competencia de Microsoft</span> en cloud empresarial con ventaja de productividad · 
+        <span class="risk-accent">Ralentización del gasto del consumidor</span> si la economía se desacelera
+    </div>
+</div>
+
+<!-- DATOS FUNDAMENTALES -->
+<div class="section">
+    <div class="section-title">Datos fundamentales</div>
+    <div class="fund-card">
+        <div>
+            <div class="mcap-label">Market Cap</div>
+            <div class="mcap-big">$2.41 Bn</div>
+        </div>
+        <div style="display:flex; gap:24px; flex-wrap:wrap; font-size:14px;">
+            <div><strong>P/E (TTM):</strong> 35.2x</div>
+            <div><strong>Fwd P/E:</strong> 28.1x</div>
+            <div><strong>P/S:</strong> 3.4x</div>
+            <div><strong>P/B:</strong> 7.8x</div>
+            <div><strong>ROE:</strong> 24.1%</div>
+            <div><strong>M. Operativo:</strong> 9.8%</div>
+        </div>
+    </div>
+    <div class="fundamentals-grid">
+        <div>
+            <table class="table-dark">
+                <thead><tr><th colspan="2">Q1 2026 · Último trimestre reportado</th></tr></thead>
+                <tbody>
+                    <tr><td>Ventas</td><td class="green-text">$181.5B (+16.6%)</td></tr>
+                    <tr><td>EPS</td><td class="green-text">$2.78 (+176% YoY)</td></tr>
+                    <tr><td>AWS Revenue</td><td class="green-text">$35.1B (+28%)</td></tr>
+                    <tr><td>Publicidad</td><td class="green-text">$18.9B (+41%)</td></tr>
+                    <tr><td>Op. Income</td><td class="green-text">$17.8B (+89%)</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <table class="table-accent">
+                <thead><tr><th colspan="2">Q2 2026 · Previsión (reporta 31 jul)</th></tr></thead>
+                <tbody>
+                    <tr><td>Ventas (guidance)</td><td class="green-text">$194-199B</td></tr>
+                    <tr><td>EPS (consenso)</td><td class="green-text">$3.12</td></tr>
+                    <tr><td>Ventas AWS (est.)</td><td>~$36.8B</td></tr>
+                    <tr><td>Op. Income (guid.)</td><td>$17.5-20.5B</td></tr>
+                    <tr><td>Margen operativo</td><td>En expansión</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ANÁLISIS TÉCNICO -->
+<div class="section">
+    <div class="section-title">Análisis técnico — Distancia a máximos históricos</div>
+    <div class="technicals-grid">
+        <div class="ath-block">
+            <div class="ath-percent">≈ -3.7%</div>
+            <div class="ath-detail">Cierre actual: $230.17<br>ATH cierre: $239.05 (2 abr 2026)<br>Máx 52 sem: $239.30</div>
+        </div>
+        <div class="analysis-card">
+            <ul>
+                <li><strong>Corrección leve desde ATH:</strong> Amazon está a menos del 4% de su máximo histórico, consolidando en un rango estrecho tras los resultados de Q1.</li>
+                <li><strong>Soporte clave:</strong> $217 (media móvil de 50 sesiones). Mientras este nivel se mantenga, la tendencia alcista de medio plazo sigue intacta.</li>
+                <li><strong>Resistencia inmediata:</strong> $239-240 (ATH). Una ruptura con volumen lo proyectaría hacia $255-260 como siguiente objetivo técnico.</li>
+                <li><strong>Próximo catalizador:</strong> Resultados Q2 2026 el 31 de julio. El mercado vigilará si el crecimiento de AWS se acelera aún más y si el guidance de Capex para IA se modera.</li>
+                <li><strong>Volumen relativo:</strong> Moderado. Sin señales de distribución institucional significativa a pesar de la cautela por el Capex de IA.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- GRÁFICO -->
+<div class="section" style="padding: 12px;">
+    <iframe class="chart-iframe" src="https://s.tradingview.com/widgetembed/?symbol=NASDAQ%3AAMZN&interval=W&theme=light&style=1&locale=es&toolbar_bg=f1f3f6&hideideas=1&range=24M&hidetoptoolbar=0&hidesidetoolbar=1&saveimage=0&studies=%5B%5D" title="Gráfico AMZN"></iframe>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+    <strong>Fecha del análisis:</strong> 1 de mayo de 2026<br>
+    <strong>Fuentes consultadas:</strong> 
+    <a href="https://ir.aboutamazon.com" target="_blank">Amazon Investor Relations</a> · 
+    <a href="https://finance.yahoo.com/quote/AMZN/" target="_blank">Yahoo Finance</a> · 
+    <a href="https://www.cnbc.com/quotes/AMZN" target="_blank">CNBC</a> · 
+    <a href="https://www.bloomberg.com/quote/AMZN:US" target="_blank">Bloomberg</a> · 
+    <a href="https://www.similarweb.com" target="_blank">SimilarWeb</a> · 
+    <a href="https://www.statista.com" target="_blank">Statista</a>
+</div>
+
+</body>
+</html>

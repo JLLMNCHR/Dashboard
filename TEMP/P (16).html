@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Informe Situación Global — 2 mayo 2026</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --bg-secondary: #f5f4f0;
+    --bg-card: #ffffff;
+    --text-primary: #1a1a18;
+    --text-secondary: #5f5e5a;
+    --text-tertiary: #888780;
+    --border: rgba(0,0,0,0.12);
+    --border-hover: rgba(0,0,0,0.22);
+    --green: #1D9E75;
+    --green-bg: #EAF3DE;
+    --green-text: #3B6D11;
+    --red: #D85A30;
+    --red-bg: #FCEBEB;
+    --red-text: #A32D2D;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18;
+      --bg-secondary: #222220;
+      --bg-card: #222220;
+      --text-primary: #f0efe9;
+      --text-secondary: #b4b2a9;
+      --text-tertiary: #888780;
+      --border: rgba(255,255,255,0.1);
+      --border-hover: rgba(255,255,255,0.2);
+      --green-bg: #173404;
+      --green-text: #c0dd97;
+      --red-bg: #501313;
+      --red-text: #f7c1c1;
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  .header-title { font-size: 22px; font-weight: 500; color: var(--text-primary); }
+  .header-date { font-size: 13px; color: var(--text-tertiary); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+    margin-bottom: 1.5rem;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+    text-decoration: none;
+    display: block;
+    transition: border-color 0.15s, transform 0.1s;
+  }
+
+  .card:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-1px);
+  }
+
+  .card-num {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+
+  .card-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+
+  .card-value {
+    font-size: 28px;
+    font-weight: 500;
+    line-height: 1.1;
+    margin-bottom: 6px;
+  }
+
+  .green { color: var(--green); }
+  .red   { color: var(--red); }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 99px;
+    margin-top: 4px;
+  }
+
+  .pill-green { background: var(--green-bg); color: var(--green-text); }
+  .pill-red   { background: var(--red-bg);   color: var(--red-text); }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .dot-green { background: var(--green); }
+  .dot-red   { background: var(--red); }
+
+  .card-sub {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 8px;
+  }
+
+  .summary {
+    background: var(--bg-card);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.5rem;
+  }
+
+  .summary-top {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .summary-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px;
+    gap: 2px;
+  }
+
+  .summary-num {
+    font-size: 40px;
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  .summary-lbl {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 400;
+  }
+
+  .bar-container {
+    flex: 1;
+    min-width: 140px;
+  }
+
+  .bar-track {
+    height: 8px;
+    background: var(--bg-secondary);
+    border-radius: 99px;
+    overflow: hidden;
+    border: 0.5px solid var(--border);
+  }
+
+  .bar-fill-green {
+    height: 100%;
+    width: 66.7%;
+    background: var(--green);
+    border-radius: 99px;
+  }
+
+  .bar-axis {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+
+  .verdict {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 0.5px solid var(--border);
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  .footer {
+    margin-top: 1.25rem;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div>
+      <div class="header-title">Situación Global</div>
+    </div>
+    <div class="header-date">2 mayo 2026</div>
+  </div>
+
+  <div class="grid">
+
+    <!-- 01 VIX -->
+    <a class="card" href="https://www.google.com/finance/quote/VIX:INDEXCBOE?window=MAX" target="_blank" rel="noopener">
+      <div class="card-num">01 — Volatilidad</div>
+      <div class="card-label">VIX — CBOE Volatility Index</div>
+      <div class="card-value green">16.99</div>
+      <div class="pill pill-green"><span class="dot dot-green"></span>En rango normal (15–25)</div>
+      <div class="card-sub">Rango 52 sem: 13.38 – 35.30</div>
+    </a>
+
+    <!-- 02 Subsidio desempleo -->
+    <a class="card" href="https://www.investing.com/economic-calendar/initial-jobless-claims-294" target="_blank" rel="noopener">
+      <div class="card-num">02 — Mercado Laboral</div>
+      <div class="card-label">Solicitudes subsidio desempleo (EE.UU.)</div>
+      <div class="card-value green">213.000</div>
+      <div class="pill pill-green"><span class="dot dot-green"></span>Por debajo de 250.000</div>
+      <div class="card-sub">Publicación: 5 mar 2026 · Previsión: 215K</div>
+    </a>
+
+    <!-- 03 Transportes -->
+    <a class="card" href="https://www.google.com/finance/quote/DJT:INDEXDJX?window=5D" target="_blank" rel="noopener">
+      <div class="card-num">03 — Transportes</div>
+      <div class="card-label">Dow Jones Transportation Average (5D)</div>
+      <div class="card-value red">20.598,20</div>
+      <div class="pill pill-red"><span class="dot dot-red"></span>−0,94% en el día</div>
+      <div class="card-sub">Máx. 52 sem: 24.825,70</div>
+    </a>
+
+    <!-- 04 Consumo -->
+    <a class="card" href="https://www.investing.com/etfs/rydex-s-p-equal-weight-cons.-dis." target="_blank" rel="noopener">
+      <div class="card-num">04 — Consumo</div>
+      <div class="card-label">RSPD — S&amp;P 500 EW Consumer Discretionary</div>
+      <div class="card-value red">54,88</div>
+      <div class="pill pill-red"><span class="dot dot-red"></span>−5,86% YTD · −0,88% en el día</div>
+      <div class="card-sub">Rango 52 sem: 49,27 – 60,34</div>
+    </a>
+
+    <!-- 05 PIB -->
+    <a class="card" href="https://es.investing.com/economic-calendar/gdp-375" target="_blank" rel="noopener">
+      <div class="card-num">05 — Crecimiento</div>
+      <div class="card-label">PIB EE.UU. — Variación trimestral (1T 2026)</div>
+      <div class="card-value red">+2,0%</div>
+      <div class="pill pill-red"><span class="dot dot-red"></span>Por debajo de la previsión (2,2%)</div>
+      <div class="card-sub">Anterior (4T 2025): +0,5%</div>
+    </a>
+
+    <!-- 06 Tipos de interés -->
+    <a class="card" href="https://es.investing.com/economic-calendar/interest-rate-decision-168" target="_blank" rel="noopener">
+      <div class="card-num">06 — Tipos de Interés</div>
+      <div class="card-label">Decisión Fed — Tipos de interés EE.UU.</div>
+      <div class="card-value green">3,75%</div>
+      <div class="pill pill-green"><span class="dot dot-green"></span>Igual a previsión (sin cambios)</div>
+      <div class="card-sub">Publicación: 18 mar 2026</div>
+    </a>
+
+    <!-- 07 Sahm -->
+    <a class="card" href="https://fred.stlouisfed.org/series/SAHMREALTIME" target="_blank" rel="noopener">
+      <div class="card-num">07 — Recesión</div>
+      <div class="card-label">Indicador de Recesión de Sahm</div>
+      <div class="card-value green">0,30</div>
+      <div class="pill pill-green"><span class="dot dot-green"></span>Por debajo del umbral de recesión (1%)</div>
+      <div class="card-sub">Enero 2026 · Umbral de señal: 0,50 pp</div>
+    </a>
+
+    <!-- 08 CDS BofA -->
+    <a class="card" href="https://es.investing.com/rates-bonds/bank-of-america-cds-1-year-usd" target="_blank" rel="noopener">
+      <div class="card-num">08 — Riesgo Crédito</div>
+      <div class="card-label">CDS BofA 1 año USD — Prima de riesgo</div>
+      <div class="card-value green">34,78</div>
+      <div class="pill pill-green"><span class="dot dot-green"></span>Estable (+0,05%)</div>
+      <div class="card-sub">Var. 1 año: −15,5% · Rango: 28,91 – 41,16</div>
+    </a>
+
+    <!-- 09 IPC Sticky -->
+    <a class="card" href="https://fred.stlouisfed.org/series/CORESTICKM159SFRBATL" target="_blank" rel="noopener">
+      <div class="card-num">09 — Inflación</div>
+      <div class="card-label">IPC Sticky Core (Atlanta Fed, excl. alim./energía)</div>
+      <div class="card-value green">2,90%</div>
+      <div class="pill pill-green"><span class="dot dot-green"></span>Por debajo del umbral (3,5%)</div>
+      <div class="card-sub">Febrero 2026 · Variación interanual</div>
+    </a>
+
+  </div>
+
+  <!-- Resumen -->
+  <div class="summary">
+    <div class="summary-top">
+      <div class="summary-block">
+        <div class="summary-num green">6</div>
+        <div class="summary-lbl">Positivos</div>
+      </div>
+      <div class="bar-container">
+        <div class="bar-track">
+          <div class="bar-fill-green"></div>
+        </div>
+        <div class="bar-axis">
+          <span>0</span>
+          <span>9 indicadores</span>
+        </div>
+      </div>
+      <div class="summary-block">
+        <div class="summary-num red">3</div>
+        <div class="summary-lbl">Negativos</div>
+      </div>
+    </div>
+    <div class="verdict">
+      6 de 9 indicadores en zona positiva — Panorama económico moderadamente favorable,
+      con señales de alerta en transportes, consumo discrecional y crecimiento del PIB.
+    </div>
+  </div>
+
+  <div class="footer">Haz clic en cada tarjeta para acceder a la fuente del dato.</div>
+
+</div>
+</body>
+</html>

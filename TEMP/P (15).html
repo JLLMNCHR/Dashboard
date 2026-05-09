@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cuadro de Monitoreo Económico</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #111a2e;
+      --panel2: #16213a;
+      --text: #e8eefc;
+      --muted: #9fb0d0;
+      --green: #23c55e;
+      --yellow: #f59e0b;
+      --red: #ef4444;
+      --gray: #64748b;
+      --border: rgba(255,255,255,.08);
+    }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: Inter, Arial, sans-serif;
+      background: linear-gradient(180deg, #08101d, #0b1220);
+      color: var(--text);
+    }
+
+    .wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .header p {
+      margin: 6px 0 0;
+      color: var(--muted);
+    }
+
+    .meta {
+      text-align: right;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .card {
+      background: rgba(17,26,46,.92);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .card .label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .card .value {
+      font-size: 28px;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+
+    .card .sub {
+      margin-top: 6px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(17,26,46,.92);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: middle;
+      font-size: 14px;
+    }
+
+    th {
+      background: rgba(22,33,58,.95);
+      color: #dbe7ff;
+      font-weight: 600;
+    }
+
+    tr:hover td {
+      background: rgba(255,255,255,.02);
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      display: inline-block;
+    }
+
+    .green { color: var(--green); background: rgba(35,197,94,.12); }
+    .yellow { color: var(--yellow); background: rgba(245,158,11,.12); }
+    .red { color: var(--red); background: rgba(239,68,68,.12); }
+    .gray { color: var(--gray); background: rgba(100,116,139,.14); }
+
+    .trend-up { color: var(--red); }
+    .trend-down { color: var(--green); }
+    .trend-flat { color: var(--muted); }
+
+    .source {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 980px) {
+      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .header { flex-direction: column; align-items: start; }
+      .meta { text-align: left; }
+      .table-wrap { overflow-x: auto; }
+      table { min-width: 980px; }
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 14px; }
+      .cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div>
+        <h1>Monitoreo de 10 indicadores de crisis</h1>
+        <p>Panel para vigilar señales tempranas de tensión económica.</p>
+      </div>
+      <div class="meta">
+        <div>Última actualización: <strong id="lastUpdate">—</strong></div>
+        <div>Frecuencia: tiempo casi real / diaria / mensual</div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="label">Indicadores en verde</div>
+        <div class="value" id="greenCount">0</div>
+        <div class="sub">Señales tranquilizadoras</div>
+      </div>
+      <div class="card">
+        <div class="label">Indicadores en amarillo</div>
+        <div class="value" id="yellowCount">0</div>
+        <div class="sub">Vigilancia reforzada</div>
+      </div>
+      <div class="card">
+        <div class="label">Indicadores en rojo</div>
+        <div class="value" id="redCount">0</div>
+        <div class="sub">Riesgo elevado</div>
+      </div>
+      <div class="card">
+        <div class="label">Nivel agregado</div>
+        <div class="value" id="overallRisk">Moderado</div>
+        <div class="sub">Resumen del cuadro</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Indicador</th>
+            <th>Fuente sugerida</th>
+            <th>Frecuencia</th>
+            <th>Lectura actual</th>
+            <th>Señal</th>
+            <th>Tendencia</th>
+            <th>Último dato</th>
+          </tr>
+        </thead>
+        <tbody id="dashboardRows">
+          <tr>
+            <td>Crecimiento del PIB</td>
+            <td>INE / Eurostat / API macro</td>
+            <td>Trimestral</td>
+            <td id="v1">—</td>
+            <td><span class="status gray" id="s1"><span class="dot"></span>Sin dato</span></td>
+            <td id="t1">—</td>
+            <td id="d1">—</td>
+          </tr>
+          <tr>
+            <td>Desempleo</td>
+            <td>INE / Eurostat / API macro</td>
+            <td>Mensual / trimestral</td>
+            <td id="v2">—</td>
+            <td><span class="status gray" id="s2"><span class="dot"></span>Sin dato</span></td>
+            <td id="t2">—</td>
+            <td id="d2">—</td>
+          </tr>
+          <tr>
+            <td>Consumo minorista</td>
+            <td>INE / ventas retail</td>
+            <td>Mensual</td>
+            <td id="v3">—</td>
+            <td><span class="status gray" id="s3"><span class="dot"></span>Sin dato</span></td>
+            <td id="t3">—</td>
+            <td id="d3">—</td>
+          </tr>
+          <tr>
+            <td>Confianza empresarial</td>
+            <td>INE / PMI / encuestas</td>
+            <td>Mensual</td>
+            <td id="v4">—</td>
+            <td><span class="status gray" id="s4"><span class="dot"></span>Sin dato</span></td>
+            <td id="t4">—</td>
+            <td id="d4">—</td>
+          </tr>
+          <tr>
+            <td>Pedidos de bienes duraderos</td>
+            <td>API macro / industria</td>
+            <td>Mensual</td>
+            <td id="v5">—</td>
+            <td><span class="status gray" id="s5"><span class="dot"></span>Sin dato</span></td>
+            <td id="t5">—</td>
+            <td id="d5">—</td>
+          </tr>
+          <tr>
+            <td>Mercado inmobiliario</td>
+            <td>INE / registradores / vivienda</td>
+            <td>Mensual / trimestral</td>
+            <td id="v6">—</td>
+            <td><span class="status gray" id="s6"><span class="dot"></span>Sin dato</span></td>
+            <td id="t6">—</td>
+            <td id="d6">—</td>
+          </tr>
+          <tr>
+            <td>Condiciones de crédito</td>
+            <td>Bancos / BCE / spreads</td>
+            <td>Diaria / semanal</td>
+            <td id="v7">—</td>
+            <td><span class="status gray" id="s7"><span class="dot"></span>Sin dato</span></td>
+            <td id="t7">—</td>
+            <td id="d7">—</td>
+          </tr>
+          <tr>
+            <td>Morosidad e impagos</td>
+            <td>Supervisor bancario / bancos</td>
+            <td>Mensual / trimestral</td>
+            <td id="v8">—</td>
+            <td><span class="status gray" id="s8"><span class="dot"></span>Sin dato</span></td>
+            <td id="t8">—</td>
+            <td id="d8">—</td>
+          </tr>
+          <tr>
+            <td>Bolsas y activos</td>
+            <td>Mercados financieros</td>
+            <td>Tiempo real</td>
+            <td id="v9">—</td>
+            <td><span class="status gray" id="s9"><span class="dot"></span>Sin dato</span></td>
+            <td id="t9">—</td>
+            <td id="d9">—</td>
+          </tr>
+          <tr>
+            <td>Inventarios empresariales</td>
+            <td>Industria / comercio</td>
+            <td>Mensual</td>
+            <td id="v10">—</td>
+            <td><span class="status gray" id="s10"><span class="dot"></span>Sin dato</span></td>
+            <td id="t10">—</td>
+            <td id="d10">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="source">
+      Sugerencia: conecta cada fila a una API de datos macro o a un feed de calendario económico. INE publica datos oficiales de empleo y paro para España, y existen APIs de indicadores macro con series como PIB, inflación y desempleo. [web:15][web:14]
+    </div>
+  </div>
+
+  <script>
+    const data = {
+      1: { value: "0.6% q/q", status: "green", label: "Crecimiento sólido", trend: "Al alza", date: "2026-03-31" },
+      2: { value: "9.9%", status: "yellow", label: "Vigilar", trend: "A la baja", date: "2026-03-31" },
+      3: { value: "-0.4% m/m", status: "red", label: "Debilidad", trend: "A la baja", date: "2026-04-30" },
+      4: { value: "48.7", status: "yellow", label: "Por debajo de 50", trend: "A la baja", date: "2026-04-30" },
+      5: { value: "-3.1% m/m", status: "red", label: "Contracción", trend: "A la baja", date: "2026-04-30" },
+      6: { value: "Enfriándose", status: "yellow", label: "Riesgo moderado", trend: "Plano", date: "2026-04-30" },
+      7: { value: "Endureciendo", status: "yellow", label: "Crédito más caro", trend: "Peorando", date: "2026-05-03" },
+      8: { value: "2.8%", status: "green", label: "Baja morosidad", trend: "Estable", date: "2026-03-31" },
+      9: { value: "Volátil", status: "yellow", label: "Corrección", trend: "Bajista", date: "2026-05-03" },
+      10: { value: "Subiendo", status: "yellow", label: "Acumulación", trend: "Al alza", date: "2026-04-30" }
+    };
+
+    const statusMap = {
+      green: { cls: "status green", text: "Verde" },
+      yellow: { cls: "status yellow", text: "Amarillo" },
+      red: { cls: "status red", text: "Rojo" },
+      gray: { cls: "status gray", text: "Sin dato" }
+    };
+
+    let counts = { green: 0, yellow: 0, red: 0 };
+
+    for (let i = 1; i <= 10; i++) {
+      const d = data[i];
+      document.getElementById(`v${i}`).textContent = d.value;
+      document.getElementById(`d${i}`).textContent = d.date;
+      document.getElementById(`t${i}`).textContent = d.trend;
+
+      const el = document.getElementById(`s${i}`);
+      el.className = statusMap[d.status].cls;
+      el.innerHTML = `<span class="dot"></span>${statusMap[d.status].text} · ${d.label}`;
+      counts[d.status]++;
+
+      const trendEl = document.getElementById(`t${i}`);
+      if (d.trend.toLowerCase().includes("al alza") || d.trend.toLowerCase().includes("peor")) {
+        trendEl.className = "trend-up";
+      } else if (d.trend.toLowerCase().includes("a la baja") || d.trend.toLowerCase().includes("bajista")) {
+        trendEl.className = "trend-down";
+      } else {
+        trendEl.className = "trend-flat";
+      }
+    }
+
+    document.getElementById("greenCount").textContent = counts.green;
+    document.getElementById("yellowCount").textContent = counts.yellow;
+    document.getElementById("redCount").textContent = counts.red;
+    document.getElementById("lastUpdate").textContent = new Date().toLocaleString("es-ES");
+
+    const overall = counts.red >= 3 ? "Alto" : counts.yellow >= 5 ? "Moderado" : "Bajo";
+    document.getElementById("overallRisk").textContent = overall;
+  </script>
+</body>
+</html>

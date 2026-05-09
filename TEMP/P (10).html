@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8 MAGNÍFICAS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background: #f8f9fa;
+            color: #111827;
+            padding: 16px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .chart-wrapper {
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            min-height: 0;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
+            display: block;
+        }
+
+        @media (max-width: 1200px) {
+            .grid-container {
+                grid-template-columns: repeat(3, 1fr);
+                grid-template-rows: auto;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .grid-container {
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: auto;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+            }
+            body {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <div class="grid-container">
+            <!-- Fila 1 -->
+            <div class="chart-wrapper">
+                <iframe
+                    src="https://s.tradingview.com/widgetembed/?symbol=NASDAQ%3ANVDA&interval=W&theme=light&style=1&locale=es&toolbarbg=ffffff&hidetoptoolbar=1&hidesidetoolbar=1&saveimage=0&hideideas=1&studies=%5B%5D"
+                    loading="lazy"
+                    allowtransparency="true">
+                </iframe>
+            </div>
+
+            <div class="chart-wrapper">
+                <iframe
+                    src="https://s.tradingview.com/widgetembed/?symbol=NASDAQ%3AAAPL&interval=W&theme=light&style=1&locale=es&toolbarbg=ffffff&hidetoptoolbar=1&hidesidetoolbar=1&saveimage=0&hideideas=1&studies=%5B%5D"
+                    loading="lazy"
+                    allowtransparency="true">
+                </iframe>
+            </div>
+
+            <div class="chart-wrapper">
+                <iframe
+                    src="https://s.tradingview.com/widgetembed/?symbol=NASDAQ%3AMSFT&interval=W&theme=light&style=1&locale=es&toolbarbg=ffffff&hidetoptoolbar=1&hidesidetoolbar=1&saveimage=0&hideideas=1&studies=%5B%5D"
+                    loading="lazy"
+                    allowtransparency="true">
+                </iframe>
+            </div>
+
+            <div class="chart-wrapper">
+                <iframe
+                    src="https://s.tradingview.com/widgetembed/?symbol=NASDAQ%3AGOOG&interval=W&theme=light&style=1&locale=es&toolbarbg=ffffff&hidetoptoolbar=1&hidesidetoolbar=1&saveimage=0&hideideas=1&studies=%5B%5D"
+                    loading="lazy"
+                    allowtransparency="true">
+                </iframe>
+            </div>
+
+            <!-- Fila 2 -->
+            <div class="chart-wrapper">
+                <iframe
+                    src="https://s.tradingview.com/widgetembed/?symbol=NASDAQ%3AAMZN&interval=W&theme=light&style=1&locale=es&toolbarbg=ffffff&hidetoptoolbar=1&hidesidetoolbar=1&saveimage=0&hideideas=1&studies=%5B%5D"
+                    loading="lazy"
+                    allowtransparency="true">
+                </iframe>
+            </div>
+
+            <div class="chart-wrapper">
+                <iframe
+                    src="https://s.tradingview.com/widgetembed/?symbol=NASDAQ%3AMETA&interval=W&theme=light&style=1&locale=es&toolbarbg=ffffff&hidetoptoolbar=1&hidesidetoolbar=1&saveimage=0&hideideas=1&studies=%5B%5D"
+                    loading="lazy"
+                    allowtransparency="true">
+                </iframe>
+            </div>
+
+            <div class="chart-wrapper">
+                <iframe
+                    src="https://s.tradingview.com/widgetembed/?symbol=NASDAQ%3ATSLA&interval=W&theme=light&style=1&locale=es&toolbarbg=ffffff&hidetoptoolbar=1&hidesidetoolbar=1&saveimage=0&hideideas=1&studies=%5B%5D"
+                    loading="lazy"
+                    allowtransparency="true">
+                </iframe>
+            </div>
+
+            <div class="chart-wrapper">
+                <iframe
+                    src="https://s.tradingview.com/widgetembed/?symbol=NASDAQ%3AAVGO&interval=W&theme=light&style=1&locale=es&toolbarbg=ffffff&hidetoptoolbar=1&hidesidetoolbar=1&saveimage=0&hideideas=1&studies=%5B%5D"
+                    loading="lazy"
+                    allowtransparency="true">
+                </iframe>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

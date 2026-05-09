@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráficos de cotización - 7 MAGNÍFICAS</title>
+    <style>
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-card: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.5rem 0;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            font-size: 1.75rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.025em;
+        }
+
+        .market-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #f1f5f9;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .chart-card {
+            background: var(--bg-card);
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--border-color);
+        }
+
+        .chart-card:hover {
+            box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            transform: translateY(-2px);
+            border-color: #cbd5e1;
+        }
+
+        .chart-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fafbfc;
+        }
+
+        .stock-symbol {
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stock-icon {
+            font-size: 1.25rem;
+        }
+
+        .chart-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-icon {
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+        }
+
+        .btn-icon:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .chart-wrapper {
+            padding: 1rem;
+            background: #ffffff;
+        }
+
+        iframe {
+            width: 100%;
+            height: 500px;
+            border: 0;
+            display: block;
+            border-radius: 0.5rem;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 2rem;
+        }
+
+        .footer a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                padding: 0 1rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 0.75rem;
+                text-align: center;
+            }
+
+            iframe {
+                height: 400px;
+            }
+
+            h1 {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <span class="logo-icon">📈</span>
+                <h1>7 MAGNÍFICAS</h1>
+            </div>
+            <div class="market-status">
+                <span class="status-dot"></span>
+                <span>NASDAQ · Mercado cerrado</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" id="chartsGrid">
+        <!-- NVIDIA -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="stock-symbol">
+                    <span class="stock-icon">🟢</span>
+                    NVIDIA Corp
+                    <span style="color: #64748b; font-weight: 500;">NVDA</span>
+                </div>
+                <div class="chart-actions">
+                    <button class="btn-icon" onclick="window.open('https://www.tradingview.com/symbols/NASDAQ-NVDA/', '_blank')">
+                        ↗ Abrir
+                    </button>
+                </div>
+            </div>
+            <div class="chart-wrapper">
+                <iframe
+                    src="https://s.tradingview.com/widgetembed/?symbol=NASDAQ%3ANVDA&interval=W&theme=light&style=1&locale=es&toolbarbg=F1F3F6&hideideas=1&range=24M&hidetoptoolbar=0&hidesidetoolbar=1&saveimage=0&studies=%5B%5D"
+                    loading="lazy"
+                    allowtransparency="true"
+                    title="Gráfico de NVIDIA">
+                </iframe>
+            </div>
+        </div>
+
+        <!-- Apple -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="stock-symbol">
+                    <span class="stock-icon">🍎</span>
+                    Apple Inc
+                    <span style="color: #64748b; font-weight: 500;">AAPL</span>
+                </div>
+                <div class="chart-actions">
+                    <button class="btn-icon" onclick="window.open('https://www.tradingview.com/symbols/NASDAQ-AAPL/', '_blank')">
+                        ↗ Abrir
+                    </button>
+                </div>
+            </div>
+            <div class="chart-wrapper">
+                <iframe
+                    src="https://s.tradingview.com/widgetembed/?symbol=NASDAQ%3AAAPL&interval=W&theme=light&style=1&locale=es&toolbarbg=F1F3F6&hideideas=1&range=24M&hidetoptoolbar=0&hidesidetoolbar=1&saveimage=0&studies=%5B%5D"
+                    loading="lazy"
+                    allowtransparency="true"
+                    title="Gráfico de Apple">
+                </iframe>
+            </div>
+        </div>
+
+        <!-- Microsoft -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="stock-symbol">
+                    <span class="stock-icon">🪟</span>
+                    Microsoft Corp
+                    <span style="color: #64748b; font-weight: 500;">MSFT</span>
+                </div>
+                <div class="chart-actions">
+                    <button class="btn-icon" onclick="window.open('https://www.tradingview.com/symbols/NASDAQ-MSFT/', '_blank')">
+                        ↗ Abrir
+                    </button>
+                </div>
+            </div>
+            <div class="chart-wrapper">
+                <iframe
+                    src="https://s.tradingview.com/widgetembed/?symbol=NASDAQ%3AMSFT&interval=W&theme=light&style=1&locale=es&toolbarbg=F1F3F6&hideideas=1&range=24M&hidetoptoolbar=0&hidesidetoolbar=1&saveimage=0&studies=%5B%5D"
+                    loading="lazy"
+                    allowtransparency="true"
+                    title="Gráfico de Microsoft">
+                </iframe>
+            </div>
+        </div>
+
+        <!-- Google -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="stock-symbol">
+                    <span class="stock-icon">🔍</span>
+                    Alphabet Inc
+                    <span style="color: #64748b; font-weight: 500;">GOOG</span>
+                </div>
+                <div class="chart-actions">
+                    <button class="btn-icon" onclick="window.open('https://www.tradingview.com/symbols/NASDAQ-GOOG/', '_blank')">
+                        ↗ Abrir
+                    </button>
+                </div>
+            </div>
+            <div class="chart-wrapper">
+                <iframe
+                    src="https://s.tradingview.com/widgetembed/?symbol=NASDAQ%3AGOOG&interval=W&theme=light&style=1&locale=es&toolbarbg=F1F3F6&hideideas=1&range=24M&hidetoptoolbar=0&hidesidetoolbar=1&saveimage=0&studies=%5B%5D"
+                    loading="lazy"
+                    allowtransparency="true"
+                    title="Gráfico de Alphabet (Google)">
+                </iframe>
+            </div>
+        </div>
+
+        <!-- Amazon -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="stock-symbol">
+                    <span class="stock-icon">📦</span>
+                    Amazon.com Inc
+                    <span style="color: #64748b; font-weight: 500;">AMZN</span>
+                </div>
+                <div class="chart-actions">
+                    <button class="btn-icon" onclick="window.open('https://www.tradingview.com/symbols/NASDAQ-AMZN/', '_blank')">
+                        ↗ Abrir
+                    </button>
+                </div>
+            </div>
+            <div class="chart-wrapper">
+                <iframe
+                    src="https://s.tradingview.com/widgetembed/?symbol=NASDAQ%3AAMZN&interval=W&theme=light&style=1&locale=es&toolbarbg=F1F3F6&hideideas=1&range=24M&hidetoptoolbar=0&hidesidetoolbar=1&saveimage=0&studies=%5B%5D"
+                    loading="lazy"
+                    allowtransparency="true"
+                    title="Gráfico de Amazon">
+                </iframe>
+            </div>
+        </div>
+
+        <!-- Meta -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="stock-symbol">
+                    <span class="stock-icon">👤</span>
+                    Meta Platforms
+                    <span style="color: #64748b; font-weight: 500;">META</span>
+                </div>
+                <div class="chart-actions">
+                    <button class="btn-icon" onclick="window.open('https://www.tradingview.com/symbols/NASDAQ-META/', '_blank')">
+                        ↗ Abrir
+                    </button>
+                </div>
+            </div>
+            <div class="chart-wrapper">
+                <iframe
+                    src="https://s.tradingview.com/widgetembed/?symbol=NASDAQ%3AMETA&interval=W&theme=light&style=1&locale=es&toolbarbg=F1F3F6&hideideas=1&range=24M&hidetoptoolbar=0&hidesidetoolbar=1&saveimage=0&studies=%5B%5D"
+                    loading="lazy"
+                    allowtransparency="true"
+                    title="Gráfico de Meta">
+                </iframe>
+            </div>
+        </div>
+
+        <!-- Tesla -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="stock-symbol">
+                    <span class="stock-icon">⚡</span>
+                    Tesla Inc
+                    <span style="color: #64748b; font-weight: 500;">TSLA</span>
+                </div>
+                <div class="chart-actions">
+                    <button class="btn-icon" onclick="window.open('https://www.tradingview.com/symbols/NASDAQ-TSLA/', '_blank')">
+                        ↗ Abrir
+                    </button>
+                </div>
+            </div>
+            <div class="chart-wrapper">
+                <iframe
+                    src="https://s.tradingview.com/widgetembed/?symbol=NASDAQ%3ATSLA&interval=W&theme=light&style=1&locale=es&toolbarbg=F1F3F6&hideideas=1&range=24M&hidetoptoolbar=0&hidesidetoolbar=1&saveimage=0&studies=%5B%5D"
+                    loading="lazy"
+                    allowtransparency="true"
+                    title="Gráfico de Tesla">
+                </iframe>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>Datos proporcionados por <a href="https://www.tradingview.com" target="_blank" rel="noopener noreferrer">TradingView</a> · 
+        Gráficos semanales · Las 7 Magníficas del NASDAQ</p>
+        <p style="margin-top: 0.5rem; font-size: 0.75rem; color: #94a3b8;">
+            La información mostrada es solo para fines informativos y no constituye asesoramiento financiero.
+        </p>
+    </footer>
+
+    <script>
+        // Lazy loading mejorado para los iframes
+        document.addEventListener('DOMContentLoaded', function() {
+            const iframes = document.querySelectorAll('iframe');
+            
+            if ('IntersectionObserver' in window) {
+                const iframeObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const iframe = entry.target;
+                            if (iframe.dataset.src) {
+                                iframe.src = iframe.dataset.src;
+                                delete iframe.dataset.src;
+                            }
+                            observer.unobserve(iframe);
+                        }
+                    });
+                }, {
+                    rootMargin: '100px',
+                    threshold: 0.1
+                });
+
+                iframes.forEach(iframe => {
+                    // Guardar el src original y luego limpiarlo para lazy loading
+                    const originalSrc = iframe.src;
+                    iframe.dataset.src = originalSrc;
+                    iframe.src = '';
+                    iframeObserver.observe(iframe);
+                });
+            }
+
+            // Añadir efecto de carga
+            iframes.forEach(iframe => {
+                iframe.addEventListener('load', function() {
+                    this.style.opacity = '1';
+                });
+                iframe.style.transition = 'opacity 0.3s ease-in-out';
+                iframe.style.opacity = '0.7';
+            });
+        });
+
+        // Actualizar estado del mercado según la hora
+        function updateMarketStatus() {
+            const statusDot = document.querySelector('.status-dot');
+            const statusText = document.querySelector('.market-status span:last-child');
+            const now = new Date();
+            const hour = now.getUTCHours();
+            const day = now.getUTCDay();
+            
+            // Horario NASDAQ (aproximado): 9:30 AM - 4:00 PM ET (14:30 - 21:00 UTC)
+            const isMarketOpen = day >= 1 && day <= 5 && hour >= 14 && hour < 21;
+            
+            if (isMarketOpen) {
+                statusDot.style.background = '#10b981';
+                statusText.textContent = 'NASDAQ · Mercado abierto';
+            } else {
+                statusDot.style.background = '#ef4444';
+                statusText.textContent = 'NASDAQ · Mercado cerrado';
+            }
+        }
+
+        updateMarketStatus();
+        setInterval(updateMarketStatus, 60000); // Actualizar cada minuto
+    </script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Informe Situación Global</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    margin: 40px;
+}
+h1 {
+    text-align: center;
+}
+.container {
+    max-width: 900px;
+    margin: auto;
+}
+.card {
+    background: #1e293b;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    transition: transform 0.2s;
+}
+.card:hover {
+    transform: scale(1.02);
+}
+a {
+    text-decoration: none;
+    color: inherit;
+}
+.green {
+    color: #22c55e;
+    font-weight: bold;
+}
+.red {
+    color: #ef4444;
+    font-weight: bold;
+}
+.summary {
+    margin-top: 30px;
+    padding: 20px;
+    background: #020617;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 18px;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+<h1>📊 Informe Situación Global</h1>
+
+<!-- 1 VIX -->
+<a href="https://www.google.com/finance/quote/VIX:INDEXCBOE?window=MAX" target="_blank">
+<div class="card">
+<h3>VIX (Volatilidad)</h3>
+<p class="green">16.99 → Normal (15-25)</p>
+</div>
+</a>
+
+<!-- 2 Jobless Claims -->
+<a href="https://www.investing.com/economic-calendar/initial-jobless-claims-294" target="_blank">
+<div class="card">
+<h3>Solicitudes Subsidio Desempleo</h3>
+<p class="red">≈ 230K - 260K (estimación reciente)</p>
+</div>
+</a>
+
+<!-- 3 Transportes -->
+<a href="https://www.google.com/finance/quote/DJT:INDEXDJX?window=5D" target="_blank">
+<div class="card">
+<h3>Sector Transportes (DJT)</h3>
+<p class="green">+0.8% (últimos días)</p>
+</div>
+</a>
+
+<!-- 4 Consumo -->
+<a href="#" target="_blank">
+<div class="card">
+<h3>Sector Consumo (S&P Equal Weight)</h3>
+<p class="green">+1.2% (última semana)</p>
+</div>
+</a>
+
+<!-- 5 PIB -->
+<a href="https://es.investing.com/economic-calendar/gdp-375" target="_blank">
+<div class="card">
+<h3>Producto Interior Bruto</h3>
+<p class="green">Dato positivo reciente</p>
+</div>
+</a>
+
+<!-- 6 Tipos -->
+<a href="https://es.investing.com/economic-calendar/interest-rate-decision-168" target="_blank">
+<div class="card">
+<h3>Tipos de Interés</h3>
+<p class="green">Sin cambios relevantes / estable</p>
+</div>
+</a>
+
+<!-- 7 Sahm -->
+<a href="https://fred.stlouisfed.org/series/SAHMREALTIME" target="_blank">
+<div class="card">
+<h3>Indicador de Recesión SAHM</h3>
+<p class="green">≈ 0.5%</p>
+</div>
+</a>
+
+<!-- 8 CDS -->
+<a href="https://es.investing.com/rates-bonds/bank-of-america-cds-1-year-usd" target="_blank">
+<div class="card">
+<h3>Riesgo Bonos Baja Calidad (CDS)</h3>
+<p class="green">Estable / sin estrés</p>
+</div>
+</a>
+
+<!-- 9 IPC -->
+<a href="https://fred.stlouisfed.org/series/CORESTICKM159SFRBATL" target="_blank">
+<div class="card">
+<h3>Inflación (IPC subyacente)</h3>
+<p class="green">≈ 3.2%</p>
+</div>
+</a>
+
+<!-- RESUMEN -->
+<div class="summary">
+✅ POSITIVOS: 8 <br>
+❌ NEGATIVOS: 1
+</div>
+
+</div>
+</body>
+</html>
