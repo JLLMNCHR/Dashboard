@@ -1,303 +1,388 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>VIX & Initial Jobless Claims</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js">
-  </script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; height: 100vh; background: #0d1117; color: #e6edf3; font-family: sans-serif; display: flex; flex-direction: column; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solicitudes subsidio desempleo EEUU</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    #global-header { padding: 16px 24px 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
-    #global-updated { font-size: 11px; color: #6b7280; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0f1117;
+    color: #e2e8f0;
+    min-height: 100vh;
+    padding: 2rem 1.5rem;
+  }
 
-    #ranges-container { padding: 8px 24px 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-    #ranges { display: flex; gap: 8px; flex-wrap: wrap; }
-    .rbtn { background: none; border: 1px solid #30363d; border-radius: 6px; color: #8b949e; font-size: 12px; padding: 4px 12px; cursor: pointer; }
-    .rbtn.active { background: #22c55e; border-color: #22c55e; color: #000; font-weight: 700; }
+  header {
+    margin-bottom: 2rem;
+  }
 
-    #vix-indicator { display: flex; align-items: center; gap: 8px; background: #111820; border: 1px solid #1a2332; border-radius: 8px; padding: 8px 14px; font-size: 13px; white-space: nowrap; }
-    #vix-dot { width: 12px; height: 12px; border-radius: 50%; background: #6b7280; transition: background 0.3s; }
-    #vix-dot.calm { background: #22c55e; box-shadow: 0 0 8px rgba(34, 197, 94, 0.5); }
-    #vix-dot.stress { background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.5); }
-    #vix-status { color: #8b949e; }
+  header h1 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #f1f5f9;
+    letter-spacing: -0.02em;
+  }
 
-    #grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; gap: 16px; padding: 0 24px 24px; min-height: 0; }
+  header p {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-top: 4px;
+  }
 
-    .panel { background: #111820; border: 1px solid #1a2332; border-radius: 10px; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
-    .panel-header { padding: 12px 16px 4px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-    .panel-header h2 { font-size: 14px; font-weight: 600; }
-    .panel-price { font-size: 20px; font-weight: 700; }
-    .panel-change { font-size: 12px; }
-    .panel-chart { flex: 1; position: relative; min-height: 0; padding: 0 8px 8px; }
-    .panel-chart canvas { width: 100% !important; height: 100% !important; }
-    .panel-msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #6b7280; text-align: center; }
-    .panel-msg.hidden { display: none; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 20px;
+    padding: 3px 10px;
+    margin-top: 10px;
+    color: #94a3b8;
+  }
 
-    .up { color: #22c55e; }
-    .down { color: #ef4444; }
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #22c55e;
+    animation: pulse 2s infinite;
+  }
 
-    @media (max-width: 768px) {
-      #ranges-container { flex-direction: column; align-items: flex-start; }
-      #grid { grid-template-columns: 1fr; grid-template-rows: auto; }
-      .panel { min-height: 300px; }
-    }
-  </style>
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 1.5rem;
+  }
+
+  .metric {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+  }
+
+  .metric-label {
+    font-size: 0.72rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  .metric-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .metric-sub {
+    font-size: 0.75rem;
+    margin-top: 6px;
+    font-weight: 500;
+  }
+
+  .up { color: #f87171; }
+  .down { color: #34d399; }
+  .neutral { color: #94a3b8; }
+
+  .chart-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .chart-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #cbd5e1;
+  }
+
+  .controls {
+    display: flex;
+    gap: 4px;
+  }
+
+  .btn-range {
+    font-size: 0.72rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid #334155;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+
+  .btn-range:hover { background: #334155; color: #cbd5e1; }
+  .btn-range.active { background: #3b82f6; border-color: #3b82f6; color: #fff; }
+
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+    height: 300px;
+  }
+
+  .footer-note {
+    font-size: 0.72rem;
+    color: #475569;
+    margin-top: 1rem;
+    line-height: 1.5;
+  }
+
+  .footer-note a { color: #3b82f6; text-decoration: none; }
+  .footer-note a:hover { text-decoration: underline; }
+
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    color: #475569;
+    font-size: 0.85rem;
+    gap: 10px;
+  }
+
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid #334155;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-msg {
+    display: none;
+    background: #450a0a;
+    border: 1px solid #7f1d1d;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+    color: #fca5a5;
+    margin-bottom: 1rem;
+  }
+
+  .last-update {
+    font-size: 0.72rem;
+    color: #475569;
+    margin-top: 8px;
+    text-align: right;
+  }
+</style>
 </head>
 <body>
 
-<div id="global-header">
-  <span id="global-updated"></span>
+<header>
+  <h1>Solicitudes de subsidio por desempleo — EEUU</h1>
+  <p>Initial jobless claims · Ajustadas estacionalmente (ICSA) · Fuente: U.S. Dept. of Labor / FRED</p>
+  <div class="badge">
+    <span class="dot"></span>
+    Datos en tiempo real — actualizados cada jueves
+  </div>
+</header>
+
+<div class="error-msg" id="errorMsg"></div>
+
+<div class="metrics" id="metrics">
+  <div class="metric">
+    <div class="metric-label">Última semana</div>
+    <div class="metric-value" id="metLast">—</div>
+    <div class="metric-sub neutral" id="metLastDate">cargando…</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Variación semanal</div>
+    <div class="metric-value" id="metChange">—</div>
+    <div class="metric-sub neutral" id="metChangePct">vs semana anterior</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Media 4 semanas</div>
+    <div class="metric-value" id="met4w">—</div>
+    <div class="metric-sub neutral">promedio móvil</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Mínimo 52 semanas</div>
+    <div class="metric-value" id="metMin">—</div>
+    <div class="metric-sub neutral" id="metMinDate">—</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Máximo 52 semanas</div>
+    <div class="metric-value" id="metMax">—</div>
+    <div class="metric-sub neutral" id="metMaxDate">—</div>
+  </div>
 </div>
 
-<div id="ranges-container">
-  <div id="ranges">
-    <button class="rbtn active" data-r="1mo" data-i="1d">1M</button>
-    <button class="rbtn" data-r="3mo" data-i="1d">3M</button>
-    <button class="rbtn" data-r="6mo" data-i="1d">6M</button>
-    <button class="rbtn" data-r="1y" data-i="1wk">1A</button>
-    <button class="rbtn" data-r="5y" data-i="1mo">5A</button>
-    <button class="rbtn" data-r="max" data-i="1mo">MAX</button>
+<div class="chart-card">
+  <div class="chart-header">
+    <span class="chart-title">Solicitudes semanales (miles)</span>
+    <div class="controls" id="rangeControls">
+      <button class="btn-range" data-weeks="52">1 año</button>
+      <button class="btn-range active" data-weeks="104">2 años</button>
+      <button class="btn-range" data-weeks="260">5 años</button>
+      <button class="btn-range" data-weeks="0">Todo</button>
+    </div>
   </div>
-  <div id="vix-indicator">
-    <div id="vix-dot"></div>
-    <span id="vix-status">Cargando...</span>
+  <div class="chart-wrap" id="chartWrap">
+    <div class="loading" id="loadingMsg">
+      <div class="spinner"></div>
+      Obteniendo datos de FRED…
+    </div>
+    <canvas id="mainChart" role="img" aria-label="Gráfico de línea de solicitudes semanales de subsidio por desempleo en EEUU desde 2020" style="display:none;"></canvas>
   </div>
+  <div class="last-update" id="lastUpdate"></div>
 </div>
 
-<div id="grid">
-  <!-- VIX -->
-  <div class="panel" data-symbol="%5EVIX" data-name="VIX" data-type="yahoo">
-    <div class="panel-header">
-      <h2>VIX</h2>
-      <span class="panel-price">—</span>
-      <span class="panel-change">—</span>
-    </div>
-    <div class="panel-chart">
-      <canvas></canvas>
-      <div class="panel-msg">Cargando...</div>
-    </div>
-  </div>
-
-  <!-- Initial Jobless Claims -->
-  <div class="panel" data-symbol="ICSA" data-name="Initial Jobless Claims" data-type="fred">
-    <div class="panel-header">
-      <h2>Initial Jobless Claims</h2>
-      <span class="panel-price">—</span>
-      <span class="panel-change">—</span>
-    </div>
-    <div class="panel-chart">
-      <canvas></canvas>
-      <div class="panel-msg">Cargando...</div>
-    </div>
-  </div>
-</div>
+<p class="footer-note">
+  Datos: <a href="https://fred.stlouisfed.org/series/ICSA" target="_blank">FRED · ICSA</a> — Federal Reserve Bank of St. Louis.
+  Las solicitudes iniciales miden el desempleo emergente y son un indicador líder de la salud del mercado laboral.
+  Se publican cada jueves con datos de la semana anterior.
+</p>
 
 <script>
-// ⚠️ REEMPLAZA ESTO CON TU CLAVE GRATUITA DE FRED: https://fred.stlouisfed.org/docs/api/api_key.html
-const FRED_API_KEY = 'TU_CLAVE_API_AQUI';
+const FRED_API = 'https://fred.stlouisfed.org/graph/fredgraph.csv?id=ICSA';
 
-// Almacenar instancias de Chart por panel
-const charts = {};
+let allDates = [];
+let allValues = [];
+let chart = null;
+let currentWeeks = 104;
 
-// Lista de proxies CORS a intentar en orden
-const PROXIES = [
-  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-  url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-];
-
-function updateVixIndicator(value) {
-  const dot = document.getElementById('vix-dot');
-  const status = document.getElementById('vix-status');
-  
-  dot.classList.remove('calm', 'stress');
-  
-  if (value === null || value === undefined) {
-    dot.style.background = '#6b7280';
-    status.textContent = 'Sin datos';
-    return;
-  }
-  
-  if (value >= 15 && value <= 25) {
-    dot.classList.add('calm');
-    status.textContent = 'Volatilidad normal (' + value.toFixed(2) + ')';
-  } else if (value > 25) {
-    dot.classList.add('stress');
-    status.textContent = 'Volatilidad alta (' + value.toFixed(2) + ')';
-  } else {
-    dot.classList.add('stress');
-    status.textContent = 'Volatilidad baja (' + value.toFixed(2) + ')';
-  }
+function fmtK(v) {
+  return (v / 1000).toFixed(0) + 'K';
 }
 
-// Fetch para Yahoo Finance (VIX)
-async function fetchYahoo(symbol, range, interval) {
-  const yhUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=${range}&interval=${interval}&includePrePost=false&events=history`;
+function fmtDate(d) {
+  const [y, m, day] = d.split('-');
+  const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return `${parseInt(day)} ${months[parseInt(m)-1]} ${y}`;
+}
 
-  for (const makeProxy of PROXIES) {
-    try {
-      const res = await fetch(makeProxy(yhUrl), { signal: AbortSignal.timeout(15000) });
-      if (!res.ok) continue;
-      const text = await res.text();
-
-      let json;
-      try { json = JSON.parse(text); } catch { continue; }
-      if (json.contents) {
-        try { json = JSON.parse(json.contents); } catch { continue; }
+async function fetchData() {
+  try {
+    const res = await fetch(FRED_API);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    const lines = text.trim().split('\n').slice(1);
+    allDates = [];
+    allValues = [];
+    lines.forEach(line => {
+      const [date, val] = line.split(',');
+      if (date && val && val.trim() !== '.') {
+        allDates.push(date.trim());
+        allValues.push(parseFloat(val.trim()));
       }
-
-      const result = json?.chart?.result?.[0];
-      if (!result) continue;
-
-      const ts = result.timestamp;
-      const closes = result.indicators.quote[0].close;
-      const meta = result.meta;
-
-      const pairs = ts
-        .map((t, i) => ({ t, c: closes[i] }))
-        .filter(p => p.c != null);
-
-      if (pairs.length === 0) continue;
-      return { pairs, meta };
-    } catch (_) { /* try next proxy */ }
+    });
+    if (allDates.length === 0) throw new Error('Sin datos');
+    return true;
+  } catch(e) {
+    return false;
   }
-  throw new Error('Todos los proxies fallaron para VIX');
 }
 
-// Fetch para FRED (Initial Jobless Claims - ICSA)
-async function fetchFred(symbol, range) {
-  // Mapeo de rangos a fechas
+function getSlice(weeks) {
+  if (!weeks || weeks === 0) return { dates: allDates, values: allValues };
+  const n = Math.min(weeks, allDates.length);
+  return {
+    dates: allDates.slice(-n),
+    values: allValues.slice(-n)
+  };
+}
+
+function updateMetrics() {
+  const n = allValues.length;
+  if (n < 2) return;
+
+  const last = allValues[n-1];
+  const prev = allValues[n-2];
+  const diff = last - prev;
+  const pct = ((diff / prev) * 100).toFixed(1);
+
+  document.getElementById('metLast').textContent = fmtK(last);
+  document.getElementById('metLastDate').textContent = fmtDate(allDates[n-1]);
+
+  const changeEl = document.getElementById('metChange');
+  const pctEl = document.getElementById('metChangePct');
+  changeEl.textContent = (diff >= 0 ? '+' : '') + fmtK(diff);
+  changeEl.className = 'metric-value ' + (diff > 0 ? 'up' : diff < 0 ? 'down' : 'neutral');
+  pctEl.textContent = (diff >= 0 ? '▲' : '▼') + ' ' + Math.abs(pct) + '% vs semana anterior';
+  pctEl.className = 'metric-sub ' + (diff > 0 ? 'up' : diff < 0 ? 'down' : 'neutral');
+
+  const w4 = allValues.slice(-4);
+  document.getElementById('met4w').textContent = fmtK(w4.reduce((a,b)=>a+b,0)/w4.length);
+
+  const last52v = allValues.slice(-52);
+  const last52d = allDates.slice(-52);
+  const minVal = Math.min(...last52v);
+  const maxVal = Math.max(...last52v);
+  const minIdx = last52v.indexOf(minVal);
+  const maxIdx = last52v.indexOf(maxVal);
+
+  document.getElementById('metMin').textContent = fmtK(minVal);
+  document.getElementById('metMinDate').textContent = fmtDate(last52d[minIdx]);
+  document.getElementById('metMax').textContent = fmtK(maxVal);
+  document.getElementById('metMaxDate').textContent = fmtDate(last52d[maxIdx]);
+
   const now = new Date();
-  const endDate = now.toISOString().split('T')[0];
-  
-  let startDate = new Date();
-  switch(range) {
-    case '1mo': startDate.setMonth(startDate.getMonth() - 1); break;
-    case '3mo': startDate.setMonth(startDate.getMonth() - 3); break;
-    case '6mo': startDate.setMonth(startDate.getMonth() - 6); break;
-    case '1y': startDate.setFullYear(startDate.getFullYear() - 1); break;
-    case '5y': startDate.setFullYear(startDate.getFullYear() - 5); break;
-    case 'max': startDate = new Date('1967-01-01'); break;
-    default: startDate.setMonth(startDate.getMonth() - 1);
-  }
-  const startStr = startDate.toISOString().split('T')[0];
-  
-  // URL de la API de FRED
-  const fredUrl = `https://api.stlouisfed.org/fred/series/observations?series_id=${symbol}&api_key=${FRED_API_KEY}&file_type=json&observation_start=${startStr}&observation_end=${endDate}&sort_order=asc`;
-
-  for (const makeProxy of PROXIES) {
-    try {
-      const res = await fetch(makeProxy(fredUrl), { signal: AbortSignal.timeout(15000) });
-      if (!res.ok) continue;
-      const text = await res.text();
-
-      let json;
-      try { json = JSON.parse(text); } catch { continue; }
-      if (json.contents) {
-        try { json = JSON.parse(json.contents); } catch { continue; }
-      }
-
-      const observations = json?.observations;
-      if (!observations || observations.length === 0) continue;
-
-      const pairs = observations
-        .map(obs => {
-          const dateObj = new Date(obs.date + 'T00:00:00');
-          const timestamp = Math.floor(dateObj.getTime() / 1000);
-          const value = parseFloat(obs.value);
-          return { t: timestamp, c: value };
-        })
-        .filter(p => !isNaN(p.c) && p.c > 0);
-
-      if (pairs.length === 0) continue;
-      return { pairs, meta: {} };
-    } catch (_) { /* try next proxy */ }
-  }
-  throw new Error('No se pudieron cargar los datos de FRED. Verifica tu clave API.');
+  document.getElementById('lastUpdate').textContent =
+    'Actualizado: ' + now.toLocaleString('es-ES', {dateStyle:'medium', timeStyle:'short'});
 }
 
-function fmtDate(ts, range) {
-  const d = new Date(ts * 1000);
-  if (range === 'max' || range === '5y') {
-    return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-  }
-  return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
-}
+function buildChart(dates, values) {
+  const labels = dates.map(d => {
+    const [y,m,day] = d.split('-');
+    return `${day}/${m}/${y.slice(2)}`;
+  });
+  const dataK = values.map(v => +(v/1000).toFixed(2));
 
-function fmtNum(n, type) {
-  if (type === 'fred') {
-    // Para Initial Jobless Claims, formatear con separadores de miles y "K"
-    return (n / 1000).toFixed(0) + 'K';
-  }
-  return n.toFixed(2);
-}
+  const ctx = document.getElementById('mainChart').getContext('2d');
 
-function getMaxTicksLimit(range) {
-  if (range === 'max' || range === '5y') return 10;
-  if (range === '1y' || range === '6mo') return 8;
-  return 6;
-}
+  const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+  gradient.addColorStop(0, 'rgba(59,130,246,0.25)');
+  gradient.addColorStop(1, 'rgba(59,130,246,0)');
 
-function renderPanel(panel, { pairs, meta }, range) {
-  const labels = pairs.map(p => fmtDate(p.t, range));
-  const values = pairs.map(p => p.c);
-  const last = values[values.length - 1];
-  const first = values[0];
-  const pct = ((last - first) / first * 100);
-  const isUp = pct >= 0;
-  const color = isUp ? '#22c55e' : '#ef4444';
-  const isVix = panel.dataset.type === 'yahoo';
+  if (chart) { chart.destroy(); }
 
-  // Actualizar indicador del VIX solo para el panel VIX
-  if (isVix) {
-    updateVixIndicator(last);
-  }
-
-  // Actualizar header del panel
-  const priceEl = panel.querySelector('.panel-price');
-  const changeEl = panel.querySelector('.panel-change');
-  
-  if (isVix) {
-    priceEl.textContent = fmtNum(last, 'yahoo');
-    changeEl.textContent = (isUp ? '+' : '') + (last - first).toFixed(2) + ' (' + (isUp ? '+' : '') + pct.toFixed(2) + '%)';
-  } else {
-    priceEl.textContent = fmtNum(last, 'fred');
-    changeEl.textContent = (isUp ? '↑ ' : '↓ ') + Math.abs(pct).toFixed(1) + '% desde inicio';
-  }
-  
-  changeEl.className = 'panel-change ' + (isUp ? 'up' : 'down');
-
-  // Ocultar mensaje de carga
-  panel.querySelector('.panel-msg').classList.add('hidden');
-
-  // Crear o actualizar gráfico
-  const canvas = panel.querySelector('canvas');
-  const ctx = canvas.getContext('2d');
-  const panelId = panel.dataset.symbol;
-
-  if (charts[panelId]) charts[panelId].destroy();
-
-  const grad = ctx.createLinearGradient(0, 0, 0, 300);
-  grad.addColorStop(0, isUp ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)');
-  grad.addColorStop(1, 'rgba(0,0,0,0)');
-
-  charts[panelId] = new Chart(ctx, {
+  chart = new Chart(ctx, {
     type: 'line',
     data: {
       labels,
       datasets: [{
-        label: panel.dataset.name,
-        data: values,
-        borderColor: color,
+        label: 'Solicitudes (miles)',
+        data: dataK,
+        borderColor: '#3b82f6',
+        backgroundColor: gradient,
         borderWidth: 1.5,
-        backgroundColor: grad,
-        fill: true,
         pointRadius: 0,
-        pointHoverRadius: 3,
-        pointHoverBackgroundColor: color,
-        tension: range === 'max' || range === '5y' ? 0.1 : 0.2
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: '#3b82f6',
+        tension: 0.2,
+        fill: true
       }]
     },
     options: {
@@ -307,89 +392,81 @@ function renderPanel(panel, { pairs, meta }, range) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#161b22',
-          borderColor: '#30363d',
+          backgroundColor: '#0f172a',
+          borderColor: '#334155',
           borderWidth: 1,
-          titleColor: '#8b949e',
-          bodyColor: color,
-          callbacks: { 
-            label: c => ' ' + (isVix ? c.raw.toFixed(2) + ' pts' : Math.round(c.raw).toLocaleString('es-ES') + ' solicitudes')
+          titleColor: '#94a3b8',
+          bodyColor: '#f1f5f9',
+          padding: 10,
+          callbacks: {
+            title: ctx => {
+              const i = ctx[0].dataIndex;
+              return fmtDate(dates[i]);
+            },
+            label: ctx => ' ' + ctx.parsed.y.toFixed(0) + 'K solicitudes'
           }
         }
       },
       scales: {
         x: {
-          ticks: { color: '#6b7280', maxTicksLimit: getMaxTicksLimit(range), maxRotation: 0, font: { size: 10 } },
-          grid: { color: '#161b22' }
+          grid: { color: 'rgba(255,255,255,0.04)' },
+          ticks: {
+            color: '#475569',
+            font: { size: 10 },
+            maxTicksLimit: 10,
+            maxRotation: 0
+          },
+          border: { color: '#334155' }
         },
         y: {
-          position: 'right',
-          ticks: { 
-            color: '#6b7280', 
-            font: { size: 10 }, 
-            callback: v => isVix ? v.toFixed(0) : (v / 1000).toFixed(0) + 'K'
+          grid: { color: 'rgba(255,255,255,0.06)' },
+          ticks: {
+            color: '#475569',
+            font: { size: 10 },
+            callback: v => v + 'K'
           },
-          grid: { color: '#161b22' }
+          border: { color: '#334155' }
         }
       }
     }
   });
 }
 
-function showPanelError(panel) {
-  panel.querySelector('.panel-msg').innerHTML = '⚠ Error al cargar';
-  panel.querySelector('.panel-msg').classList.remove('hidden');
-  panel.querySelector('.panel-price').textContent = '—';
-  panel.querySelector('.panel-change').textContent = '—';
-  
-  if (panel.dataset.type === 'yahoo') {
-    updateVixIndicator(null);
+function renderSlice(weeks) {
+  currentWeeks = weeks;
+  const { dates, values } = getSlice(weeks);
+  buildChart(dates, values);
+}
+
+async function init() {
+  const ok = await fetchData();
+
+  document.getElementById('loadingMsg').style.display = 'none';
+  document.getElementById('mainChart').style.display = 'block';
+
+  if (!ok) {
+    const errEl = document.getElementById('errorMsg');
+    errEl.style.display = 'block';
+    errEl.textContent =
+      'No se pudo conectar con la API de FRED. Verifica tu conexión a internet o intenta de nuevo más tarde. ' +
+      'Puedes consultar los datos directamente en fred.stlouisfed.org/series/ICSA';
+    document.getElementById('mainChart').style.display = 'none';
+    return;
   }
-}
 
-async function loadPanel(panel, range, interval) {
-  const symbol = panel.dataset.symbol;
-  const type = panel.dataset.type;
-  
-  panel.querySelector('.panel-msg').textContent = 'Cargando...';
-  panel.querySelector('.panel-msg').classList.remove('hidden');
-  
-  try {
-    let data;
-    if (type === 'yahoo') {
-      data = await fetchYahoo(symbol, range, interval);
-    } else if (type === 'fred') {
-      data = await fetchFred(symbol, range);
-    }
-    renderPanel(panel, data, range);
-  } catch (e) {
-    console.error('Error cargando ' + symbol + ':', e);
-    showPanelError(panel);
-  }
-}
+  updateMetrics();
+  renderSlice(currentWeeks);
 
-async function loadAll(range, interval) {
-  document.getElementById('global-updated').textContent = 'Actualizando...';
-  
-  const panels = document.querySelectorAll('.panel');
-  const promises = Array.from(panels).map(panel => loadPanel(panel, range, interval));
-  
-  await Promise.allSettled(promises);
-  
-  document.getElementById('global-updated').textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-ES');
-}
-
-// Event listeners para botones de rango
-document.querySelectorAll('.rbtn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.rbtn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    loadAll(btn.dataset.r, btn.dataset.i);
+  document.querySelectorAll('.btn-range').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.btn-range').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderSlice(parseInt(btn.dataset.weeks));
+    });
   });
-});
+}
 
-// Carga inicial
-loadAll('1mo', '1d');
+init();
 </script>
 </body>
 </html>
