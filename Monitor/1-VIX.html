@@ -13,9 +13,16 @@
     #global-header { padding: 16px 24px 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
     #global-updated { font-size: 11px; color: #6b7280; }
     
-    #ranges { padding: 8px 24px 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+    #ranges-container { padding: 8px 24px 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    #ranges { display: flex; gap: 8px; flex-wrap: wrap; }
     .rbtn { background: none; border: 1px solid #30363d; border-radius: 6px; color: #8b949e; font-size: 12px; padding: 4px 12px; cursor: pointer; }
     .rbtn.active { background: #22c55e; border-color: #22c55e; color: #000; font-weight: 700; }
+    
+    #vix-indicator { display: flex; align-items: center; gap: 8px; background: #111820; border: 1px solid #1a2332; border-radius: 8px; padding: 8px 14px; font-size: 13px; white-space: nowrap; }
+    #vix-dot { width: 12px; height: 12px; border-radius: 50%; background: #6b7280; transition: background 0.3s; }
+    #vix-dot.calm { background: #22c55e; box-shadow: 0 0 8px rgba(34, 197, 94, 0.5); }
+    #vix-dot.stress { background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.5); }
+    #vix-status { color: #8b949e; }
     
     #grid { flex: 1; display: grid; grid-template-columns: 1fr; grid-template-rows: 1fr; gap: 16px; padding: 0 24px 24px; min-height: 0; }
     
@@ -33,6 +40,7 @@
     .down { color: #ef4444; }
     
     @media (max-width: 768px) {
+      #ranges-container { flex-direction: column; align-items: flex-start; }
       .panel { min-height: 300px; }
     }
   </style>
@@ -43,14 +51,20 @@
   <span id="global-updated"></span>
 </div>
 
-<div id="ranges">
-  <button class="rbtn" data-r="1d" data-i="5m">1D</button>
-  <button class="rbtn" data-r="5d" data-i="15m">5D</button>
-  <button class="rbtn active" data-r="1mo" data-i="1d">1M</button>
-  <button class="rbtn" data-r="6mo" data-i="1d">6M</button>
-  <button class="rbtn" data-r="1y" data-i="1wk">1A</button>
-  <button class="rbtn" data-r="5y" data-i="1mo">5A</button>
-  <button class="rbtn" data-r="max" data-i="1mo">MAX</button>
+<div id="ranges-container">
+  <div id="ranges">
+    <button class="rbtn" data-r="1d" data-i="5m">1D</button>
+    <button class="rbtn" data-r="5d" data-i="15m">5D</button>
+    <button class="rbtn active" data-r="1mo" data-i="1d">1M</button>
+    <button class="rbtn" data-r="6mo" data-i="1d">6M</button>
+    <button class="rbtn" data-r="1y" data-i="1wk">1A</button>
+    <button class="rbtn" data-r="5y" data-i="1mo">5A</button>
+    <button class="rbtn" data-r="max" data-i="1mo">MAX</button>
+  </div>
+  <div id="vix-indicator">
+    <div id="vix-dot"></div>
+    <span id="vix-status">Cargando...</span>
+  </div>
 </div>
 
 <div id="grid">
@@ -78,6 +92,31 @@ const PROXIES = [
   url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
   url => `https://cors-anywhere.herokuapp.com/${url}`,
 ];
+
+function updateVixIndicator(value) {
+  const dot = document.getElementById('vix-dot');
+  const status = document.getElementById('vix-status');
+  
+  // Limpiar clases anteriores
+  dot.classList.remove('calm', 'stress');
+  
+  if (value === null || value === undefined) {
+    dot.style.background = '#6b7280';
+    status.textContent = 'Sin datos';
+    return;
+  }
+  
+  if (value >= 15 && value <= 25) {
+    dot.classList.add('calm');
+    status.textContent = 'Volatilidad normal (' + value.toFixed(2) + ')';
+  } else if (value > 25) {
+    dot.classList.add('stress');
+    status.textContent = 'Volatilidad alta (' + value.toFixed(2) + ')';
+  } else {
+    dot.classList.add('stress');
+    status.textContent = 'Volatilidad baja (' + value.toFixed(2) + ')';
+  }
+}
 
 async function fetchYahoo(symbol, range, interval) {
   const yhUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=${range}&interval=${interval}&includePrePost=false&events=history`;
@@ -141,6 +180,9 @@ function renderPanel(panel, { pairs, meta }, range) {
   const pct = ((last - first) / first * 100);
   const isUp = pct >= 0;
   const color = isUp ? '#22c55e' : '#ef4444';
+
+  // Actualizar indicador del VIX
+  updateVixIndicator(last);
 
   // Actualizar header del panel
   const priceEl = panel.querySelector('.panel-price');
@@ -215,6 +257,7 @@ function showPanelError(panel) {
   panel.querySelector('.panel-msg').classList.remove('hidden');
   panel.querySelector('.panel-price').textContent = '—';
   panel.querySelector('.panel-change').textContent = '—';
+  updateVixIndicator(null);
 }
 
 async function loadPanel(panel, range, interval) {
