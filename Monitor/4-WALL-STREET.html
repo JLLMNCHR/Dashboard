@@ -194,7 +194,7 @@ function renderPanel(panel, { pairs, meta }, range) {
   grad.addColorStop(1, 'rgba(0,0,0,0)');
 
   charts[panelId] = new Chart(ctx, {
-    type: 'line',
+    type: 'candle',
     data: {
       labels,
       datasets: [{
