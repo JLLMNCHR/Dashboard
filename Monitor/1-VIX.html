@@ -13,7 +13,7 @@
     #global-header { padding: 16px 24px 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
     #global-updated { font-size: 11px; color: #6b7280; }
     
-    #ranges { padding: 8px 24px 12px; display: flex; gap: 8px; }
+    #ranges { padding: 8px 24px 12px; display: flex; gap: 8px; flex-wrap: wrap; }
     .rbtn { background: none; border: 1px solid #30363d; border-radius: 6px; color: #8b949e; font-size: 12px; padding: 4px 12px; cursor: pointer; }
     .rbtn.active { background: #22c55e; border-color: #22c55e; color: #000; font-weight: 700; }
     
@@ -50,6 +50,7 @@
   <button class="rbtn" data-r="6mo" data-i="1d">6M</button>
   <button class="rbtn" data-r="1y" data-i="1wk">1A</button>
   <button class="rbtn" data-r="5y" data-i="1mo">5A</button>
+  <button class="rbtn" data-r="max" data-i="1mo">MAX</button>
 </div>
 
 <div id="grid">
@@ -83,7 +84,7 @@ async function fetchYahoo(symbol, range, interval) {
 
   for (const makeProxy of PROXIES) {
     try {
-      const res = await fetch(makeProxy(yhUrl), { signal: AbortSignal.timeout(8000) });
+      const res = await fetch(makeProxy(yhUrl), { signal: AbortSignal.timeout(15000) });
       if (!res.ok) continue;
       const text = await res.text();
 
@@ -116,11 +117,20 @@ function fmtDate(ts, range) {
   if (range === '1d' || range === '5d') {
     return d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
   }
+  if (range === 'max') {
+    return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
   return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: range === '5y' ? 'numeric' : undefined });
 }
 
 function fmtNum(n) {
   return n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function getMaxTicksLimit(range) {
+  if (range === 'max' || range === '5y') return 10;
+  if (range === '1y' || range === '6mo') return 8;
+  return 6;
 }
 
 function renderPanel(panel, { pairs, meta }, range) {
@@ -167,7 +177,7 @@ function renderPanel(panel, { pairs, meta }, range) {
         pointRadius: 0,
         pointHoverRadius: 3,
         pointHoverBackgroundColor: color,
-        tension: 0.2
+        tension: range === 'max' || range === '5y' ? 0.1 : 0.2
       }]
     },
     options: {
@@ -187,7 +197,7 @@ function renderPanel(panel, { pairs, meta }, range) {
       },
       scales: {
         x: {
-          ticks: { color: '#6b7280', maxTicksLimit: 8, maxRotation: 0, font: { size: 10 } },
+          ticks: { color: '#6b7280', maxTicksLimit: getMaxTicksLimit(range), maxRotation: 0, font: { size: 10 } },
           grid: { color: '#161b22' }
         },
         y: {
