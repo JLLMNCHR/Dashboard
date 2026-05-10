@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>VIX en Tiempo Real | Market Mood</title>
+    <style>
+        /* Estilos CSS directamente en el HTML para facilitar la portabilidad */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #1a1a1a;
+            font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+        }
+        .card-link {
+            text-decoration: none;
+            display: block;
+        }
+        .card {
+            width: 220px;
+            padding: 30px 25px;
+            border-radius: 20px;
+            background: #2d2d2d;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            color: white;
+            text-align: center;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border-left: 6px solid #555; /* borde dinámico por JS */
+        }
+        .card-link:hover .card {
+            transform: scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.7);
+        }
+        .card-label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #aaa;
+            margin-bottom: 12px;
+        }
+        .card-value {
+            font-size: 4rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 15px;
+            transition: color 0.3s ease;
+        }
+        .card-status {
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 5px 15px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.15);
+            display: inline-block;
+        }
+        .green {
+            color: #4ade80;
+            border-color: #4ade80;
+        }
+        .red {
+            color: #f87171;
+            border-color: #f87171;
+        }
+        .refresh-hint {
+            font-size: 0.7rem;
+            color: #666;
+            margin-top: 15px;
+        }
+        .loader {
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <a href="https://finance.yahoo.com/quote/%5EVIX" target="_blank" rel="noopener noreferrer" class="card-link">
+        <div id="vix-card" class="card loader">
+            <div class="card-label">Índice de Volatilidad</div>
+            <div id="vix-value" class="card-value">⌛</div>
+            <div id="vix-status" class="card-status">Cargando...</div>
+            <div class="refresh-hint">Clic para fuente • Actualización en vivo</div>
+        </div>
+    </a>
+
+    <script>
+        // Ticker del VIX en Yahoo Finance [citation:3][citation:7]
+        const VIX_SYMBOL = "^VIX";
+        const YAHOO_FINANCE_URL = `https://finance.yahoo.com/quote/%5EVIX`;
+        
+        // Elementos del DOM
+        const card = document.getElementById('vix-card');
+        const valueEl = document.getElementById('vix-value');
+        const statusEl = document.getElementById('vix-status');
+
+        // Función para extraer datos del VIX desde la API de Yahoo Finance
+        async function fetchVIX() {
+            try {
+                // Intentamos obtener datos de la API no oficial de Yahoo Finance [citation:8]
+                // Usamos el endpoint v8 de finanzas de Yahoo (práctica común)
+                const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(VIX_SYMBOL)}?interval=1m&range=1d`;
+                
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("Error de red");
+                
+                const data = await response.json();
+                
+                // La estructura típica de respuesta de Yahoo Finance v8 chart API
+                const meta = data?.chart?.result?.[0]?.meta;
+                if (!meta || meta.regularMarketPrice === undefined) {
+                    throw new Error("Datos no disponibles");
+                }
+                
+                const price = meta.regularMarketPrice;
+                const change = meta.regularMarketPrice - meta.previousClose;
+                const changePercent = ((change / meta.previousClose) * 100).toFixed(2);
+                
+                // Actualizar la interfaz
+                updateCard(price, change, changePercent);
+            } catch (error) {
+                console.error("Error obteniendo VIX:", error);
+                valueEl.textContent = '⚠️';
+                statusEl.textContent = 'Error temporal';
+                card.classList.add('red');
+                card.classList.remove('green');
+                // Reintentar en 1 minuto
+                setTimeout(fetchVIX, 60000);
+            }
+        }
+
+        function updateCard(price, change, changePercent) {
+            // Limpiar estado de carga
+            card.classList.remove('loader');
+            
+            // Formatear precio
+            valueEl.textContent = price.toFixed(2);
+            
+            // Determinar color basado en el rango [15, 25]
+            const isGreen = price >= 15 && price <= 25;
+            card.classList.toggle('green', isGreen);
+            card.classList.toggle('red', !isGreen);
+            
+            // Preparar texto de cambio
+            const sign = change >= 0 ? '+' : '';
+            const changeText = `${sign}${change.toFixed(2)} (${sign}${changePercent}%)`;
+            const mood = isGreen ? 'Volatilidad moderada' : (price > 25 ? 'Volatilidad ALTA' : 'Volatilidad BAJA');
+            
+            statusEl.innerHTML = `${changeText} · ${mood}`;
+        }
+
+        // Iniciar fetching y luego actualizar cada 60 segundos
+        fetchVIX();
+        setInterval(fetchVIX, 60000);
+        
+        // También permitir refrescar con clic sin perder el link (usamos event delegation)
+        // Como usamos un enlace <a>, el clic normal abre la fuente. 
+        // Si se quiere refrescar sin abrir link, podríamos usar doble clic o botón,
+        // pero el requisito es: "al pinchar se accederá a la web". Cumplimos.
+        // Agregamos un pequeño truco: si el usuario hace Ctrl+Click actualizará sin navegar.
+        // Dejamos el comportamiento por defecto para cumplir estrictamente el requisito.
+    </script>
+</body>
+</html>
