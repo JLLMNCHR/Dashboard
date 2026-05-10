@@ -541,7 +541,6 @@ async function fetchVIX(){
 // corsproxy.io añade la cabecera CORS que FRED no incluye por sí solo.
 // ──────────────────────────────────────────────────────────────────
 const CL_THRESHOLD = 250_000;
-const CL_BAR_MAX   = 400_000;
 const FRED_KEY     = '6dc1290379fe1d4a6fec81278325858d';
 
 const clCard   = document.getElementById('clCard');
@@ -551,7 +550,6 @@ const clWeek   = document.getElementById('clWeek');
 const clArrow  = document.getElementById('clArrow');
 const clChange = document.getElementById('clChange');
 const clStatus = document.getElementById('clStatus');
-const clFill   = document.getElementById('clFill');
 let   clPrev   = null;
 
 function fmtK(n){
@@ -600,8 +598,6 @@ async function fetchClaims(){
       clChange.textContent = rawVal.toLocaleString('es-ES') + ' solicitudes';
       clArrow.textContent  = '→';
     }
-
-    clFill.style.width = Math.min((rawVal / CL_BAR_MAX) * 100, 100) + '%';
 
     const isGood = rawVal < CL_THRESHOLD;
     setCardColor(clCard, isGood);
