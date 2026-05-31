@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curva de Rendimientos - Bonos del Tesoro de EE.UU.</title>
+    <style>
+        :root {
+            --bg: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --accent: #2563eb;
+            --accent-dark: #1d4ed8;
+            --accent-light: #dbeafe;
+            --red: #dc2626;
+            --red-light: #fef2f2;
+            --green: #16a34a;
+            --green-light: #f0fdf4;
+            --orange: #ea580c;
+            --orange-light: #fff7ed;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.04);
+            --radius: 12px;
+            --radius-sm: 8px;
+            --radius-xs: 6px;
+            --transition: 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 24px 28px;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            border: 1px solid var(--border);
+        }
+        .header-left h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+            margin: 0 0 4px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-left h1 .flag-icon {
+            font-size: 1.6rem;
+        }
+        .header-left .subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin: 0;
+            font-weight: 500;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+        }
+        .badge-inverted {
+            background: var(--orange-light);
+            color: #c2410c;
+            border: 1px solid #fed7aa;
+        }
+        .badge-date {
+            background: #f8fafc;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            font-weight: 500;
+        }
+        .badge-date .dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #22c55e;
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+            }
+            50% {
+                opacity: 0.7;
+                box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+            }
+        }
+
+        /* Main grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.6fr;
+            gap: 20px;
+            align-items: start;
+        }
+        @media (max-width: 850px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .header-right {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+
+        /* Card */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+        }
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-light);
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            background: #fafbfc;
+        }
+        .card-body {
+            padding: 0;
+        }
+
+        /* Table */
+        .table-wrap {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        table thead th {
+            background: #f8fafc;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            border-bottom: 2px solid var(--border);
+            white-space: nowrap;
+        }
+        table tbody td {
+            padding: 11px 16px;
+            border-bottom: 1px solid var(--border-light);
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+            font-family: 'SF Mono', 'Cascadia Code', 'Consolas', 'Monaco', monospace;
+            font-size: 0.875rem;
+            letter-spacing: -0.01em;
+        }
+        table tbody tr {
+            transition: background 0.15s ease;
+        }
+        table tbody tr:hover {
+            background: #f8fafd;
+        }
+        table tbody tr.highlight-short {
+            border-left: 3px solid var(--orange);
+        }
+        table tbody tr.highlight-mid {
+            border-left: 3px solid var(--accent);
+        }
+        table tbody tr.highlight-long {
+            border-left: 3px solid var(--green);
+        }
+        .yield-val {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .change-neg {
+            color: var(--red);
+            font-weight: 600;
+        }
+        .change-pos {
+            color: var(--green);
+            font-weight: 600;
+        }
+        .change-zero {
+            color: var(--text-muted);
+        }
+        .maturity-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+            letter-spacing: 0.03em;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+        }
+        .badge-st {
+            background: #fff7ed;
+            color: #c2410c;
+        }
+        .badge-mt {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .badge-lt {
+            background: #f0fdf4;
+            color: #15803d;
+        }
+
+        /* Chart card */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            padding: 8px 4px 4px 4px;
+        }
+        .chart-container svg {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Spreads row */
+        .spreads-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        @media (max-width: 600px) {
+            .spreads-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        .spread-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-sm);
+            padding: 16px 18px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            text-align: center;
+            transition: var(--transition);
+        }
+        .spread-card:hover {
+            box-shadow: var(--shadow);
+            transform: translateY(-1px);
+        }
+        .spread-card .spread-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .spread-card .spread-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            font-variant-numeric: tabular-nums;
+            font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+        }
+        .spread-card .spread-sub {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+            font-weight: 500;
+        }
+        .spread-neg {
+            color: var(--red);
+        }
+        .spread-pos {
+            color: var(--green);
+        }
+
+        /* Footer / analysis */
+        .analysis-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+        }
+        .analysis-card h3 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .analysis-card p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin: 0;
+        }
+        .analysis-card .highlight {
+            font-weight: 700;
+            color: var(--orange);
+        }
+        .analysis-card .highlight-green {
+            font-weight: 700;
+            color: var(--green);
+        }
+
+        /* SVG chart styles */
+        .chart-grid-line {
+            stroke: #e5e7eb;
+            stroke-width: 1;
+            stroke-dasharray: 4 3;
+        }
+        .chart-grid-line-solid {
+            stroke: #e5e7eb;
+            stroke-width: 1;
+        }
+        .chart-axis-label {
+            fill: #6b7280;
+            font-size: 11px;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+        }
+        .chart-curve-line {
+            fill: none;
+            stroke: #2563eb;
+            stroke-width: 2.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .chart-area {
+            fill: url(#areaGradient);
+        }
+        .chart-dot {
+            fill: #ffffff;
+            stroke: #1d4ed8;
+            stroke-width: 2.5;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .chart-dot:hover {
+            fill: #1d4ed8;
+            stroke: #1d4ed8;
+            r: 6;
+        }
+        .chart-point-label {
+            fill: #374151;
+            font-size: 10px;
+            font-weight: 600;
+            font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+            text-anchor: middle;
+        }
+        .chart-xlabel {
+            fill: #6b7280;
+            font-size: 10.5px;
+            font-weight: 500;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            text-anchor: middle;
+        }
+        .chart-reference-line {
+            stroke: #f59e0b;
+            stroke-width: 1.5;
+            stroke-dasharray: 6 4;
+            opacity: 0.7;
+        }
+        .chart-reference-label {
+            fill: #d97706;
+            font-size: 10px;
+            font-weight: 600;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+        }
+
+        /* Tooltip style */
+        .tooltip-native {
+            pointer-events: none;
+        }
+
+        /* Subtle animation for card entrance */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .card,
+        .spread-card,
+        .analysis-card {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+        .spread-card:nth-child(2) {
+            animation-delay: 0.08s;
+        }
+        .spread-card:nth-child(3) {
+            animation-delay: 0.16s;
+        }
+        .analysis-card {
+            animation-delay: 0.2s;
+        }
+        .main-grid .card:first-child {
+            animation-delay: 0.04s;
+        }
+        .main-grid .card:last-child {
+            animation-delay: 0.1s;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            .header {
+                padding: 16px;
+            }
+            .header-left h1 {
+                font-size: 1.2rem;
+            }
+            table thead th,
+            table tbody td {
+                padding: 8px 10px;
+                font-size: 0.75rem;
+            }
+            .spread-card .spread-value {
+                font-size: 1.2rem;
+            }
+            .card-header {
+                padding: 12px 14px;
+                font-size: 0.78rem;
+            }
+            .analysis-card {
+                padding: 14px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <!-- ========== HEADER ========== -->
+        <header class="header">
+            <div class="header-left">
+                <h1>
+                    <span class="flag-icon">🇺🇸</span> Curva de Rendimientos
+                </h1>
+                <p class="subtitle">Bonos del Tesoro de Estados Unidos &bull; 1 Mes – 30 Años</p>
+            </div>
+            <div class="header-right">
+                <span class="badge badge-inverted">⚠ Curva Invertida</span>
+                <span class="badge badge-date">
+                    <span class="dot"></span> Datos al: 31 de mayo de 2026
+                </span>
+            </div>
+        </header>
+
+        <!-- ========== MAIN GRID: Tabla + Gráfico ========== -->
+        <div class="main-grid">
+
+            <!-- Tabla de rentabilidades -->
+            <div class="card">
+                <div class="card-header">📊 Rentabilidades por Plazo</div>
+                <div class="card-body table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Plazo</th>
+                                <th>Tipo</th>
+                                <th>Rendimiento</th>
+                                <th>Var. Día</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="highlight-short">
+                                <td><strong>1 Mes</strong></td>
+                                <td><span class="maturity-badge badge-st">Corto</span></td>
+                                <td class="yield-val">5.28%</td>
+                                <td class="change-neg">−0.02</td>
+                            </tr>
+                            <tr class="highlight-short">
+                                <td><strong>3 Meses</strong></td>
+                                <td><span class="maturity-badge badge-st">Corto</span></td>
+                                <td class="yield-val">5.22%</td>
+                                <td class="change-neg">−0.01</td>
+                            </tr>
+                            <tr class="highlight-short">
+                                <td><strong>6 Meses</strong></td>
+                                <td><span class="maturity-badge badge-st">Corto</span></td>
+                                <td class="yield-val">5.08%</td>
+                                <td class="change-neg">−0.03</td>
+                            </tr>
+                            <tr class="highlight-short">
+                                <td><strong>1 Año</strong></td>
+                                <td><span class="maturity-badge badge-st">Corto</span></td>
+                                <td class="yield-val">4.75%</td>
+                                <td class="change-neg">−0.04</td>
+                            </tr>
+                            <tr class="highlight-mid">
+                                <td><strong>2 Años</strong></td>
+                                <td><span class="maturity-badge badge-mt">Medio</span></td>
+                                <td class="yield-val">4.25%</td>
+                                <td class="change-neg">−0.05</td>
+                            </tr>
+                            <tr class="highlight-mid">
+                                <td><strong>3 Años</strong></td>
+                                <td><span class="maturity-badge badge-mt">Medio</span></td>
+                                <td class="yield-val">4.05%</td>
+                                <td class="change-neg">−0.04</td>
+                            </tr>
+                            <tr class="highlight-mid">
+                                <td><strong>5 Años</strong></td>
+                                <td><span class="maturity-badge badge-mt">Medio</span></td>
+                                <td class="yield-val">3.88%</td>
+                                <td class="change-neg">−0.03</td>
+                            </tr>
+                            <tr class="highlight-mid">
+                                <td><strong>7 Años</strong></td>
+                                <td><span class="maturity-badge badge-mt">Medio</span></td>
+                                <td class="yield-val">3.82%</td>
+                                <td class="change-neg">−0.02</td>
+                            </tr>
+                            <tr class="highlight-long">
+                                <td><strong>10 Años</strong></td>
+                                <td><span class="maturity-badge badge-lt">Largo</span></td>
+                                <td class="yield-val">3.78%</td>
+                                <td class="change-neg">−0.02</td>
+                            </tr>
+                            <tr class="highlight-long">
+                                <td><strong>20 Años</strong></td>
+                                <td><span class="maturity-badge badge-lt">Largo</span></td>
+                                <td class="yield-val">4.02%</td>
+                                <td class="change-neg">−0.01</td>
+                            </tr>
+                            <tr class="highlight-long">
+                                <td><strong>30 Años</strong></td>
+                                <td><span class="maturity-badge badge-lt">Largo</span></td>
+                                <td class="yield-val">4.12%</td>
+                                <td class="change-zero">0.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Gráfico de la curva -->
+            <div class="card">
+                <div class="card-header">📈 Curva de Rendimientos (Yield Curve)</div>
+                <div class="card-body chart-container">
+                    <svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg" role="img"
+                    aria-label="Gráfico de la curva de rendimientos del Tesoro de EE.UU. del 31 de mayo de 2026">
+                    <defs>
+                        <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#2563eb" stop-opacity="0.28" />
+                            <stop offset="60%" stop-color="#2563eb" stop-opacity="0.06" />
+                            <stop offset="100%" stop-color="#2563eb" stop-opacity="0.01" />
+                        </linearGradient>
+                        <filter id="shadowDot" x="-50%" y="-50%" width="200%" height="200%">
+                            <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#1d4ed8" flood-opacity="0.3" />
+                        </filter>
+                    </defs>
+
+                    <!-- Fondo del área del gráfico -->
+                    <rect x="70" y="20" width="600" height="265" fill="#fafcfd" rx="4" />
+
+                    <!-- Líneas de grid horizontales -->
+                    <!-- 5.50% -->
+                    <line x1="70" y1="25" x2="670" y2="25" class="chart-grid-line" />
+                    <text x="62" y="29" class="chart-axis-label" text-anchor="end">5.50%</text>
+                    <!-- 5.00% -->
+                    <line x1="70" y1="86.9" x2="670" y2="86.9" class="chart-grid-line-solid" />
+                    <text x="62" y="90.9" class="chart-axis-label" text-anchor="end">5.00%</text>
+                    <!-- 4.50% -->
+                    <line x1="70" y1="148.8" x2="670" y2="148.8" class="chart-grid-line" />
+                    <text x="62" y="152.8" class="chart-axis-label" text-anchor="end">4.50%</text>
+                    <!-- 4.00% -->
+                    <line x1="70" y1="210.7" x2="670" y2="210.7" class="chart-grid-line-solid" />
+                    <text x="62" y="214.7" class="chart-axis-label" text-anchor="end">4.00%</text>
+                    <!-- 3.50% -->
+                    <line x1="70" y1="272.6" x2="670" y2="272.6" class="chart-grid-line" />
+                    <text x="62" y="276.6" class="chart-axis-label" text-anchor="end">3.50%</text>
+
+                    <!-- Línea de referencia: Fed Funds ~4.75% -->
+                    <line x1="70" y1="117.9" x2="670" y2="117.9" class="chart-reference-line" />
+                    <text x="675" y="114" class="chart-reference-label" font-size="9.5">Fed Funds
+                    ~4.75%</text>
+
+                    <!-- Área sombreada bajo la curva -->
+                    <path class="chart-area" d="
+                        M 70,285
+                        L 70,52.2 L 106,59.7 L 136,77.0 L 178,117.9
+                        L 226,179.8 L 274,204.5 L 346,225.6 L 406,233.0
+                        L 478,238.0 L 574,208.2 L 646,195.9
+                        L 646,285 Z
+                    " />
+
+                    <!-- Línea de la curva -->
+                    <polyline class="chart-curve-line" points="
+                        70,52.2 106,59.7 136,77.0 178,117.9
+                        226,179.8 274,204.5 346,225.6 406,233.0
+                        478,238.0 574,208.2 646,195.9
+                    " />
+
+                    <!-- Puntos en la curva -->
+                    <circle cx="70" cy="52.2" r="5" class="chart-dot" filter="url(#shadowDot)" />
+                    <circle cx="106" cy="59.7" r="4.5" class="chart-dot" />
+                    <circle cx="136" cy="77.0" r="4.5" class="chart-dot" />
+                    <circle cx="178" cy="117.9" r="4.5" class="chart-dot" />
+                    <circle cx="226" cy="179.8" r="5" class="chart-dot" filter="url(#shadowDot)" />
+                    <circle cx="274" cy="204.5" r="4.5" class="chart-dot" />
+                    <circle cx="346" cy="225.6" r="4.5" class="chart-dot" />
+                    <circle cx="406" cy="233.0" r="4.5" class="chart-dot" />
+                    <circle cx="478" cy="238.0" r="5" class="chart-dot" filter="url(#shadowDot)" />
+                    <circle cx="574" cy="208.2" r="4.5" class="chart-dot" />
+                    <circle cx="646" cy="195.9" r="5" class="chart-dot" filter="url(#shadowDot)" />
+
+                    <!-- Etiquetas de rendimiento sobre los puntos -->
+                    <text x="70" y="41" class="chart-point-label" font-size="10.5" fill="#1d4ed8">5.28%</text>
+                    <text x="106" y="50" class="chart-point-label">5.22%</text>
+                    <text x="136" y="67" class="chart-point-label">5.08%</text>
+                    <text x="178" y="107" class="chart-point-label">4.75%</text>
+                    <text x="226" y="170" class="chart-point-label" font-size="10.5" fill="#1d4ed8">4.25%</text>
+                    <text x="274" y="195" class="chart-point-label">4.05%</text>
+                    <text x="346" y="216" class="chart-point-label">3.88%</text>
+                    <text x="406" y="224" class="chart-point-label">3.82%</text>
+                    <text x="478" y="252" class="chart-point-label" font-size="10.5" fill="#1d4ed8">3.78%</text>
+                    <text x="574" y="199" class="chart-point-label">4.02%</text>
+                    <text x="646" y="186" class="chart-point-label" font-size="10.5" fill="#1d4ed8">4.12%</text>
+
+                    <!-- Etiquetas del eje X -->
+                    <text x="70" y="302" class="chart-xlabel">1M</text>
+                    <text x="106" y="302" class="chart-xlabel">3M</text>
+                    <text x="136" y="302" class="chart-xlabel">6M</text>
+                    <text x="178" y="302" class="chart-xlabel">1A</text>
+                    <text x="226" y="302" class="chart-xlabel">2A</text>
+                    <text x="274" y="302" class="chart-xlabel">3A</text>
+                    <text x="346" y="302" class="chart-xlabel">5A</text>
+                    <text x="406" y="302" class="chart-xlabel">7A</text>
+                    <text x="478" y="302" class="chart-xlabel">10A</text>
+                    <text x="574" y="302" class="chart-xlabel">20A</text>
+                    <text x="646" y="302" class="chart-xlabel">30A</text>
+
+                    <!-- Línea base del eje X -->
+                    <line x1="70" y1="285" x2="670" y2="285" stroke="#cbd5e1" stroke-width="1.5" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== SPREADS CLAVE ========== -->
+    <div class="spreads-row">
+        <div class="spread-card">
+            <div class="spread-label">Spread 2A – 10A</div>
+            <div class="spread-value spread-neg">−0.47%</div>
+            <div class="spread-sub">−47 pb &bull; Invertido</div>
+        </div>
+        <div class="spread-card">
+            <div class="spread-label">Spread 3M – 10A</div>
+            <div class="spread-value spread-neg">−1.44%</div>
+            <div class="spread-sub">−144 pb &bull; Fuertemente invertido</div>
+        </div>
+        <div class="spread-card">
+            <div class="spread-label">Spread 10A – 30A</div>
+            <div class="spread-value spread-pos">+0.34%</div>
+            <div class="spread-sub">+34 pb &bull; Prima por plazo</div>
+        </div>
+    </div>
+
+    <!-- ========== ANÁLISIS ========== -->
+    <div class="analysis-card">
+        <h3>🔍 Interpretación de la Curva</h3>
+        <p>
+            La curva de rendimientos del Tesoro estadounidense presenta una
+            <span class="highlight">inversión significativa en los tramos corto-medio</span>.
+            Los rendimientos a <strong>1 mes (5.28%)</strong> y <strong>3 meses (5.22%)</strong>
+            se mantienen elevados, reflejando la política monetaria restrictiva de la Reserva Federal.
+            El <strong>mínimo de la curva se sitúa en el bono a 10 años (3.78%)</strong>, lo que indica
+            que el mercado descuenta recortes de tipos en el horizonte de medio plazo.
+            Sin embargo, los tramos más largos <strong>(20–30 años)</strong> repuntan ligeramente hasta
+            el <span class="highlight-green">4.02%–4.12%</span>, incorporando una
+            <span class="highlight-green">prima por plazo</span> que refleja incertidumbre sobre
+            la inflación y la sostenibilidad fiscal a largo plazo. El spread 2–10 años en
+            <strong>−47 puntos básicos</strong> es una señal clásica que históricamente ha
+            anticipado desaceleraciones económicas.
+        </p>
+    </div>
+
+</div>
+</body>
+</html>
