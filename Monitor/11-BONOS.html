@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curva de Rendimientos - Bonos del Tesoro EE.UU. (FRED en vivo)</title>
+    <style>
+        :root {
+            --bg: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --accent: #2563eb;
+            --red: #dc2626;
+            --red-light: #fef2f2;
+            --green: #16a34a;
+            --green-light: #f0fdf4;
+            --orange: #ea580c;
+            --orange-light: #fff7ed;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.06);
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            padding: 20px;
+        }
+        .container { max-width: 1100px; margin:0 auto; display:flex; flex-direction:column; gap:20px; }
+        .header {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 24px 28px;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            border: 1px solid var(--border);
+        }
+        .header-left h1 { font-size:1.5rem; font-weight:700; display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+        .header-left .subtitle { font-size:0.875rem; color:var(--text-secondary); }
+        .badge {
+            display:inline-flex; align-items:center; gap:6px;
+            padding:7px 14px; border-radius:20px; font-weight:600; font-size:0.8rem; white-space:nowrap;
+        }
+        .badge-inverted { background:var(--orange-light); color:#c2410c; border:1px solid #fed7aa; }
+        .badge-date { background:#f8fafc; color:var(--text-secondary); border:1px solid var(--border); }
+        .badge-error { background:#fee2e2; color:#b91c1c; border:1px solid #fecaca; }
+        .dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:#22c55e; animation:pulse-dot 2s infinite; }
+        .dot-error { background:#ef4444; animation:none; }
+        @keyframes pulse-dot {
+            0%,100%{ opacity:1; box-shadow:0 0 0 0 rgba(34,197,94,0.4); }
+            50%{ opacity:0.7; box-shadow:0 0 0 6px rgba(34,197,94,0); }
+        }
+        .main-grid { display:grid; grid-template-columns:1fr 1.6fr; gap:20px; }
+        @media (max-width:850px){ .main-grid{grid-template-columns:1fr;} }
+        .card { background:var(--card-bg); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border); overflow:hidden; }
+        .card-header { padding:16px 20px; border-bottom:1px solid var(--border-light); font-weight:700; font-size:0.9rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-secondary); background:#fafbfc; }
+        .table-wrap { overflow-x:auto; }
+        table { width:100%; border-collapse:collapse; font-size:0.9rem; }
+        table thead th { background:#f8fafc; padding:12px 16px; text-align:left; font-weight:600; font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); border-bottom:2px solid var(--border); }
+        table tbody td { padding:11px 16px; border-bottom:1px solid var(--border-light); font-family:'SF Mono','Cascadia Code',Consolas,monospace; font-size:0.875rem; }
+        .yield-val { font-weight:700; }
+        .maturity-badge { display:inline-block; font-size:0.7rem; font-weight:600; padding:2px 8px; border-radius:10px; }
+        .badge-st { background:#fff7ed; color:#c2410c; }
+        .badge-mt { background:#dbeafe; color:#1d4ed8; }
+        .badge-lt { background:#f0fdf4; color:#15803d; }
+        .chart-container { padding:8px 4px; }
+        .chart-container svg { width:100%; height:auto; display:block; }
+        .spreads-row { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+        @media (max-width:600px){ .spreads-row{grid-template-columns:1fr;} }
+        .spread-card { background:var(--card-bg); border-radius:var(--radius-sm); padding:16px 18px; box-shadow:var(--shadow-sm); border:1px solid var(--border); text-align:center; }
+        .spread-label { font-size:0.7rem; text-transform:uppercase; font-weight:600; color:var(--text-muted); margin-bottom:6px; }
+        .spread-value { font-size:1.5rem; font-weight:800; font-family:'SF Mono',Consolas,monospace; }
+        .spread-sub { font-size:0.75rem; color:var(--text-secondary); margin-top:2px; }
+        .spread-neg { color:var(--red); }
+        .spread-pos { color:var(--green); }
+        .analysis-card { background:var(--card-bg); border-radius:var(--radius); padding:20px 24px; box-shadow:var(--shadow-sm); border:1px solid var(--border); }
+        .analysis-card h3 { font-size:0.85rem; text-transform:uppercase; color:var(--text-secondary); margin-bottom:10px; }
+        .analysis-card p { font-size:0.9rem; color:var(--text-secondary); line-height:1.7; }
+        .error-message { color:#b91c1c; font-weight:600; background:#fee2e2; padding:12px 16px; border-radius:8px; border:1px solid #fecaca; text-align:center; }
+        .chart-grid-line { stroke:#e5e7eb; stroke-width:1; stroke-dasharray:4 3; }
+        .chart-grid-line-solid { stroke:#e5e7eb; stroke-width:1; }
+        .chart-axis-label { fill:#6b7280; font-size:11px; font-family:'Inter',sans-serif; }
+        .chart-curve-line { fill:none; stroke:#2563eb; stroke-width:2.8; stroke-linecap:round; }
+        .chart-area { fill:url(#areaGradient); }
+        .chart-dot { fill:#fff; stroke:#1d4ed8; stroke-width:2.5; }
+        .chart-point-label { fill:#374151; font-size:10px; font-weight:600; font-family:'SF Mono',Consolas,monospace; text-anchor:middle; }
+        .chart-xlabel { fill:#6b7280; font-size:10.5px; font-weight:500; text-anchor:middle; }
+        .chart-reference-line { stroke:#f59e0b; stroke-width:1.5; stroke-dasharray:6 4; opacity:0.7; }
+        .chart-reference-label { fill:#d97706; font-size:10px; font-weight:600; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-left">
+                <h1><span>🇺🇸</span> Curva de Rendimientos</h1>
+                <p class="subtitle">Bonos del Tesoro de EE.UU. &bull; 1 Mes – 30 Años &bull; Datos FRED</p>
+            </div>
+            <div class="header-right">
+                <span class="badge badge-inverted" id="inversion-badge">⏳ Cargando...</span>
+                <span class="badge badge-date" id="date-badge">
+                    <span class="dot"></span> Datos al: <span id="data-date">consultando...</span>
+                </span>
+            </div>
+        </header>
+
+        <div class="main-grid">
+            <div class="card">
+                <div class="card-header">📊 Rentabilidades por Plazo</div>
+                <div class="card-body table-wrap">
+                    <table>
+                        <thead><tr><th>Plazo</th><th>Tipo</th><th>Rendimiento</th><th>Var. Día</th></tr></thead>
+                        <tbody id="table-body">
+                            <tr><td colspan="4" style="text-align:center;padding:20px;">Conectando con FRED...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">📈 Curva de Rendimientos</div>
+                <div class="card-body chart-container">
+                    <svg viewBox="0 0 720 340">
+                        <defs>
+                            <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#2563eb" stop-opacity="0.28" />
+                                <stop offset="60%" stop-color="#2563eb" stop-opacity="0.06" />
+                                <stop offset="100%" stop-color="#2563eb" stop-opacity="0.01" />
+                            </linearGradient>
+                        </defs>
+                        <rect x="70" y="20" width="600" height="265" fill="#fafcfd" rx="4" />
+                        <line x1="70" y1="25" x2="670" y2="25" class="chart-grid-line" />
+                        <text x="62" y="29" class="chart-axis-label" text-anchor="end">5.50%</text>
+                        <line x1="70" y1="86.9" x2="670" y2="86.9" class="chart-grid-line-solid" />
+                        <text x="62" y="90.9" class="chart-axis-label" text-anchor="end">5.00%</text>
+                        <line x1="70" y1="148.8" x2="670" y2="148.8" class="chart-grid-line" />
+                        <text x="62" y="152.8" class="chart-axis-label" text-anchor="end">4.50%</text>
+                        <line x1="70" y1="210.7" x2="670" y2="210.7" class="chart-grid-line-solid" />
+                        <text x="62" y="214.7" class="chart-axis-label" text-anchor="end">4.00%</text>
+                        <line x1="70" y1="272.6" x2="670" y2="272.6" class="chart-grid-line" />
+                        <text x="62" y="276.6" class="chart-axis-label" text-anchor="end">3.50%</text>
+                        <line x1="70" y1="117.9" x2="670" y2="117.9" class="chart-reference-line" />
+                        <text x="675" y="114" class="chart-reference-label" font-size="9.5">Fed Funds ~4.75%</text>
+                        <g id="curve-area-group"></g>
+                        <g id="curve-line-group"></g>
+                        <g id="curve-points-group"></g>
+                        <g id="curve-labels-group"></g>
+                        <text x="70" y="302" class="chart-xlabel">1M</text>
+                        <text x="106" y="302" class="chart-xlabel">3M</text>
+                        <text x="136" y="302" class="chart-xlabel">6M</text>
+                        <text x="178" y="302" class="chart-xlabel">1A</text>
+                        <text x="226" y="302" class="chart-xlabel">2A</text>
+                        <text x="274" y="302" class="chart-xlabel">3A</text>
+                        <text x="346" y="302" class="chart-xlabel">5A</text>
+                        <text x="406" y="302" class="chart-xlabel">7A</text>
+                        <text x="478" y="302" class="chart-xlabel">10A</text>
+                        <text x="574" y="302" class="chart-xlabel">20A</text>
+                        <text x="646" y="302" class="chart-xlabel">30A</text>
+                        <line x1="70" y1="285" x2="670" y2="285" stroke="#cbd5e1" stroke-width="1.5" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="spreads-row">
+            <div class="spread-card">
+                <div class="spread-label">Spread 2A – 10A</div>
+                <div class="spread-value" id="spread-2-10">--</div>
+                <div class="spread-sub" id="spread-2-10-desc">Esperando...</div>
+            </div>
+            <div class="spread-card">
+                <div class="spread-label">Spread 3M – 10A</div>
+                <div class="spread-value" id="spread-3m-10">--</div>
+                <div class="spread-sub" id="spread-3m-10-desc">Esperando...</div>
+            </div>
+            <div class="spread-card">
+                <div class="spread-label">Spread 10A – 30A</div>
+                <div class="spread-value" id="spread-10-30">--</div>
+                <div class="spread-sub" id="spread-10-30-desc">Esperando...</div>
+            </div>
+        </div>
+
+        <div class="analysis-card">
+            <h3>🔍 Interpretación de la Curva</h3>
+            <p id="analysis-text">Obteniendo datos desde FRED...</p>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const FRED_KEY = "6dc1290379fe1d4a6fec81278325858d";
+            const FRED_BASE = "https://api.stlouisfed.org/fred/series/observations";
+            const PROXY = "https://corsproxy.io/?url=";
+            
+            const MATURITY_MAP = [
+                { series: 'DGS1MO',  key: 'one_month',   label: '1 Mes',   type: 'Corto', cls: 'badge-st', x: 70 },
+                { series: 'DGS3MO',  key: 'three_month', label: '3 Meses', type: 'Corto', cls: 'badge-st', x: 106 },
+                { series: 'DGS6MO',  key: 'six_month',   label: '6 Meses', type: 'Corto', cls: 'badge-st', x: 136 },
+                { series: 'DGS1',    key: 'one_yr',      label: '1 Año',   type: 'Corto', cls: 'badge-st', x: 178 },
+                { series: 'DGS2',    key: 'two_yr',      label: '2 Años',  type: 'Medio', cls: 'badge-mt', x: 226 },
+                { series: 'DGS3',    key: 'three_yr',    label: '3 Años',  type: 'Medio', cls: 'badge-mt', x: 274 },
+                { series: 'DGS5',    key: 'five_yr',     label: '5 Años',  type: 'Medio', cls: 'badge-mt', x: 346 },
+                { series: 'DGS7',    key: 'seven_yr',    label: '7 Años',  type: 'Medio', cls: 'badge-mt', x: 406 },
+                { series: 'DGS10',   key: 'ten_yr',      label: '10 Años', type: 'Largo', cls: 'badge-lt', x: 478 },
+                { series: 'DGS20',   key: 'twenty_yr',   label: '20 Años', type: 'Largo', cls: 'badge-lt', x: 574 },
+                { series: 'DGS30',   key: 'thirty_yr',   label: '30 Años', type: 'Largo', cls: 'badge-lt', x: 646 }
+            ];
+
+            function formatPercent(v) { return v.toFixed(2) + '%'; }
+            function formatSpread(v) { return (v >= 0 ? '+' : '') + v.toFixed(2) + '%'; }
+            function formatPb(v) { const pb = Math.round(v * 100); return (pb >= 0 ? '+' : '') + pb + ' pb'; }
+            function yieldToY(y) {
+                const minY = 3.50, maxY = 5.50, yMin = 272.6, yMax = 25;
+                return yMin - (y - minY) * ((yMin - yMax) / (maxY - minY));
+            }
+
+            function showError(msg) {
+                document.getElementById('table-body').innerHTML = `<tr><td colspan="4"><div class="error-message">${msg}</div></td></tr>`;
+                document.getElementById('inversion-badge').textContent = '⚠ Error';
+                document.getElementById('inversion-badge').className = 'badge badge-error';
+                document.getElementById('data-date').textContent = 'no disponible';
+                document.getElementById('date-badge').querySelector('.dot').className = 'dot dot-error';
+                document.getElementById('analysis-text').innerHTML = `<span class="error-message" style="display:block;">${msg}</span>`;
+                ['spread-2-10','spread-3m-10','spread-10-30'].forEach(id => document.getElementById(id).textContent = '--');
+                ['spread-2-10-desc','spread-3m-10-desc','spread-10-30-desc'].forEach(id => document.getElementById(id).textContent = 'Error');
+                document.getElementById('curve-area-group').innerHTML = '';
+                document.getElementById('curve-line-group').innerHTML = '';
+                document.getElementById('curve-points-group').innerHTML = '';
+                document.getElementById('curve-labels-group').innerHTML = '';
+            }
+
+            async function fetchSeries(seriesId) {
+                const url = `${FRED_BASE}?series_id=${seriesId}&api_key=${FRED_KEY}&file_type=json&sort_order=desc&limit=1`;
+                const proxyUrl = `${PROXY}${encodeURIComponent(url)}`;
+                const resp = await fetch(proxyUrl);
+                if (!resp.ok) throw new Error(`HTTP ${resp.status} en ${seriesId}`);
+                const json = await resp.json();
+                if (!json.observations || json.observations.length === 0) return null;
+                const obs = json.observations[0];
+                if (obs.value === '.' || obs.value === '') return null;
+                return { date: obs.date, value: parseFloat(obs.value) };
+            }
+
+            async function fetchAllData() {
+                const promises = MATURITY_MAP.map(async (item) => {
+                    try {
+                        const result = await fetchSeries(item.series);
+                        return { key: item.key, ...item, result };
+                    } catch (e) {
+                        console.warn(`Falló ${item.series}:`, e);
+                        return { key: item.key, ...item, result: null };
+                    }
+                });
+                return await Promise.all(promises);
+            }
+
+            function processData(results) {
+                const data = { record_date: null };
+                results.forEach(r => {
+                    if (r.result) {
+                        data[r.key] = r.result.value;
+                        if (!data.record_date) data.record_date = r.result.date;
+                    } else {
+                        data[r.key] = null;
+                    }
+                });
+                return data;
+            }
+
+            function renderTable(data, results) {
+                const tbody = document.getElementById('table-body');
+                let html = '';
+                results.forEach(r => {
+                    const val = data[r.key];
+                    const display = val !== null ? formatPercent(val) : 'N/D';
+                    html += `<tr>
+                        <td><strong>${r.label}</strong></td>
+                        <td><span class="maturity-badge ${r.cls}">${r.type}</span></td>
+                        <td class="yield-val">${display}</td>
+                        <td><span style="color:#718096;">N/D</span></td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html;
+            }
+
+            function renderChart(data) {
+                const points = [];
+                MATURITY_MAP.forEach(item => {
+                    const val = data[item.key];
+                    if (val !== null && val !== undefined) points.push({ x: item.x, y: yieldToY(val), yield: val });
+                });
+                if (points.length === 0) return;
+                const area = document.getElementById('curve-area-group');
+                const baseY = 285;
+                let d = `M ${points[0].x},${baseY} `;
+                points.forEach(p => d += `L ${p.x},${p.y} `);
+                d += `L ${points[points.length-1].x},${baseY} Z`;
+                area.innerHTML = `<path class="chart-area" d="${d}" />`;
+                document.getElementById('curve-line-group').innerHTML = `<polyline class="chart-curve-line" points="${points.map(p=>`${p.x},${p.y}`).join(' ')}" />`;
+                document.getElementById('curve-points-group').innerHTML = points.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="5" class="chart-dot" />`).join('');
+                document.getElementById('curve-labels-group').innerHTML = points.map(p=>`<text x="${p.x}" y="${p.y-9}" class="chart-point-label" fill="#1d4ed8">${formatPercent(p.yield)}</text>`).join('');
+            }
+
+            function renderSpreads(data) {
+                const two = data.two_yr, ten = data.ten_yr, threeM = data.three_month, thirty = data.thirty_yr;
+                if (two !== null && ten !== null) {
+                    const s = two - ten;
+                    const el = document.getElementById('spread-2-10');
+                    el.textContent = formatSpread(s);
+                    el.className = 'spread-value ' + (s < 0 ? 'spread-neg' : 'spread-pos');
+                    document.getElementById('spread-2-10-desc').textContent = formatPb(s) + (s < 0 ? ' • Invertido' : ' • Normal');
+                }
+                if (threeM !== null && ten !== null) {
+                    const s = threeM - ten;
+                    const el = document.getElementById('spread-3m-10');
+                    el.textContent = formatSpread(s);
+                    el.className = 'spread-value ' + (s < 0 ? 'spread-neg' : 'spread-pos');
+                    document.getElementById('spread-3m-10-desc').textContent = formatPb(s) + (s < 0 ? ' • Invertido' : ' • Normal');
+                }
+                if (ten !== null && thirty !== null) {
+                    const s = thirty - ten;
+                    const el = document.getElementById('spread-10-30');
+                    el.textContent = formatSpread(s);
+                    el.className = 'spread-value ' + (s < 0 ? 'spread-neg' : 'spread-pos');
+                    document.getElementById('spread-10-30-desc').textContent = formatPb(s) + (s > 0 ? ' • Prima por plazo' : ' • Inusual');
+                }
+            }
+
+            function renderAnalysis(data) {
+                const oneM = data.one_month, two = data.two_yr, ten = data.ten_yr, thirty = data.thirty_yr;
+                const inversion = (two !== null && ten !== null && two > ten) || (oneM !== null && ten !== null && oneM > ten);
+                const badge = document.getElementById('inversion-badge');
+                badge.textContent = inversion ? '⚠ Curva Invertida' : '📈 Curva Normal';
+                badge.className = inversion ? 'badge badge-inverted' : 'badge';
+                let text = '';
+                if (oneM !== null && ten !== null && thirty !== null) {
+                    text = `Rendimiento a 1 mes: ${formatPercent(oneM)}. `;
+                    text += inversion ? `Inversión significativa respecto al bono a 10 años (${formatPercent(ten)}). ` : `Pendiente positiva hacia el largo plazo. `;
+                    text += `El bono a 10 años marca el mínimo. `;
+                    text += thirty > ten ? `El bono a 30 años (${formatPercent(thirty)}) añade una prima por plazo de ${formatSpread(thirty-ten)}.` : `El tramo largo no ofrece prima adicional.`;
+                } else {
+                    text = 'Datos insuficientes para generar el análisis.';
+                }
+                document.getElementById('analysis-text').innerHTML = text;
+            }
+
+            function renderDate(dateStr) {
+                const el = document.getElementById('data-date');
+                if (dateStr) {
+                    const d = new Date(dateStr + 'T00:00:00');
+                    el.textContent = d.toLocaleDateString('es-ES', { year:'numeric', month:'long', day:'numeric' });
+                } else {
+                    el.textContent = 'fecha no disponible';
+                }
+            }
+
+            async function init() {
+                try {
+                    const results = await fetchAllData();
+                    if (results.every(r => r.result === null)) {
+                        throw new Error('Ninguna serie de FRED devolvió datos. Verifique la clave API o la conexión.');
+                    }
+                    const data = processData(results);
+                    renderTable(data, results);
+                    renderChart(data);
+                    renderSpreads(data);
+                    renderAnalysis(data);
+                    renderDate(data.record_date);
+                } catch (e) {
+                    console.error(e);
+                    showError('No se pudieron obtener datos de FRED. Verifique su conexión a internet o la clave API.');
+                }
+            }
+
+            init();
+        })();
+    </script>
+</body>
+</html>
