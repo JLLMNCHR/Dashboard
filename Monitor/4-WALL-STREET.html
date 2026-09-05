@@ -111,11 +111,9 @@
 // Almacenar instancias de Chart por panel
 const charts = {};
 
-// Lista de proxies CORS a intentar en orden
+// Proxy CORS que devuelve directamente el JSON de Yahoo
 const PROXIES = [
-  url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-  url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
-  url => `https://cors-anywhere.herokuapp.com/${url}`,
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
 ];
 
 async function fetchYahoo(symbol, range, interval) {
@@ -123,16 +121,15 @@ async function fetchYahoo(symbol, range, interval) {
 
   for (const makeProxy of PROXIES) {
     try {
-      const res = await fetch(makeProxy(yhUrl), { signal: AbortSignal.timeout(8000) });
+      const res = await fetch(makeProxy(yhUrl), {
+        cache: 'no-store',
+        signal: AbortSignal.timeout(8000)
+      });
       if (!res.ok) continue;
       const text = await res.text();
 
       let json;
       try { json = JSON.parse(text); } catch { continue; }
-      if (json.contents) {
-        try { json = JSON.parse(json.contents); } catch { continue; }
-      }
-
       const result = json?.chart?.result?.[0];
       if (!result) continue;
 
