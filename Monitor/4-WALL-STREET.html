@@ -110,6 +110,7 @@
 <script>
 // Almacenar instancias de Chart por panel
 const charts = {};
+console.log('[Dashboard] Inicializando paneles de Wall Street');
 
 // Lista de proxies CORS a intentar en orden
 const PROXIES = [
@@ -120,21 +121,36 @@ const PROXIES = [
 
 async function fetchYahoo(symbol, range, interval) {
   const yhUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=${range}&interval=${interval}&includePrePost=false&events=history`;
+  console.log('[fetchYahoo] Inicio', { symbol, range, interval, url: yhUrl });
 
-  for (const makeProxy of PROXIES) {
+  for (const [proxyIndex, makeProxy] of PROXIES.entries()) {
+    const proxyUrl = makeProxy(yhUrl);
+    console.log('[fetchYahoo] Probando proxy', { proxyIndex, proxyUrl });
+
     try {
-      const res = await fetch(makeProxy(yhUrl), { signal: AbortSignal.timeout(8000) });
+      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
+      console.log('[fetchYahoo] Respuesta proxy', { proxyIndex, status: res.status, ok: res.ok });
+
       if (!res.ok) continue;
       const text = await res.text();
 
       let json;
-      try { json = JSON.parse(text); } catch { continue; }
+      try { json = JSON.parse(text); } catch (err) {
+        console.warn('[fetchYahoo] JSON parse falló en proxy', { proxyIndex, err: err.message });
+        continue;
+      }
       if (json.contents) {
-        try { json = JSON.parse(json.contents); } catch { continue; }
+        try { json = JSON.parse(json.contents); } catch (err) {
+          console.warn('[fetchYahoo] JSON contents parse falló', { proxyIndex, err: err.message });
+          continue;
+        }
       }
 
       const result = json?.chart?.result?.[0];
-      if (!result) continue;
+      if (!result) {
+        console.warn('[fetchYahoo] Sin resultado en Yahoo', { proxyIndex, json });
+        continue;
+      }
 
       const ts = result.timestamp;
       const closes = result.indicators.quote[0].close;
@@ -144,10 +160,28 @@ async function fetchYahoo(symbol, range, interval) {
         .map((t, i) => ({ t, c: closes[i] }))
         .filter(p => p.c != null);
 
-      if (pairs.length === 0) continue;
+      if (pairs.length === 0) {
+        console.warn('[fetchYahoo] No hay datos válidos', { proxyIndex, symbol, range, interval });
+        continue;
+      }
+
+      console.log('[fetchYahoo] Datos cargados correctamente', {
+        symbol,
+        range,
+        interval,
+        puntos: pairs.length,
+        primer: pairs[0].c,
+        ultimo: pairs[pairs.length - 1].c,
+        meta
+      });
+
       return { pairs, meta };
-    } catch (_) { /* try next proxy */ }
+    } catch (err) {
+      console.error('[fetchYahoo] Error con proxy', { proxyIndex, symbol, range, interval, err: err.message });
+    }
   }
+
+  console.error('[fetchYahoo] Todos los proxies fallaron', { symbol, range, interval });
   throw new Error('Todos los proxies fallaron');
 }
 
@@ -164,6 +198,13 @@ function fmtNum(n) {
 }
 
 function renderPanel(panel, { pairs, meta }, range) {
+  console.log('[renderPanel] Renderizando panel', {
+    symbol: panel.dataset.symbol,
+    name: panel.dataset.name,
+    range,
+    puntos: pairs.length
+  });
+
   const labels = pairs.map(p => fmtDate(p.t, range));
   const values = pairs.map(p => p.c);
   const last = values[values.length - 1];
@@ -171,6 +212,14 @@ function renderPanel(panel, { pairs, meta }, range) {
   const pct = ((last - first) / first * 100);
   const isUp = pct >= 0;
   const color = isUp ? '#22c55e' : '#ef4444';
+
+  console.log('[renderPanel] Métricas', {
+    symbol: panel.dataset.symbol,
+    first,
+    last,
+    delta: last - first,
+    pct: pct.toFixed(2)
+  });
 
   // Actualizar header del panel
   const priceEl = panel.querySelector('.panel-price');
@@ -187,7 +236,10 @@ function renderPanel(panel, { pairs, meta }, range) {
   const ctx = canvas.getContext('2d');
   const panelId = panel.dataset.symbol;
 
-  if (charts[panelId]) charts[panelId].destroy();
+  if (charts[panelId]) {
+    console.log('[renderPanel] Destruyendo gráfico anterior', { panelId });
+    charts[panelId].destroy();
+  }
 
   const grad = ctx.createLinearGradient(0, 0, 0, 300);
   grad.addColorStop(0, isUp ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)');
@@ -238,9 +290,12 @@ function renderPanel(panel, { pairs, meta }, range) {
       }
     }
   });
+
+  console.log('[renderPanel] Gráfico creado', { panelId, color, isUp });
 }
 
 function showPanelError(panel) {
+  console.error('[showPanelError] Error cargando panel', { symbol: panel.dataset.symbol, name: panel.dataset.name });
   panel.querySelector('.panel-msg').innerHTML = '⚠ Error al cargar';
   panel.querySelector('.panel-msg').classList.remove('hidden');
   panel.querySelector('.panel-price').textContent = '—';
@@ -249,18 +304,23 @@ function showPanelError(panel) {
 
 async function loadPanel(panel, range, interval) {
   const symbol = panel.dataset.symbol;
+  console.log('[loadPanel] Inicio carga', { symbol, range, interval });
   panel.querySelector('.panel-msg').textContent = 'Cargando...';
   panel.querySelector('.panel-msg').classList.remove('hidden');
   
   try {
     const data = await fetchYahoo(symbol, range, interval);
+    console.log('[loadPanel] Datos recibidos', { symbol, rango: data.pairs.length });
     renderPanel(panel, data, range);
+    console.log('[loadPanel] Carga completada', { symbol });
   } catch (e) {
+    console.error('[loadPanel] Error en carga', { symbol, range, interval, error: e.message });
     showPanelError(panel);
   }
 }
 
 async function loadAll(range, interval) {
+  console.log('[loadAll] Actualizando todos los paneles', { range, interval });
   document.getElementById('global-updated').textContent = 'Actualizando...';
   
   const panels = document.querySelectorAll('.panel');
@@ -268,12 +328,14 @@ async function loadAll(range, interval) {
   
   await Promise.allSettled(promises);
   
+  console.log('[loadAll] Finalizada actualización', { range, interval, total: panels.length });
   document.getElementById('global-updated').textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-ES');
 }
 
 // Event listeners para botones de rango
 document.querySelectorAll('.rbtn').forEach(btn => {
   btn.addEventListener('click', () => {
+    console.log('[UI] Cambio de rango', { range: btn.dataset.r, interval: btn.dataset.i });
     document.querySelectorAll('.rbtn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     loadAll(btn.dataset.r, btn.dataset.i);
@@ -281,6 +343,7 @@ document.querySelectorAll('.rbtn').forEach(btn => {
 });
 
 // Carga inicial
+console.log('[Dashboard] Carga inicial ejecutada');
 loadAll('1mo', '1d');
 </script>
 </body>
