@@ -113,8 +113,8 @@ const charts = {};
 
 // Lista de proxies CORS a intentar en orden
 const PROXIES = [
-  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
   url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+  url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
   url => `https://cors-anywhere.herokuapp.com/${url}`,
 ];
 
