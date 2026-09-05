@@ -112,35 +112,26 @@
 const charts = {};
 
 async function fetchMarketData(panel, range) {
-  const symbol = panel.dataset.symbol;
-  const assetClass = panel.dataset.assetClass;
-  const params = new URLSearchParams({ assetclass: assetClass });
+  const response = await fetch(`../data/wall-street.json?v=${Date.now()}`, {
+    cache: 'no-store',
+    signal: AbortSignal.timeout(8000)
+  });
+  if (!response.ok) throw new Error(`Datos locales HTTP ${response.status}`);
 
-  if (range !== '1d') {
-    const days = { '5d': 5, '1mo': 30, '6mo': 180, '1y': 365, '5y': 1825 }[range] || 30;
-    const from = new Date();
-    from.setDate(from.getDate() - days);
-    const formatDate = date => date.toISOString().slice(0, 10);
-    params.set('fromdate', formatDate(from));
-    params.set('todate', formatDate(new Date()));
-  }
+  const payload = await response.json();
+  const marketData = payload?.panels?.[panel.dataset.symbol];
+  if (!marketData) throw new Error(`Sin datos para ${panel.dataset.name}`);
 
-  const url = `https://api.nasdaq.com/api/quote/${encodeURIComponent(symbol)}/chart?${params}`;
-  const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(8000) });
-  if (!res.ok) throw new Error(`Nasdaq HTTP ${res.status}`);
-
-  const json = await res.json();
-  const chart = json?.data?.chart;
-  if (!Array.isArray(chart) || chart.length === 0) {
-    throw new Error(json?.status?.bCodeMessage?.[0]?.errorMessage || 'Sin datos');
-  }
-
-  const pairs = chart
-    .map(point => ({ t: point.x / 1000, c: Number(point.y) }))
+  const days = { '5d': 5, '1mo': 30, '6mo': 180, '1y': 365, '5y': 1825 }[range];
+  const source = range === '1d' ? marketData.intraday : marketData.daily;
+  const cutoff = days ? Date.now() / 1000 - days * 86400 : 0;
+  const pairs = source
+    .filter(point => point.t >= cutoff)
+    .map(point => ({ t: point.t, c: Number(point.c) }))
     .filter(point => Number.isFinite(point.t) && Number.isFinite(point.c));
 
   if (pairs.length === 0) throw new Error('Datos de mercado vacíos');
-  return { pairs, meta: json.data };
+  return { pairs, meta: payload };
 }
 
 function fmtDate(ts, range) {

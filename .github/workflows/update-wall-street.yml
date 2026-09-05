@@ -1,0 +1,27 @@
+name: Update Wall Street data
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update market data
+        run: node scripts/update-wall-street.mjs > data/wall-street.json
+
+      - name: Publish changed data
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/wall-street.json
+          git diff --cached --quiet || git commit -m 'Update Wall Street data'
+          git push
