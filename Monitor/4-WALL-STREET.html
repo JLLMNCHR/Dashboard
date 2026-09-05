@@ -55,7 +55,7 @@
 
 <div id="grid">
   <!-- S&P 500 -->
-  <div class="panel" data-symbol="^GSPC" data-name="S&P 500">
+  <div class="panel" data-symbol="SPY" data-asset-class="etf" data-name="S&P 500">
     <div class="panel-header">
       <h2>S&P 500</h2>
       <span class="panel-price">—</span>
@@ -68,7 +68,7 @@
   </div>
   
   <!-- Nasdaq -->
-  <div class="panel" data-symbol="^IXIC" data-name="Nasdaq">
+  <div class="panel" data-symbol="COMP" data-asset-class="index" data-name="Nasdaq Composite">
     <div class="panel-header">
       <h2>Nasdaq</h2>
       <span class="panel-price">—</span>
@@ -81,7 +81,7 @@
   </div>
   
   <!-- Russell 2000 -->
-  <div class="panel" data-symbol="^RUT" data-name="Russell 2000">
+  <div class="panel" data-symbol="IWM" data-asset-class="etf" data-name="Russell 2000">
     <div class="panel-header">
       <h2>Russell 2000</h2>
       <span class="panel-price">—</span>
@@ -94,7 +94,7 @@
   </div>
   
   <!-- Dow Jones -->
-  <div class="panel" data-symbol="^DJI" data-name="Dow Jones">
+  <div class="panel" data-symbol="DIA" data-asset-class="etf" data-name="Dow Jones">
     <div class="panel-header">
       <h2>Dow Jones</h2>
       <span class="panel-price">—</span>
@@ -111,45 +111,36 @@
 // Almacenar instancias de Chart por panel
 const charts = {};
 
-// Proxy CORS que devuelve la respuesta de Yahoo dentro de `contents`
-const PROXIES = [
-  url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-];
+async function fetchMarketData(panel, range) {
+  const symbol = panel.dataset.symbol;
+  const assetClass = panel.dataset.assetClass;
+  const params = new URLSearchParams({ assetclass: assetClass });
 
-async function fetchYahoo(symbol, range, interval) {
-  const yhUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=${range}&interval=${interval}&includePrePost=false&events=history`;
-
-  for (const makeProxy of PROXIES) {
-    try {
-      const res = await fetch(makeProxy(yhUrl), {
-        cache: 'no-store',
-        signal: AbortSignal.timeout(8000)
-      });
-      if (!res.ok) continue;
-      const text = await res.text();
-
-      let json;
-      try { json = JSON.parse(text); } catch { continue; }
-      if (json.contents) {
-        try { json = JSON.parse(json.contents); } catch { continue; }
-      }
-
-      const result = json?.chart?.result?.[0];
-      if (!result) continue;
-
-      const ts = result.timestamp;
-      const closes = result.indicators.quote[0].close;
-      const meta = result.meta;
-
-      const pairs = ts
-        .map((t, i) => ({ t, c: closes[i] }))
-        .filter(p => p.c != null);
-
-      if (pairs.length === 0) continue;
-      return { pairs, meta };
-    } catch (_) { /* try next proxy */ }
+  if (range !== '1d') {
+    const days = { '5d': 5, '1mo': 30, '6mo': 180, '1y': 365, '5y': 1825 }[range] || 30;
+    const from = new Date();
+    from.setDate(from.getDate() - days);
+    const formatDate = date => date.toISOString().slice(0, 10);
+    params.set('fromdate', formatDate(from));
+    params.set('todate', formatDate(new Date()));
   }
-  throw new Error('Todos los proxies fallaron');
+
+  const url = `https://api.nasdaq.com/api/quote/${encodeURIComponent(symbol)}/chart?${params}`;
+  const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(8000) });
+  if (!res.ok) throw new Error(`Nasdaq HTTP ${res.status}`);
+
+  const json = await res.json();
+  const chart = json?.data?.chart;
+  if (!Array.isArray(chart) || chart.length === 0) {
+    throw new Error(json?.status?.bCodeMessage?.[0]?.errorMessage || 'Sin datos');
+  }
+
+  const pairs = chart
+    .map(point => ({ t: point.x / 1000, c: Number(point.y) }))
+    .filter(point => Number.isFinite(point.t) && Number.isFinite(point.c));
+
+  if (pairs.length === 0) throw new Error('Datos de mercado vacíos');
+  return { pairs, meta: json.data };
 }
 
 function fmtDate(ts, range) {
@@ -249,14 +240,14 @@ function showPanelError(panel) {
 }
 
 async function loadPanel(panel, range, interval) {
-  const symbol = panel.dataset.symbol;
   panel.querySelector('.panel-msg').textContent = 'Cargando...';
   panel.querySelector('.panel-msg').classList.remove('hidden');
   
   try {
-    const data = await fetchYahoo(symbol, range, interval);
+    const data = await fetchMarketData(panel, range);
     renderPanel(panel, data, range);
   } catch (e) {
+    console.error(`[market data] ${panel.dataset.name}:`, e);
     showPanelError(panel);
   }
 }
