@@ -111,9 +111,9 @@
 // Almacenar instancias de Chart por panel
 const charts = {};
 
-// Proxy CORS que devuelve directamente el JSON de Yahoo
+// Proxy CORS que devuelve la respuesta de Yahoo dentro de `contents`
 const PROXIES = [
-  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
 ];
 
 async function fetchYahoo(symbol, range, interval) {
@@ -130,6 +130,10 @@ async function fetchYahoo(symbol, range, interval) {
 
       let json;
       try { json = JSON.parse(text); } catch { continue; }
+      if (json.contents) {
+        try { json = JSON.parse(json.contents); } catch { continue; }
+      }
+
       const result = json?.chart?.result?.[0];
       if (!result) continue;
 
