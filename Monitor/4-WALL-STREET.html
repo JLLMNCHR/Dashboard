@@ -228,8 +228,10 @@ function renderPanel(panel, { pairs, meta }, range) {
   changeEl.textContent = (isUp ? '+' : '') + fmtNum(last - first) + ' (' + (isUp ? '+' : '') + pct.toFixed(2) + '%)';
   changeEl.className = 'panel-change ' + (isUp ? 'up' : 'down');
 
-  // Ocultar mensaje de carga
-  panel.querySelector('.panel-msg').classList.add('hidden');
+  const msgEl = panel.querySelector('.panel-msg');
+  msgEl.textContent = 'Datos actualizados: ' + values.length + ' puntos';
+  msgEl.classList.remove('hidden');
+  setTimeout(() => msgEl.classList.add('hidden'), 1200);
 
   // Crear o actualizar gráfico
   const canvas = panel.querySelector('canvas');
@@ -296,8 +298,9 @@ function renderPanel(panel, { pairs, meta }, range) {
 
 function showPanelError(panel) {
   console.error('[showPanelError] Error cargando panel', { symbol: panel.dataset.symbol, name: panel.dataset.name });
-  panel.querySelector('.panel-msg').innerHTML = '⚠ Error al cargar';
-  panel.querySelector('.panel-msg').classList.remove('hidden');
+  const msgEl = panel.querySelector('.panel-msg');
+  msgEl.innerHTML = '⚠ Error: no se pudieron cargar datos';
+  msgEl.classList.remove('hidden');
   panel.querySelector('.panel-price').textContent = '—';
   panel.querySelector('.panel-change').textContent = '—';
 }
@@ -305,16 +308,19 @@ function showPanelError(panel) {
 async function loadPanel(panel, range, interval) {
   const symbol = panel.dataset.symbol;
   console.log('[loadPanel] Inicio carga', { symbol, range, interval });
-  panel.querySelector('.panel-msg').textContent = 'Cargando...';
-  panel.querySelector('.panel-msg').classList.remove('hidden');
+  const msgEl = panel.querySelector('.panel-msg');
+  msgEl.textContent = 'Cargando ' + panel.dataset.name + '...';
+  msgEl.classList.remove('hidden');
   
   try {
     const data = await fetchYahoo(symbol, range, interval);
     console.log('[loadPanel] Datos recibidos', { symbol, rango: data.pairs.length });
+    msgEl.textContent = 'Recibiendo datos de ' + panel.dataset.name + '...';
     renderPanel(panel, data, range);
     console.log('[loadPanel] Carga completada', { symbol });
   } catch (e) {
     console.error('[loadPanel] Error en carga', { symbol, range, interval, error: e.message });
+    msgEl.textContent = 'Fallo al cargar ' + panel.dataset.name;
     showPanelError(panel);
   }
 }
