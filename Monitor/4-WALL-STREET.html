@@ -112,77 +112,73 @@
 const charts = {};
 console.log('[Dashboard] Inicializando paneles de Wall Street');
 
-// Lista de proxies CORS a intentar en orden
-const PROXIES = [
-  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-  url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-  url => `https://cors-anywhere.herokuapp.com/${url}`,
-];
+// Proxy propio de Cloudflare Workers
+// Ejemplo de URL esperada:
+// https://tu-worker.<subdominio>.workers.dev/?symbol=%5EGSPC&range=1mo&interval=1d
+const PROXY_URL = 'https://dashboard.subdominio.workers.dev/';
 
 async function fetchYahoo(symbol, range, interval) {
-  const yhUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=${range}&interval=${interval}&includePrePost=false&events=history`;
-  console.log('[fetchYahoo] Inicio', { symbol, range, interval, url: yhUrl });
+  const proxyUrl = new URL(PROXY_URL);
+  proxyUrl.searchParams.set('symbol', symbol);
+  proxyUrl.searchParams.set('range', range);
+  proxyUrl.searchParams.set('interval', interval);
 
-  for (const [proxyIndex, makeProxy] of PROXIES.entries()) {
-    const proxyUrl = makeProxy(yhUrl);
-    console.log('[fetchYahoo] Probando proxy', { proxyIndex, proxyUrl });
+  console.log('[fetchYahoo] Inicio', { symbol, range, interval, url: proxyUrl.toString() });
+
+  try {
+    const res = await fetch(proxyUrl.toString(), { signal: AbortSignal.timeout(15000) });
+    console.log('[fetchYahoo] Respuesta proxy', { status: res.status, ok: res.ok });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error('[fetchYahoo] Proxy respondió error', { status: res.status, body: errText });
+      throw new Error(`Proxy respondió ${res.status}`);
+    }
+
+    const text = await res.text();
+    let json;
 
     try {
-      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
-      console.log('[fetchYahoo] Respuesta proxy', { proxyIndex, status: res.status, ok: res.ok });
-
-      if (!res.ok) continue;
-      const text = await res.text();
-
-      let json;
-      try { json = JSON.parse(text); } catch (err) {
-        console.warn('[fetchYahoo] JSON parse falló en proxy', { proxyIndex, err: err.message });
-        continue;
-      }
-      if (json.contents) {
-        try { json = JSON.parse(json.contents); } catch (err) {
-          console.warn('[fetchYahoo] JSON contents parse falló', { proxyIndex, err: err.message });
-          continue;
-        }
-      }
-
-      const result = json?.chart?.result?.[0];
-      if (!result) {
-        console.warn('[fetchYahoo] Sin resultado en Yahoo', { proxyIndex, json });
-        continue;
-      }
-
-      const ts = result.timestamp;
-      const closes = result.indicators.quote[0].close;
-      const meta = result.meta;
-
-      const pairs = ts
-        .map((t, i) => ({ t, c: closes[i] }))
-        .filter(p => p.c != null);
-
-      if (pairs.length === 0) {
-        console.warn('[fetchYahoo] No hay datos válidos', { proxyIndex, symbol, range, interval });
-        continue;
-      }
-
-      console.log('[fetchYahoo] Datos cargados correctamente', {
-        symbol,
-        range,
-        interval,
-        puntos: pairs.length,
-        primer: pairs[0].c,
-        ultimo: pairs[pairs.length - 1].c,
-        meta
-      });
-
-      return { pairs, meta };
+      json = JSON.parse(text);
     } catch (err) {
-      console.error('[fetchYahoo] Error con proxy', { proxyIndex, symbol, range, interval, err: err.message });
+      console.error('[fetchYahoo] JSON inválido del proxy', { err: err.message, text });
+      throw new Error('Respuesta JSON inválida del proxy');
     }
-  }
 
-  console.error('[fetchYahoo] Todos los proxies fallaron', { symbol, range, interval });
-  throw new Error('Todos los proxies fallaron');
+    const result = json?.chart?.result?.[0];
+    if (!result) {
+      console.error('[fetchYahoo] Sin resultado en Yahoo', json);
+      throw new Error('Yahoo no devolvió datos válidos');
+    }
+
+    const ts = result.timestamp;
+    const closes = result.indicators.quote[0].close;
+    const meta = result.meta;
+
+    const pairs = ts
+      .map((t, i) => ({ t, c: closes[i] }))
+      .filter(p => p.c != null);
+
+    if (pairs.length === 0) {
+      console.error('[fetchYahoo] No hay datos válidos', { symbol, range, interval });
+      throw new Error('No hay datos válidos');
+    }
+
+    console.log('[fetchYahoo] Datos cargados correctamente', {
+      symbol,
+      range,
+      interval,
+      puntos: pairs.length,
+      primer: pairs[0].c,
+      ultimo: pairs[pairs.length - 1].c,
+      meta
+    });
+
+    return { pairs, meta };
+  } catch (err) {
+    console.error('[fetchYahoo] Error con proxy propio', { symbol, range, interval, err: err.message });
+    throw err;
+  }
 }
 
 function fmtDate(ts, range) {
