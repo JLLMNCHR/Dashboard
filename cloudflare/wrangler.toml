@@ -1,8 +1,0 @@
-name = "yahoo-finance-proxy"
-main = "yahoo-proxy.js"
-compatibility_date = "2025-01-01"
-
-[vars]
-# Ajusta este valor con tu dominio real del worker al desplegar.
-# Ejemplo: https://yahoo-finance-proxy.tuusuario.workers.dev
-PROXY_BASE_URL = "https://dashboard.subdominio.workers.dev/"
