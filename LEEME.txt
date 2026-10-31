@@ -1,0 +1,9 @@
+Git-Bash en LOCAL:
+    cd /C/CODIGO/VSCODE/NO-TIREA/HTML/Dashboard
+
+Repositorio REMOTO en Github:
+    https://github.com/JLLMNCHR/Dashboard
+
+Se despliegan los htmls en Github Pages:
+    https://jllmnchr.github.io/Dashboard/TEMP/*.html
+    https://jllmnchr.github.io/Dashboard/Monitor/*.html
