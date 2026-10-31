@@ -7,3 +7,5 @@ Repositorio REMOTO en Github:
 Se despliegan los htmls en Github Pages:
     https://jllmnchr.github.io/Dashboard/TEMP/*.html
     https://jllmnchr.github.io/Dashboard/Monitor/*.html
+
+El usuario de Github es jl.lominchar (¿?).
