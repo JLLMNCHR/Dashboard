@@ -7,32 +7,207 @@
   <style>
     body {
       margin: 0;
+      padding: 1rem;
+      color: #222;
       font-family: Arial, sans-serif;
     }
 
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+
+    label {
+      margin-right: 0.35rem;
+    }
+
+    select {
+      padding: 0.4rem;
+      font: inherit;
+    }
+
+    #status {
+      min-height: 1.25rem;
+      margin: 0.75rem 0 0;
+      color: #555;
+    }
+
     #chart {
-      height: 100vh;
+      display: block;
+      width: 100%;
+      height: min(70vh, 520px);
+    }
+
+    .line {
+      fill: none;
+      stroke: #1769aa;
+      stroke-width: 2.5;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .grid {
+      stroke: #ddd;
+      stroke-width: 1;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .axis-label {
+      fill: #555;
+      font-size: 12px;
     }
   </style>
 </head>
 <body>
-  <div id="chart"></div>
-  <script src="https://s3.tradingview.com/tv.js"></script>
+  <header>
+    <h1>S&amp;P 500</h1>
+    <div>
+      <label for="interval">Intervalo:</label>
+      <select id="interval">
+        <option value="1d">Diario</option>
+        <option value="1wk" selected>Semanal</option>
+        <option value="1mo">Mensual</option>
+      </select>
+      <label for="period">Periodo:</label>
+      <select id="period">
+        <option value="1y">1 año</option>
+        <option value="5y" selected>5 años</option>
+        <option value="10y">10 años</option>
+        <option value="max">Máximo disponible (10 años)</option>
+      </select>
+    </div>
+  </header>
+  <p id="status" role="status">Cargando datos…</p>
+  <svg id="chart" viewBox="0 0 1000 500" role="img" aria-label="Gráfico del índice S&amp;P 500"></svg>
+
   <script>
-    new TradingView.widget({
-      container_id: "chart",
-      symbol: "SP:SPX",
-      interval: "D",
-      timezone: "Etc/UTC",
-      theme: "light",
-      style: "1",
-      locale: "es",
-      enable_publishing: false,
-      allow_symbol_change: false,
-      hide_top_toolbar: true,
-      hide_legend: true,
-      autosize: true
-    });
+    const intervalSelect = document.getElementById("interval");
+    const periodSelect = document.getElementById("period");
+    const chart = document.getElementById("chart");
+    const status = document.getElementById("status");
+    const svgNS = "http://www.w3.org/2000/svg";
+    let requestId = 0;
+
+    function addSvgElement(name, attributes, text) {
+      const element = document.createElementNS(svgNS, name);
+      for (const [key, value] of Object.entries(attributes)) {
+        element.setAttribute(key, value);
+      }
+      if (text) element.textContent = text;
+      chart.appendChild(element);
+      return element;
+    }
+
+    function renderChart(timestamps, values) {
+      chart.replaceChildren();
+      const width = 1000;
+      const height = 500;
+      const margin = { top: 20, right: 80, bottom: 35, left: 10 };
+      const plotWidth = width - margin.left - margin.right;
+      const plotHeight = height - margin.top - margin.bottom;
+      const minimum = Math.min(...values);
+      const maximum = Math.max(...values);
+      const padding = (maximum - minimum) * 0.05 || maximum * 0.01;
+      const low = minimum - padding;
+      const high = maximum + padding;
+
+      for (let i = 0; i <= 4; i++) {
+        const y = margin.top + (plotHeight * i) / 4;
+        const value = high - ((high - low) * i) / 4;
+        addSvgElement("line", {
+          x1: margin.left, y1: y, x2: width - margin.right, y2: y, class: "grid"
+        });
+        addSvgElement("text", {
+          x: width - margin.right + 8, y: y + 4, class: "axis-label"
+        }, Math.round(value).toLocaleString("es-ES"));
+      }
+
+      const points = values.map((value, index) => {
+        const x = margin.left + (plotWidth * index) / (values.length - 1);
+        const y = margin.top + ((high - value) / (high - low)) * plotHeight;
+        return `${x},${y}`;
+      });
+      addSvgElement("polyline", { points: points.join(" "), class: "line" });
+
+      for (const index of [0, Math.floor((timestamps.length - 1) / 2), timestamps.length - 1]) {
+        const x = margin.left + (plotWidth * index) / (timestamps.length - 1);
+        const date = new Date(timestamps[index] * 1000);
+        addSvgElement("text", {
+          x, y: height - 8, "text-anchor": index === 0 ? "start" : index === timestamps.length - 1 ? "end" : "middle",
+          class: "axis-label"
+        }, date.toLocaleDateString("es-ES", { month: "short", year: "numeric", timeZone: "UTC" }));
+      }
+    }
+
+    function aggregatePoints(points, interval) {
+      if (interval === "1d") return points;
+
+      const periods = new Map();
+      for (const point of points) {
+        const date = new Date(point.timestamp * 1000);
+        if (interval === "1wk") {
+          date.setUTCDate(date.getUTCDate() - ((date.getUTCDay() + 6) % 7));
+        }
+        const key = interval === "1mo"
+          ? `${date.getUTCFullYear()}-${date.getUTCMonth()}`
+          : date.toISOString().slice(0, 10);
+        periods.set(key, point);
+      }
+      return [...periods.values()];
+    }
+
+    async function loadChart() {
+      const currentRequest = ++requestId;
+      status.textContent = "Cargando datos…";
+      chart.replaceChildren();
+
+      try {
+        const response = await fetch("https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500");
+        if (!response.ok) throw new Error(`La fuente de datos respondió con HTTP ${response.status}.`);
+
+        const rows = (await response.text()).trim().split(/\r?\n/).slice(1);
+        let points = rows.map(row => {
+          const [date, close] = row.split(",");
+          return {
+            timestamp: Date.parse(`${date}T00:00:00Z`) / 1000,
+            value: Number(close)
+          };
+        }).filter(point => Number.isFinite(point.timestamp) && Number.isFinite(point.value) && point.value > 0);
+
+        const period = periodSelect.value;
+        if (period !== "max") {
+          const cutoff = new Date();
+          cutoff.setUTCFullYear(cutoff.getUTCFullYear() - Number.parseInt(period, 10));
+          const cutoffTimestamp = cutoff.getTime() / 1000;
+          points = points.filter(point => point.timestamp >= cutoffTimestamp);
+        }
+        points = aggregatePoints(points, intervalSelect.value);
+
+        if (!points?.length) throw new Error("No hay datos disponibles para este intervalo.");
+        if (currentRequest !== requestId) return;
+
+        renderChart(points.map(point => point.timestamp), points.map(point => point.value));
+        const lastValue = points[points.length - 1].value.toLocaleString("es-ES", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+        status.textContent = `Último cierre: ${lastValue} · Fuente: FRED (Reserva Federal de St. Louis)`;
+      } catch (error) {
+        if (currentRequest !== requestId) return;
+        status.textContent = `No se pudo cargar el gráfico: ${error.message}`;
+      }
+    }
+
+    intervalSelect.addEventListener("change", loadChart);
+    periodSelect.addEventListener("change", loadChart);
+    loadChart();
   </script>
 </body>
 </html>
