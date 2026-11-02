@@ -200,7 +200,7 @@
         (function() {
             const FRED_KEY = "6dc1290379fe1d4a6fec81278325858d";
             const FRED_BASE = "https://api.stlouisfed.org/fred/series/observations";
-            const PROXY = "https://corsproxy.io/?url=";
+            const CORS_PROXY = "https://bold-moon-d548.subdominio.workers.dev/?url=";
             
             const MATURITY_MAP = [
                 { series: 'DGS1MO',  key: 'one_month',   label: '1 Mes',   type: 'Corto', cls: 'badge-st', x: 70 },
@@ -246,7 +246,7 @@
 
             async function fetchSeries(seriesId) {
                 const url = `${FRED_BASE}?series_id=${seriesId}&api_key=${FRED_KEY}&file_type=json&sort_order=desc&limit=1`;
-                const proxyUrl = `${PROXY}${encodeURIComponent(url)}`;
+                const proxyUrl = `${CORS_PROXY}${encodeURIComponent(url)}`;
                 
                 // Primer intento
                 let resp = await fetch(proxyUrl);

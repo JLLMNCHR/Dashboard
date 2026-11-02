@@ -228,10 +228,10 @@
 
 <script>
   // ---------- PROXY ÚNICO ----------
-  const PROXY = "https://corsproxy.io/?url=";
+  const CORS_PROXY = "https://bold-moon-d548.subdominio.workers.dev/?url=";
 
   async function fetchJSON(url) {
-    const res = await fetch(PROXY + encodeURIComponent(url), {
+    const res = await fetch(CORS_PROXY + encodeURIComponent(url), {
       cache: "no-store",
       signal: AbortSignal.timeout(8000)
     });

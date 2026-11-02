@@ -425,32 +425,17 @@
 
 <script>
 // ──────────────────────────────────────────────────────────────────
-// Proxy helpers — se prueban en orden hasta que uno responde bien
+// Proxy CORS propio alojado en Cloudflare Workers
 // ──────────────────────────────────────────────────────────────────
-const PROXIES = [
-  url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
-  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-  url => `https://proxy.cors.sh/${url}`,
-];
+const CORS_PROXY = 'https://bold-moon-d548.subdominio.workers.dev/?url=';
 
-async function fetchWithFallback(targetUrl, validateFn) {
-  let lastErr;
-  for (const proxyFn of PROXIES) {
-    try {
-      const res = await fetch(proxyFn(targetUrl), {
-        cache: 'no-store',
-        signal: AbortSignal.timeout(8000)
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      const result = validateFn(json);
-      return result;
-    } catch (e) {
-      lastErr = e;
-      console.warn(`[proxy fallback]`, proxyFn(targetUrl).slice(0,60), e.message);
-    }
-  }
-  throw lastErr;
+async function fetchWithProxy(targetUrl, validateFn) {
+  const res = await fetch(CORS_PROXY + encodeURIComponent(targetUrl), {
+    cache: 'no-store',
+    signal: AbortSignal.timeout(8000)
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return validateFn(await res.json());
 }
 
 // ──────────────────────────────────────────────────────────────────
@@ -506,7 +491,7 @@ function parseVIX(json){
 
 async function fetchVIX(){
   try {
-    const { price, prev } = await fetchWithFallback(VIX_TARGET, parseVIX);
+    const { price, prev } = await fetchWithProxy(VIX_TARGET, parseVIX);
     const change = price - prev;
     const pct    = (change / prev) * 100;
     const sign   = change >= 0 ? '+' : '';
@@ -552,7 +537,7 @@ function fmtK(n){
 
 async function fetchClaims(){
   const fredApiUrl = `https://api.stlouisfed.org/fred/series/observations?series_id=ICSA&api_key=${FRED_KEY}&file_type=json&sort_order=desc&limit=5`;
-  const url = `https://corsproxy.io/?url=${encodeURIComponent(fredApiUrl)}`;
+  const url = CORS_PROXY + encodeURIComponent(fredApiUrl);
   try {
     const res = await fetch(url, { cache:'no-store', signal: AbortSignal.timeout(10000) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -627,7 +612,7 @@ function parseMonthlyChange(json) {
 
 async function fetchDJTMonthly() {
   try {
-    const { currentPrice, changePercent } = await fetchWithFallback(DJT_HISTORY_URL, parseMonthlyChange);
+    const { currentPrice, changePercent } = await fetchWithProxy(DJT_HISTORY_URL, parseMonthlyChange);
     const sign = changePercent >= 0 ? '+' : '';
     const [ip, dp] = currentPrice.toFixed(2).split('.');
     djtInt.textContent = ip;
