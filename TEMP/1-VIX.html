@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIX — Histórico Máximo</title>
+    <!-- Cargar Chart.js desde CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+
+        body {
+            background: #0b0e14;
+            color: #e6edf3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .card {
+            background: #151b26;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            width: 100%;
+            max-width: 900px;
+            border: 1px solid #2a3342;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 4px;
+            color: #f0f6fc;
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+            color: #8b949e;
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: #8b949e;
+            margin-top: 16px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #2ea043;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .error {
+            color: #f85149;
+            font-size: 0.9rem;
+            margin-top: 12px;
+        }
+
+        .note {
+            font-size: 0.75rem;
+            color: #484f58;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>📈 VIX — Índice de Volatilidad</h1>
+        <div class="subtitle">Histórico máximo (datos diarios) · Actualización cada 30 s</div>
+        <div class="chart-container">
+            <canvas id="vixChart"></canvas>
+        </div>
+        <div class="status">
+            <span class="dot"></span>
+            <span id="statusText">Conectando...</span>
+        </div>
+        <div id="errorMsg" class="error"></div>
+        <div class="note">
+            Los datos históricos diarios pueden tener un retraso de hasta 15 minutos. Peticiones servidas a través de tu Cloudflare Worker.
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ============================================================
+            // Configuración
+            // ============================================================
+            const REFRESH_INTERVAL = 30000; // 30 segundos
+            // *** CAMBIO CLAVE: range=max con interval=1d (diario) ***
+            const YAHOO_URL = 'https://query1.finance.yahoo.com/v8/finance/chart/%5EVIX?interval=1d&range=max';
+            // Proxy CORS propio alojado en Cloudflare Workers
+            const CORS_PROXY = 'https://bold-moon-d548.subdominio.workers.dev/?url=';
+
+            // ============================================================
+            // Referencias DOM
+            // ============================================================
+            const canvas = document.getElementById('vixChart');
+            const statusText = document.getElementById('statusText');
+            const errorMsg = document.getElementById('errorMsg');
+
+            // ============================================================
+            // Variable del gráfico
+            // ============================================================
+            let chart = null;
+
+            // ============================================================
+            // Inicializar Chart.js
+            // ============================================================
+            function initChart() {
+                const ctx = canvas.getContext('2d');
+
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, 'rgba(88, 166, 255, 0.35)');
+                gradient.addColorStop(1, 'rgba(88, 166, 255, 0.02)');
+
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'VIX',
+                            data: [],
+                            borderColor: '#58a6ff',
+                            backgroundColor: gradient,
+                            borderWidth: 2.5,
+                            pointRadius: 0,
+                            pointHoverRadius: 4,
+                            pointHoverBackgroundColor: '#58a6ff',
+                            fill: true,
+                            tension: 0.2,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index',
+                        },
+                        plugins: {
+                            legend: {
+                                display: false,
+                            },
+                            tooltip: {
+                                backgroundColor: '#1c2333',
+                                titleColor: '#f0f6fc',
+                                bodyColor: '#c9d1d9',
+                                borderColor: '#30363d',
+                                borderWidth: 1,
+                                padding: 12,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: function(context) {
+                                        return `VIX: ${context.parsed.y.toFixed(2)}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    color: 'rgba(48, 54, 61, 0.5)',
+                                    drawBorder: false,
+                                },
+                                ticks: {
+                                    color: '#8b949e',
+                                    maxTicksLimit: 10,
+                                    maxRotation: 45, // rotar fechas largas
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(48, 54, 61, 0.5)',
+                                    drawBorder: false,
+                                },
+                                ticks: {
+                                    color: '#8b949e',
+                                    callback: function(value) {
+                                        return value.toFixed(1);
+                                    }
+                                },
+                                beginAtZero: false,
+                            }
+                        },
+                        animation: {
+                            duration: 600,
+                        }
+                    }
+                });
+            }
+
+            // ============================================================
+            // Formatear etiqueta según el rango
+            // Para range=max usamos fecha (DD/MM/YYYY)
+            // ============================================================
+            function formatLabel(timestamp, isMaxRange) {
+                const date = new Date(timestamp * 1000); // Yahoo usa segundos
+                if (isMaxRange) {
+                    // Formato: DD/MM/YYYY
+                    return date.toLocaleDateString('es-ES', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                    });
+                } else {
+                    // Formato: HH:MM (para rangos intradía)
+                    return date.toLocaleTimeString('es-ES', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
+            }
+
+            // ============================================================
+            // Obtener y actualizar datos del VIX
+            // ============================================================
+            async function fetchVIXData() {
+                try {
+                    statusText.textContent = 'Actualizando...';
+                    errorMsg.textContent = '';
+
+                    const response = await fetch(CORS_PROXY + encodeURIComponent(YAHOO_URL));
+
+                    if (!response.ok) {
+                        throw new Error(`Error HTTP: ${response.status}`);
+                    }
+
+                    const json = await response.json();
+
+                    const result = json?.chart?.result?.[0];
+                    if (!result) {
+                        throw new Error('No se recibieron datos válidos de Yahoo Finance.');
+                    }
+
+                    const timestamps = result.timestamp || [];
+                    const closes = result.indicators?.quote?.[0]?.close || [];
+
+                    // Detectar si el rango es 'max' para formatear etiquetas
+                    const isMaxRange = YAHOO_URL.includes('range=max');
+
+                    const labels = [];
+                    const data = [];
+
+                    for (let i = 0; i < timestamps.length; i++) {
+                        if (closes[i] !== null && closes[i] !== undefined) {
+                            labels.push(formatLabel(timestamps[i], isMaxRange));
+                            data.push(closes[i]);
+                        }
+                    }
+
+                    if (data.length === 0) {
+                        throw new Error('No hay datos de cierre disponibles.');
+                    }
+
+                    if (chart) {
+                        chart.data.labels = labels;
+                        chart.data.datasets[0].data = data;
+                        chart.update('none');
+                    }
+
+                    const lastValue = data[data.length - 1];
+                    statusText.textContent = `Último valor: ${lastValue.toFixed(2)} · Actualizado ${new Date().toLocaleTimeString('es-ES')}`;
+
+                } catch (error) {
+                    console.error('Error al obtener datos del VIX:', error);
+                    errorMsg.textContent = `⚠️ ${error.message}`;
+                    statusText.textContent = 'Error de conexión';
+                }
+            }
+
+            // ============================================================
+            // Inicio
+            // ============================================================
+            function start() {
+                initChart();
+                fetchVIXData();
+
+                setInterval(fetchVIXData, REFRESH_INTERVAL);
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', start);
+            } else {
+                start();
+            }
+        })();
+    </script>
+</body>
+</html>
