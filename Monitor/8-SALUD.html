@@ -335,7 +335,7 @@
         const prevVal = obs[1] ? +obs[1].value : lastVal;
         const diff = lastVal - prevVal;
         const sign = diff >= 0 ? "+" : "";
-        let displayVal = (lastVal / 1000).toFixed(1);
+        const displayVal = (lastVal / 1000).toFixed(1);
         clVal.innerText = displayVal + "K";
         clCambio.innerText = `${sign}${diff.toLocaleString()} vs semana anterior`;
         const isGood = lastVal < 250000;
@@ -631,8 +631,8 @@
       }
     }
 
-    // ---------- ACTUALIZACIÓN PERIÓDICA ----------
-    function updateAll() {
+    // ---------- CARGA INICIAL ----------
+    function loadAll() {
       fetchVIX();
       fetchClaims();
       fetchDJT();
@@ -640,11 +640,10 @@
       fetchGDP();
       fetchSAHM();
       fetchRates();
-      fetchStickyCPI();  // nueva función añadida
+      fetchStickyCPI();
     }
 
-    updateAll();
-    setInterval(updateAll, 60000);
+    loadAll();
   </script>
 </body>
 
