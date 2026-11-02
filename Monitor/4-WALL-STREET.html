@@ -114,7 +114,7 @@ console.log('[Dashboard] Inicializando paneles de Wall Street');
 
 // Lista de proxies CORS a intentar en orden
 const PROXIES = [
-  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  url => `https://bold-moon-d548.subdominio.workers.dev/?url${encodeURIComponent(url)}`,
   url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
   url => `https://cors-anywhere.herokuapp.com/${url}`,
 ];
