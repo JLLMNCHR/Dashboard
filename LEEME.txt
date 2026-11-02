@@ -9,3 +9,12 @@ Se despliegan los htmls en Github Pages:
     https://jllmnchr.github.io/Dashboard/Monitor/*.html
 
 El usuario de Github es jl.lominchar (¿?).
+
+Me dejó de funcionar, pero DeepSeek me dió la solución. Usando este PROXY:
+    CORS_PROXY = 'https://bold-moon-d548.subdominio.workers.dev/?url=';
+Que me lo cree en Cloudfare:
+    https://chat.deepseek.com/share/zsn8s910fco6f2qk68
+
+En Cloudfare parece que tengo una cuenta conectada con mi repositorio de GitHub, de tal forma que, por ejemplo, a 4-WALL-STREET.html puedo acceder desde:
+    https://dashboard.subdominio.workers.dev/Monitor/4-WALL-STREET.html
+    https://jllmnchr.github.io/Dashboard/Monitor/4-WALL-STREET.html
