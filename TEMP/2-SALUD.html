@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SALUD · Índices PSMI de EE. UU.</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0a0a0f;
+      font-family: system-ui, 'Segoe UI', monospace;
+      color: #eee;
+      padding: 2rem 1rem;
+    }
+
+    .grid {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: #111118;
+      border: 1px solid #2a2a3a;
+      border-radius: 16px;
+      padding: 1.5rem;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.1s ease, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    :root {
+      --verde: #00e5a0;
+      --rojo: #ff3c5a;
+    }
+
+    .card.green {
+      border-left: 4px solid var(--verde);
+    }
+
+    .card.red {
+      border-left: 4px solid var(--rojo);
+    }
+
+    .card.green .titulo,
+    .card.green .valor-principal {
+      color: var(--verde);
+    }
+
+    .card.red .titulo,
+    .card.red .valor-principal {
+      color: var(--rojo);
+    }
+
+    .titulo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 0.25rem;
+      transition: color 0.2s;
+    }
+
+    .subtitulo {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #8888aa;
+      margin-bottom: 1rem;
+    }
+
+    .valor-principal {
+      font-size: 3rem;
+      font-weight: 800;
+      line-height: 1;
+      margin: 0.75rem 0 0.25rem;
+      font-family: monospace;
+      transition: color 0.2s;
+    }
+
+    .cambio {
+      font-size: 0.85rem;
+      margin-bottom: 0.75rem;
+      color: #bbb;
+    }
+
+    .estado {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid #2a2a3a;
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .leyenda {
+      font-size: 0.7rem;
+      color: #777;
+      margin-top: 0.5rem;
+    }
+
+    .fuente {
+      display: inline-block;
+      color: #8888aa;
+      font-size: 0.75rem;
+      margin-top: 0.8rem;
+    }
+
+    .error-banner {
+      max-width: 800px;
+      margin: 1.5rem auto 0;
+      background: #2a0f14;
+      border: 1px solid #ff3c5a;
+      border-radius: 12px;
+      padding: 0.5rem 1rem;
+      font-size: 0.75rem;
+      color: #ff9eae;
+      text-align: center;
+      display: none;
+    }
+
+    @media (max-width: 640px) {
+      .valor-principal {
+        font-size: 2.2rem;
+      }
+
+      .titulo {
+        font-size: 1.4rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="grid">
+    <a class="card" id="manufacturingCard"
+      href="https://www.ismworld.org/supply-management-news-and-reports/reports/ism-pmi-reports/pmi/"
+      target="_blank" rel="noopener noreferrer">
+      <div class="titulo">PSMI Manufacturero</div>
+      <div class="subtitulo">Índice de gestores de compras · EE. UU.</div>
+      <div class="valor-principal" id="manufacturingValue">---</div>
+      <div class="cambio" id="manufacturingChange">Cargando último dato publicado...</div>
+      <div class="estado">
+        <span id="manufacturingState" aria-live="polite">Consultando ISM</span>
+        <span>mensual</span>
+      </div>
+      <div class="leyenda">Verde ≥ 50 · Rojo &lt; 50</div>
+      <span class="fuente">Ver informe del ISM ↗</span>
+    </a>
+
+    <a class="card" id="servicesCard"
+      href="https://www.ismworld.org/supply-management-news-and-reports/reports/ism-pmi-reports/services/"
+      target="_blank" rel="noopener noreferrer">
+      <div class="titulo">PSMI de Servicios</div>
+      <div class="subtitulo">Índice de gestores de compras · EE. UU.</div>
+      <div class="valor-principal" id="servicesValue">---</div>
+      <div class="cambio" id="servicesChange">Cargando último dato publicado...</div>
+      <div class="estado">
+        <span id="servicesState" aria-live="polite">Consultando ISM</span>
+        <span>mensual</span>
+      </div>
+      <div class="leyenda">Verde ≥ 50 · Rojo &lt; 50</div>
+      <span class="fuente">Ver informe del ISM ↗</span>
+    </a>
+  </div>
+
+  <div class="error-banner" id="errorMsg" role="alert"></div>
+
+  <script>
+    'use strict';
+
+    const CORS_PROXY = 'https://bold-moon-d548.subdominio.workers.dev/?url=';
+    const BASE = 'https://www.ismworld.org/supply-management-news-and-reports/reports/ism-pmi-reports/';
+    const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+    const SHORT_MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+    const numberFormat = new Intl.NumberFormat('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    const monthFormat = new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+    const series = [
+      { id: 'manufacturing', path: 'pmi', name: 'PSMI Manufacturero' },
+      { id: 'services', path: 'services', name: 'PSMI de Servicios' }
+    ];
+
+    function setCardColor(card, isGood) {
+      card.classList.remove('green', 'red');
+      card.classList.add(isGood ? 'green' : 'red');
+    }
+
+    function parseMonth(text) {
+      const match = text.trim().match(/^([A-Za-z]+)\.?\s+(20\d{2})$/);
+      if (!match) return null;
+      const month = SHORT_MONTHS.indexOf(match[1].slice(0, 3).toLowerCase());
+      return month < 0 ? null : Number(match[2]) * 12 + month;
+    }
+
+    function dateOf(key) {
+      return new Date(Date.UTC(Math.floor(key / 12), key % 12, 1));
+    }
+
+    async function getHTML(url) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 20000);
+      try {
+        const response = await fetch(CORS_PROXY + encodeURIComponent(url), {
+          cache: 'no-store',
+          signal: controller.signal
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return await response.text();
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    function parseLatestReport(html) {
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const values = new Map();
+
+      for (const table of doc.querySelectorAll('table')) {
+        const rows = [...table.rows];
+        let headerIndex = -1;
+        const monthColumns = [];
+
+        for (let i = 0; i < Math.min(rows.length, 5); i++) {
+          const cells = [...rows[i].cells].map(cell => cell.textContent.replace(/\s+/g, ' ').trim());
+          for (let j = 0; j < cells.length - 1; j++) {
+            if (/^month$/i.test(cells[j]) && /PMI/i.test(cells[j + 1])) monthColumns.push(j);
+          }
+          if (monthColumns.length) {
+            headerIndex = i;
+            break;
+          }
+        }
+
+        if (headerIndex < 0) continue;
+        for (const row of rows.slice(headerIndex + 1)) {
+          const cells = [...row.cells];
+          for (const column of monthColumns) {
+            if (!cells[column] || !cells[column + 1]) continue;
+            const key = parseMonth(cells[column].textContent);
+            const raw = cells[column + 1].textContent.trim().replace(/%/g, '').trim();
+            if (key === null || !/^\d{1,3}(?:[.,]\d+)?$/.test(raw)) continue;
+            const value = Number(raw.replace(',', '.'));
+            if (value < 0 || value > 100) continue;
+            if (values.has(key) && values.get(key) !== value) {
+              throw new Error('El informe contiene valores contradictorios.');
+            }
+            values.set(key, value);
+          }
+        }
+      }
+
+      const observations = [...values]
+        .sort((a, b) => b[0] - a[0])
+        .map(([key, value]) => ({ key, value }));
+      if (!observations.length) throw new Error('No se encontró el último dato mensual del ISM.');
+      return observations.slice(0, 2);
+    }
+
+    async function loadSeries(item) {
+      const now = new Date();
+      const currentMonth = now.getUTCFullYear() * 12 + now.getUTCMonth();
+      const reportUrls = [0, 1, 2].map(offset => {
+        const reportMonth = dateOf(currentMonth - offset);
+        return BASE + item.path + '/' + MONTHS[reportMonth.getUTCMonth()] + '/';
+      });
+      const results = await Promise.allSettled(reportUrls.map(async url => ({
+        url,
+        observations: parseLatestReport(await getHTML(url))
+      })));
+      const valid = results
+        .filter(result => result.status === 'fulfilled')
+        .map(result => result.value)
+        .sort((a, b) => b.observations[0].key - a.observations[0].key);
+
+      if (!valid.length) {
+        throw new Error('No se pudo consultar el ISM. Comprueba el proxy o vuelve a intentarlo más tarde.');
+      }
+      return valid[0];
+    }
+
+    function displaySeries(item, result) {
+      const card = document.getElementById(item.id + 'Card');
+      const last = result.observations[0];
+      const previous = result.observations[1];
+      const isExpansion = last.value >= 50;
+
+      document.getElementById(item.id + 'Value').textContent = numberFormat.format(last.value);
+      document.getElementById(item.id + 'Change').textContent = previous
+        ? `${previous.value <= last.value ? '+' : ''}${numberFormat.format(last.value - previous.value)} puntos frente al mes anterior`
+        : 'No hay dato anterior disponible';
+      document.getElementById(item.id + 'State').textContent =
+        `${isExpansion ? 'Expansión' : 'Contracción'} · ${monthFormat.format(dateOf(last.key))}`;
+      setCardColor(card, isExpansion);
+      card.href = result.url;
+    }
+
+    async function loadAll() {
+      const errorDiv = document.getElementById('errorMsg');
+      errorDiv.style.display = 'none';
+      const results = await Promise.allSettled(series.map(loadSeries));
+      const errors = [];
+
+      results.forEach((result, index) => {
+        const item = series[index];
+        if (result.status === 'fulfilled') {
+          displaySeries(item, result.value);
+        } else {
+          console.error(`${item.name} error:`, result.reason);
+          document.getElementById(item.id + 'State').textContent = 'Error al cargar';
+          errors.push(`${item.name}: ${result.reason.message}`);
+        }
+      });
+
+      if (errors.length) {
+        errorDiv.textContent = errors.join(' · ');
+        errorDiv.style.display = 'block';
+      }
+    }
+
+    loadAll();
+  </script>
+</body>
+
+</html>
