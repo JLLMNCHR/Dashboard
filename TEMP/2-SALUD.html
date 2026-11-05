@@ -185,6 +185,7 @@
     'use strict';
 
     const CORS_PROXY = 'https://bold-moon-d548.subdominio.workers.dev/?url=';
+    const READER = 'https://r.jina.ai/';
     const BASE = 'https://www.ismworld.org/supply-management-news-and-reports/reports/ism-pmi-reports/';
     const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
     const SHORT_MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
@@ -211,11 +212,11 @@
       return new Date(Date.UTC(Math.floor(key / 12), key % 12, 1));
     }
 
-    async function getHTML(url) {
+    async function getReportText(url) {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 20000);
       try {
-        const response = await fetch(CORS_PROXY + encodeURIComponent(url), {
+        const response = await fetch(CORS_PROXY + encodeURIComponent(READER + url), {
           cache: 'no-store',
           signal: controller.signal
         });
@@ -226,71 +227,48 @@
       }
     }
 
-    function parseLatestReport(html) {
-      const doc = new DOMParser().parseFromString(html, 'text/html');
+    function parseLatestReport(text, item) {
+      const label = item.path === 'pmi' ? 'Manufacturing' : 'Services';
+      const lines = text.split(/\r?\n/);
+      const headerIndex = lines.findIndex(line => {
+        const cells = line.split('|').map(cell => cell.trim()).filter(Boolean);
+        return cells.length >= 2 && /^month$/i.test(cells[0]) &&
+          new RegExp(`^${label}\\s+PMI`, 'i').test(cells[1]);
+      });
+      if (headerIndex < 0) return [];
+
       const values = new Map();
-
-      for (const table of doc.querySelectorAll('table')) {
-        const rows = [...table.rows];
-        let headerIndex = -1;
-        const monthColumns = [];
-
-        for (let i = 0; i < Math.min(rows.length, 5); i++) {
-          const cells = [...rows[i].cells].map(cell => cell.textContent.replace(/\s+/g, ' ').trim());
-          for (let j = 0; j < cells.length - 1; j++) {
-            if (/^month$/i.test(cells[j]) && /PMI/i.test(cells[j + 1])) monthColumns.push(j);
-          }
-          if (monthColumns.length) {
-            headerIndex = i;
-            break;
-          }
-        }
-
-        if (headerIndex < 0) continue;
-        for (const row of rows.slice(headerIndex + 1)) {
-          const cells = [...row.cells];
-          for (const column of monthColumns) {
-            if (!cells[column] || !cells[column + 1]) continue;
-            const key = parseMonth(cells[column].textContent);
-            const raw = cells[column + 1].textContent.trim().replace(/%/g, '').trim();
-            if (key === null || !/^\d{1,3}(?:[.,]\d+)?$/.test(raw)) continue;
-            const value = Number(raw.replace(',', '.'));
-            if (value < 0 || value > 100) continue;
-            if (values.has(key) && values.get(key) !== value) {
-              throw new Error('El informe contiene valores contradictorios.');
-            }
-            values.set(key, value);
-          }
-        }
+      for (const line of lines.slice(headerIndex + 1)) {
+        if (!line.trim()) break;
+        const cells = line.split('|').map(cell => cell.trim()).filter(Boolean);
+        if (cells.length < 2 || /^-+$/.test(cells[0])) continue;
+        const key = parseMonth(cells[0]);
+        const raw = cells[1].replace(/%/g, '').trim();
+        if (key === null || !/^\d{1,3}(?:[.,]\d+)?$/.test(raw)) continue;
+        const value = Number(raw.replace(',', '.'));
+        if (value < 0 || value > 100) continue;
+        values.set(key, value);
       }
 
-      const observations = [...values]
+      return [...values]
         .sort((a, b) => b[0] - a[0])
+        .slice(0, 2)
         .map(([key, value]) => ({ key, value }));
-      if (!observations.length) throw new Error('No se encontró el último dato mensual del ISM.');
-      return observations.slice(0, 2);
     }
 
     async function loadSeries(item) {
       const now = new Date();
       const currentMonth = now.getUTCFullYear() * 12 + now.getUTCMonth();
-      const reportUrls = [0, 1, 2].map(offset => {
+      const reportUrls = [1, 2, 3].map(offset => {
         const reportMonth = dateOf(currentMonth - offset);
         return BASE + item.path + '/' + MONTHS[reportMonth.getUTCMonth()] + '/';
       });
-      const results = await Promise.allSettled(reportUrls.map(async url => ({
-        url,
-        observations: parseLatestReport(await getHTML(url))
-      })));
-      const valid = results
-        .filter(result => result.status === 'fulfilled')
-        .map(result => result.value)
-        .sort((a, b) => b.observations[0].key - a.observations[0].key);
-
-      if (!valid.length) {
-        throw new Error('No se pudo consultar el ISM. Comprueba el proxy o vuelve a intentarlo más tarde.');
+      for (const url of reportUrls) {
+        const observations = parseLatestReport(await getReportText(url), item);
+        if (observations.length) return { url, observations };
       }
-      return valid[0];
+
+      throw new Error('No se encontraron datos PMI publicados en los últimos informes del ISM.');
     }
 
     function displaySeries(item, result) {
