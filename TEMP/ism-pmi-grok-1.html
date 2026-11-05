@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ISM PMI · Estados Unidos</title>
+<style>
+:root{color-scheme:light;--ink:#183346;--muted:#657989;--line:#e0e8ee;--blue:#326e95;--green:#218b55;--red:#bf3d34}
+*{box-sizing:border-box}body{margin:0;padding:24px;background:#f3f6fa;color:var(--ink);font:15px system-ui,-apple-system,Segoe UI,sans-serif}main{max-width:1120px;margin:auto;padding:26px;background:white;border:1px solid var(--line);border-radius:20px;box-shadow:0 12px 45px #203b5010}header{display:flex;align-items:center;gap:14px;flex-wrap:wrap}h1{margin:0;font-size:30px;letter-spacing:-1px}.badge{background:#e8f1fa;border-radius:24px;padding:7px 13px;color:#42657e;font-size:13px}button{font:inherit;cursor:pointer;color:#2a6084;background:#eef5fd;border:1px solid #cfdeec;border-radius:24px;padding:8px 14px}button:hover{background:#e0edfa}button:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid #307cb9;outline-offset:3px}button:disabled{opacity:.55;cursor:wait}#refresh{margin-left:auto}.subtitle{border-left:4px solid var(--blue);background:#f0f5fb;padding:13px 16px;border-radius:0 12px 12px 0;color:#526c80;margin:16px 0 22px}.legend{display:flex;align-items:center;justify-content:space-around;flex-wrap:wrap;gap:16px;border:1px solid var(--line);border-radius:30px;padding:15px;margin-bottom:26px;font-size:13px}.key{display:inline-flex;align-items:center;gap:8px}.dot{height:13px;width:13px;border-radius:50%;display:inline-block;background:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 12%,white)}.neutral{color:var(--muted);background:#f0f4f8;padding:5px 12px;border-radius:15px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}.card{min-width:0;border:1px solid var(--line);border-radius:23px;padding:20px;box-shadow:0 5px 25px #284c7010}.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px}h2{font-size:21px;margin:0}.info{font-size:12px;white-space:nowrap}.reading{min-height:50px;margin-top:16px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.number{font-size:30px;font-weight:650}.meta{font-size:12px;color:var(--muted)}.chart{min-height:255px}.chart svg{width:100%;height:auto;display:block}.foot{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--muted);margin-top:8px}.pill{border:1px dashed #b6c6d2;padding:3px 10px;border-radius:15px}.message{font-size:13px;color:var(--muted);line-height:1.6;padding:40px 12px}.error{color:#a3332c}.source{font-size:12px;color:var(--muted);line-height:1.6;margin:12px 0 0;overflow-wrap:anywhere}a{color:var(--blue)}details{margin-top:15px;font-size:13px}summary{cursor:pointer;color:var(--blue)}table{border-collapse:collapse;width:100%;margin-top:10px;font-size:12px}td,th{text-align:left;padding:7px;border-bottom:1px solid var(--line)}footer{margin-top:26px;border-top:1px solid var(--line);padding-top:17px;color:var(--muted);font-size:12px;line-height:1.7}#status{margin-bottom:7px}dialog{border:1px solid var(--line);border-radius:20px;padding:26px;max-width:570px;width:calc(100% - 32px);color:var(--ink);line-height:1.7}dialog::backdrop{background:#142c4766}dialog h2{margin:0 0 15px}dialog button{float:right;margin-top:10px}.dialog-text p{margin:12px 0}.bar:hover,.bar:focus{filter:brightness(1.15);outline:none;stroke:#203f59;stroke-width:2}@media(max-width:760px){body{padding:10px}main{padding:18px}.grid{grid-template-columns:1fr}.legend{border-radius:16px;justify-content:flex-start}h1{font-size:27px}.card{padding:16px}#refresh{margin-left:0}}
+</style>
+</head>
+<body>
+<main>
+<header><h1>ISM PMI</h1><span class="badge">Manufacturero · Servicios · EEUU</span><button id="refresh" type="button">Actualizar datos</button></header>
+<p class="subtitle">Índice de gestores de compras del ISM · Lectura mensual · Últimos 12 meses publicados</p>
+<div class="legend" aria-label="Criterios de interpretación"><span class="key"><i class="dot" style="--c:var(--green)"></i>&gt; 50 · Expansión</span><span class="key"><i class="dot" style="--c:var(--red)"></i>&lt; 50 · Contracción</span><span class="key"><i class="dot" style="--c:#aab4c0"></i>= 50 · Sin cambio</span><span class="neutral">Umbral sectorial: 50 puntos</span></div>
+<div class="grid" id="cards"></div>
+<footer><div id="status" role="status" aria-live="polite">Preparando consulta…</div>Fuente: Institute for Supply Management (ISM). Índices expresados en puntos, no en tasas de crecimiento. El umbral 50 se refiere al sector correspondiente, no necesariamente al PIB de EEUU.<br>Consulta mediante el proxy indicado. Sin datos simulados ni librerías externas. La disponibilidad depende del proxy y de la web del ISM. Consulta las condiciones y autorizaciones del ISM antes de publicar o redistribuir sus datos.</footer>
+</main>
+<dialog id="explanation" aria-labelledby="dialog-title"><h2 id="dialog-title"></h2><div class="dialog-text" id="dialog-text"></div><form method="dialog"><button>Cerrar explicación</button></form></dialog>
+<script>
+'use strict';
+const CORS_PROXY = 'https://bold-moon-d548.subdominio.workers.dev/?url=';
+const BASE = 'https://www.ismworld.org/supply-management-news-and-reports/reports/ism-pmi-reports/';
+const MONTHS = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+const SHORT = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+const fmt = new Intl.NumberFormat('es-ES',{minimumFractionDigits:1,maximumFractionDigits:1});
+const monthFmt = new Intl.DateTimeFormat('es-ES',{month:'short',year:'2-digit',timeZone:'UTC'});
+const longFmt = new Intl.DateTimeFormat('es-ES',{month:'long',year:'numeric',timeZone:'UTC'});
+const SERIES = [
+ {id:'manufacturing',path:'pmi',name:'Manufacturero',explanation:'El PMI manufacturero resume las respuestas de responsables de compras de empresas manufactureras de EEUU. Combina cinco componentes con el mismo peso: nuevos pedidos, producción, empleo, entregas de proveedores e inventarios.'},
+ {id:'services',path:'services',name:'Servicios',explanation:'El PMI de servicios resume las respuestas de responsables de compras del sector de servicios de EEUU. Combina cuatro componentes con el mismo peso: actividad empresarial, nuevos pedidos, empleo y entregas de proveedores.'}
+];
+const cards = document.querySelector('#cards');
+for(const s of SERIES){
+ const card = document.createElement('section');card.className='card';card.id=s.id;
+ card.innerHTML=`<div class="card-head"><h2>${s.name}</h2><button class="info" type="button" aria-haspopup="dialog">ⓘ Explicación</button></div><div class="reading"></div><div class="chart" aria-live="polite"><p class="message">Cargando datos del ISM…</p></div><div class="foot"><span>Últimos 12 meses publicados</span><span class="pill">Umbral 50</span></div><p class="source"></p><details hidden><summary>Ver los datos de la gráfica</summary><table><thead><tr><th scope="col">Mes</th><th scope="col">PMI</th><th scope="col">Situación</th></tr></thead><tbody></tbody></table></details>`;
+ card.querySelector('.info').onclick=()=>showExplanation(s);cards.append(card);
+}
+function state(v){return v>50?'Expansión':v<50?'Contracción':'Sin cambio'}
+function color(v){const strength=Math.min(1,Math.abs(v-50)/12);return v===50?'#aab4c0':v>50?`hsl(148 59% ${40-strength*12}%)`:`hsl(5 60% ${49-strength*10}%)`}
+function dateOf(key){return new Date(Date.UTC(Math.floor(key/12),key%12,1))}
+function showExplanation(s){
+ document.querySelector('#dialog-title').textContent='PMI '+s.name.toLowerCase();
+ const box=document.querySelector('#dialog-text');box.replaceChildren();
+ const texts=[s.explanation,'Por encima de 50: expansión respecto al mes anterior. Por debajo de 50: contracción. En 50: sin cambio neto. Los colores dependen del nivel del índice, no de si sube o baja respecto al mes previo.','Ejemplo: pasar de 54 a 52 indica que el sector sigue en expansión, pero a un ritmo más lento. Un valor de 54 no significa un crecimiento del 4 %.','Las barras muestran las últimas 12 lecturas mensuales publicadas; la línea discontinua marca 50. Sitúa el puntero sobre una barra, tócala o selecciónala con el teclado para consultar su valor. El eje vertical puede estar recortado y comparte escala entre ambas gráficas.','El componente de entregas de proveedores tiene una interpretación particular: valores superiores a 50 indican entregas más lentas. Este indicador debe interpretarse junto con otros datos económicos.'];
+ for(const text of texts){const p=document.createElement('p');p.textContent=text;box.append(p)}
+ document.querySelector('#explanation').showModal();
+}
+async function getHTML(url){
+ const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),22000);
+ try{const response=await fetch(CORS_PROXY+encodeURIComponent(url),{signal:controller.signal});if(!response.ok)throw Error('HTTP '+response.status);return await response.text()}finally{clearTimeout(timer)}
+}
+function parseMonth(text){
+ const match=text.trim().match(/^([A-Za-z]+)\.?\s+(20\d{2})$/);if(!match)return null;
+ const month=SHORT.indexOf(match[1].slice(0,3).toLowerCase());return month<0?null:Number(match[2])*12+month;
+}
+function parseReport(html){
+ const doc=new DOMParser().parseFromString(html,'text/html');const values=new Map();
+ // Sólo tablas históricas cuyo encabezado identifica explícitamente Month / PMI.
+ for(const table of doc.querySelectorAll('table')){
+  const rows=[...table.rows];let header=-1,columns=[];
+  for(let i=0;i<Math.min(rows.length,5);i++){
+   const cells=[...rows[i].cells].map(c=>c.textContent.replace(/\s+/g,' ').trim());
+   const found=[];for(let j=0;j<cells.length-1;j++)if(/^month$/i.test(cells[j])&&/PMI/i.test(cells[j+1]))found.push(j);
+   if(found.length){header=i;columns=found;break}
+  }
+  if(header<0)continue;
+  for(const row of rows.slice(header+1))for(const col of columns){
+   const cells=[...row.cells];if(!cells[col+1])continue;
+   const key=parseMonth(cells[col].textContent);const raw=cells[col+1].textContent.trim().replace(/%/g,'').trim();
+   if(key===null||!/^\d{1,3}(?:[.,]\d+)?$/.test(raw))continue;
+   const value=Number(raw.replace(',','.'));if(value<0||value>100)continue;
+   if(values.has(key)&&values.get(key)!==value)throw Error('Valores históricos contradictorios');values.set(key,value);
+  }
+ }
+ const data=[...values].sort((a,b)=>a[0]-b[0]).slice(-12).map(([key,value])=>({key,value}));
+ if(data.length!==12||data.some((d,i)=>i&&d.key!==data[i-1].key+1))throw Error('No se encontraron 12 meses consecutivos en las tablas históricas del informe');
+ const now=new Date();if(data.at(-1).key>now.getUTCFullYear()*12+now.getUTCMonth())throw Error('El informe contiene fechas futuras');
+ return data;
+}
+async function loadSeries(s){
+ const now=new Date();const current=now.getUTCFullYear()*12+now.getUTCMonth();
+ // Las URL del ISM usan el nombre del mes; se comprueba la fecha de los datos.
+ const urls=[0,1,2].map(offset=>BASE+s.path+'/'+MONTHS[(current-offset)%12]+'/');
+ const results=await Promise.allSettled(urls.map(async url=>({url,data:parseReport(await getHTML(url))})));
+ const valid=results.filter(r=>r.status==='fulfilled').map(r=>r.value).sort((a,b)=>b.data.at(-1).key-a.data.at(-1).key);
+ if(!valid.length){console.warn(s.name,results);throw Error('No se ha podido obtener el histórico. El proxy o el ISM no responde, o ha cambiado el formato de las tablas. Pulsa «Actualizar datos» para reintentar.')}
+ return {...valid[0],checked:new Date(),stale:valid[0].data.at(-1).key<current-1};
+}
+function drawChart(s,result,min,max){
+ const card=document.getElementById(s.id);const data=result.data;const last=data.at(-1),previous=data.at(-2);const delta=last.value-previous.value;
+ const reading=card.querySelector('.reading');reading.replaceChildren();
+ const number=document.createElement('span');number.className='number';number.style.color=color(last.value);number.textContent=fmt.format(last.value);reading.append(number);
+ const meta=document.createElement('span');meta.className='meta';meta.textContent=`${state(last.value)} · ${monthFmt.format(dateOf(last.key))} · ${delta>0?'+':''}${fmt.format(delta)} puntos frente al mes anterior`;reading.append(meta);
+ const W=500,H=288,left=44,right=14,top=25,bottom=66,pw=W-left-right,ph=H-top-bottom;const y=v=>top+(max-v)/(max-min)*ph;
+ let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="PMI ${s.name}: últimos doce meses; último dato ${fmt.format(last.value)} puntos"><text x="13" y="140" transform="rotate(-90 13 140)" font-size="10" fill="#657989">Índice PMI · puntos</text>`;
+ for(let tick=min;tick<=max;tick+=5){svg+=`<line x1="${left}" y1="${y(tick)}" x2="${W-right}" y2="${y(tick)}" stroke="#e0e8ee"/><text x="${left-9}" y="${y(tick)+4}" text-anchor="end" font-size="11" fill="#657989">${tick}</text>`}
+ svg+=`<line x1="${left}" y1="${y(50)}" x2="${W-right}" y2="${y(50)}" stroke="#326e95" stroke-width="2" stroke-dasharray="7 5"/>`;
+ data.forEach((d,i)=>{const step=pw/12,bw=step*.57,x=left+i*step+(step-bw)/2,barY=y(d.value),label=monthFmt.format(dateOf(d.key));
+ svg+=`<rect class="bar" tabindex="0" role="img" aria-label="${label}: ${fmt.format(d.value)} puntos, ${state(d.value)}" x="${x}" y="${barY}" width="${bw}" height="${Math.max(1,y(min)-barY)}" rx="5" fill="${color(d.value)}"><title>${longFmt.format(dateOf(d.key))}: ${fmt.format(d.value)} · ${state(d.value)}</title></rect><text x="${x+bw/2}" y="${barY-7}" text-anchor="middle" font-size="9" fill="#425c70">${fmt.format(d.value)}</text><text transform="translate(${x+bw/2+3},${H-bottom+18}) rotate(-45)" text-anchor="end" font-size="10" fill="#657989">${label}</text>`;
+ });svg+='</svg>';card.querySelector('.chart').innerHTML=svg;
+ const source=card.querySelector('.source');source.replaceChildren();const a=document.createElement('a');a.href=result.url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Ver informe fuente del ISM';source.append(a,document.createTextNode(' · Consultado '+result.checked.toLocaleString('es-ES')));
+ if(result.stale)source.append(document.createTextNode(' · Aviso: el último mes disponible es anterior al mes pasado.'));
+ const tbody=card.querySelector('tbody');tbody.replaceChildren();
+ for(const d of data){const tr=document.createElement('tr');for(const text of [longFmt.format(dateOf(d.key)),fmt.format(d.value),state(d.value)]){const td=document.createElement('td');td.textContent=text;tr.append(td)}tbody.append(tr)}card.querySelector('details').hidden=false;
+}
+async function refresh(){
+ const button=document.querySelector('#refresh');button.disabled=true;document.querySelector('#status').textContent='Consultando los informes mensuales del ISM…';
+ for(const s of SERIES){const card=document.getElementById(s.id);card.querySelector('.chart').innerHTML='<p class="message">Cargando los últimos 12 meses…</p>';card.querySelector('.reading').replaceChildren();card.querySelector('.source').replaceChildren();card.querySelector('details').hidden=true}
+ try{
+ const results=await Promise.allSettled(SERIES.map(loadSeries));const numbers=results.flatMap(r=>r.status==='fulfilled'?r.value.data.map(d=>d.value):[]);
+ const min=Math.max(0,Math.min(35,Math.floor((Math.min(50,...numbers)-3)/5)*5));const max=Math.min(100,Math.max(65,Math.ceil((Math.max(50,...numbers)+3)/5)*5));
+ let good=0;results.forEach((r,i)=>{const card=document.getElementById(SERIES[i].id);if(r.status==='fulfilled'){drawChart(SERIES[i],r.value,min,max);good++}else{const p=document.createElement('p');p.className='message error';p.textContent=r.reason.message||'Error al cargar los datos.';card.querySelector('.chart').replaceChildren(p)}});
+ document.querySelector('#status').textContent=good===2?'Consulta completada. Cada serie muestra sus últimos 12 meses publicados.':`Se han cargado ${good} de 2 series. No se muestran datos de ejemplo.`;
+ }catch(error){document.querySelector('#status').textContent='Error: '+error.message}finally{button.disabled=false}
+}
+document.querySelector('#refresh').onclick=refresh;
+refresh();
+</script>
+</body>
+</html>
