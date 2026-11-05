@@ -18,3 +18,6 @@ Que me lo cree en Cloudfare:
 En Cloudfare parece que tengo una cuenta conectada con mi repositorio de GitHub, de tal forma que, por ejemplo, a 4-WALL-STREET.html puedo acceder desde:
     https://dashboard.subdominio.workers.dev/Monitor/4-WALL-STREET.html
     https://jllmnchr.github.io/Dashboard/Monitor/4-WALL-STREET.html
+
+Para que se publique automáticamente en GitHub-Pages, el repositorio Dashboard tiene que ser público.
+Cuando deje de subir cosas, tengo que pasar a provado el repositorio.
