@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BofA FMS</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 720px;
+    margin: 40px auto;
+    padding: 0 16px;
+    background: #f5f6f7;
+    color: #222;
+  }
+  button {
+    padding: 10px 16px;
+    border: 0;
+    background: #0a66c2;
+    color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  button:disabled { opacity: .6; cursor: not-allowed; }
+  #resultado {
+    margin-top: 20px;
+    padding: 16px;
+    background: #fff;
+    border-radius: 8px;
+    white-space: pre-wrap;
+    min-height: 80px;
+  }
+  .error { color: #b00020; }
+</style>
+</head>
+<body>
+
+<h1>Bank of America Global Fund Manager Survey</h1>
+
+<button id="consultar">Consultar</button>
+
+<div id="resultado">Pulsa “Consultar” para obtener el último dato disponible.</div>
+
+<script>
+// URL del Worker (ya no necesita ?url=, el Worker llama directamente a Workers AI)
+const WORKER_URL = "https://lingering-dream-3dfb.subdominio.workers.dev/";
+
+// Modelo de Workers AI.
+const MODELO = "@cf/nvidia/nemotron-3-120b-a12b";
+
+const PROMPT =
+  "Busca en Internet la última publicación disponible del Bank of America Global Fund Manager Survey (FMS), correspondiente a Octubre de 2026";
+
+const boton = document.getElementById("consultar");
+const resultado = document.getElementById("resultado");
+
+boton.addEventListener("click", async () => {
+  boton.disabled = true;
+  resultado.textContent = "Consultando…";
+  resultado.classList.remove("error");
+
+  try {
+    const respuesta = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: MODELO,
+        messages: [{ role: "user", content: PROMPT }]
+      })
+    });
+
+    const datos = await respuesta.json();
+
+    if (!respuesta.ok || datos.error) {
+      throw new Error(datos.error || `Error HTTP ${respuesta.status}`);
+    }
+
+    resultado.textContent = datos.response;
+  } catch (error) {
+    resultado.textContent = "Error: " + error.message;
+    resultado.classList.add("error");
+  } finally {
+    boton.disabled = false;
+  }
+});
+</script>
+
+</body>
+</html>

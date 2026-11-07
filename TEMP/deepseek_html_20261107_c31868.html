@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BofA FMS – Web Search</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 720px;
+    margin: 40px auto;
+    padding: 0 16px;
+    background: #f5f6f7;
+    color: #222;
+  }
+  button {
+    padding: 10px 16px;
+    border: 0;
+    background: #0a66c2;
+    color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  button:disabled { opacity: .6; cursor: not-allowed; }
+  #resultado {
+    margin-top: 20px;
+    padding: 16px;
+    background: #fff;
+    border-radius: 8px;
+    white-space: pre-wrap;
+    min-height: 80px;
+  }
+  .error { color: #b00020; }
+  .resultado-item { margin-bottom: 12px; }
+  .resultado-item a { color: #0a66c2; text-decoration: none; }
+  .resultado-item a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<h1>Bank of America Global Fund Manager Survey – Búsqueda web</h1>
+
+<button id="consultar">Consultar</button>
+
+<div id="resultado">Pulsa “Consultar” para buscar la última publicación del FMS.</div>
+
+<script>
+// URL del Worker (debe ser el endpoint que hayas desplegado)
+const WORKER_URL = "https://lingering-dream-3dfb.subdominio.workers.dev/";
+
+// Consulta que se enviará a la Web Search API
+const QUERY =
+  "Cuántos habitantes tiene Toledo";
+
+const boton = document.getElementById("consultar");
+const resultado = document.getElementById("resultado");
+
+boton.addEventListener("click", async () => {
+  boton.disabled = true;
+  resultado.textContent = "Buscando en la web…";
+  resultado.classList.remove("error");
+
+  try {
+    const respuesta = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: QUERY })
+    });
+
+    const datos = await respuesta.json();
+
+    if (!respuesta.ok || datos.error) {
+      throw new Error(datos.error || `Error HTTP ${respuesta.status}`);
+    }
+
+    // La Web Search API devuelve un objeto con `items` y `metadata`
+    const items = datos.items || [];
+
+    if (items.length === 0) {
+      resultado.textContent = "No se encontraron resultados para la búsqueda.";
+      return;
+    }
+
+    // Formatear los resultados como enlaces clicables
+    const html = items
+      .map(item => {
+        const titulo = item.title || "Sin título";
+        const url = item.url || "#";
+        const descripcion = item.description ? ` – ${item.description}` : "";
+        return `<div class="resultado-item">
+          <a href="${url}" target="_blank" rel="noopener">${titulo}</a>${descripcion}
+        </div>`;
+      })
+      .join("");
+
+    resultado.innerHTML = html;
+  } catch (error) {
+    resultado.textContent = "Error: " + error.message;
+    resultado.classList.add("error");
+  } finally {
+    boton.disabled = false;
+  }
+});
+</script>
+
+</body>
+</html>
