@@ -20,4 +20,4 @@ En Cloudfare parece que tengo una cuenta conectada con mi repositorio de GitHub,
     https://jllmnchr.github.io/Dashboard/Monitor/4-WALL-STREET.html
 
 Para que se publique automáticamente en GitHub-Pages, el repositorio Dashboard tiene que ser público.
-Cuando deje de subir cosas, tengo que pasar a provado el repositorio.
+
