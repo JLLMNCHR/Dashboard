@@ -122,7 +122,6 @@
     });
 
     function drawGauge(score) {
-      // 1. Asegurar que el score esté siempre entre 0 y 100
       score = Math.max(0, Math.min(100, score));
 
       const bounds = [0, 25, 45, 55, 75, 100];
@@ -134,17 +133,14 @@
       };
 
       const arcs = colors.map((color, i) => {
-        // 2. Aumentamos el margen de separación (de 1 a 2.5 grados) para que el hueco sea visible
         const start = point(180 - bounds[i] * 1.8 - 2.5);
         const end = point(180 - bounds[i + 1] * 1.8 + 2.5);
 
-        // 3. Añadimos fill="none" explícitamente a cada path por seguridad
-        return `<path d="M ${start[0]} ${start[1]} A 115 115 0 0 0 ${end[0]} ${end[1]}" stroke="${color}" fill="none" />`;
+        return `<path d="M ${start[0]} ${start[1]} A 115 115 0 0 1 ${end[0]} ${end[1]}" stroke="${color}" fill="none" />`;
       });
 
       document.getElementById("segments").innerHTML = arcs.join("");
 
-      // La rotación de la aguja es correcta (mapea 0-100 a -90 y 90 grados)
       document.getElementById("needle").setAttribute("transform", `rotate(${-90 + score * 1.8} 150 150)`);
       document.getElementById("gauge").setAttribute("aria-label", `Valor del indicador: ${Math.round(score)} de 100`);
     }
