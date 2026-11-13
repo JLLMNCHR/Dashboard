@@ -38,13 +38,33 @@
       margin-top: 20px;
     }
 
+    .note {
+      max-width: 760px;
+      margin: 20px auto;
+      padding: 14px 18px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #f7f7f7;
+      line-height: 1.5;
+      text-align: left;
+    }
+
+    .note p:first-child {
+      margin-top: 0;
+    }
+
+    .note p:last-child {
+      margin-bottom: 0;
+    }
+
     dialog {
       max-width: 420px;
       text-align: left;
     }
 
     #explanation,
-    #interpretation {
+    #interpretation,
+    #extra {
       width: min(900px, 90vw);
       max-width: none;
       box-sizing: border-box;
@@ -93,14 +113,15 @@
     <button id="explanationButton" type="button">Explicación</button>
     <button id="interpretationButton" type="button">Interpretación</button>
     <button id="sourceButton" type="button">Fuente</button>
+    <button id="extraButton" type="button">Extra</button>
   </div>
   <dialog id="explanation" aria-labelledby="explanationTitle">
-    <h2 id="explanationTitle">Indicador de miedo y codicia</h2>
+    <h2 id="explanationTitle">Explicación</h2>
     <img src="../img/cnn-fear-and-greed-explicacion.png" alt="Infografía explicativa del índice CNN Fear &amp; Greed">
     <button id="closeExplanation" type="button">Cerrar</button>
   </dialog>
   <dialog id="interpretation" aria-labelledby="interpretationTitle">
-    <h2 id="interpretationTitle">Interpretación del índice</h2>
+    <h2 id="interpretationTitle">Interpretación</h2>
     <img src="../img/cnn-fear-and-greed-interpretacion.png" alt="Interpretación del índice CNN Fear &amp; Greed">
     <button id="closeInterpretation" type="button">Cerrar</button>
   </dialog>
@@ -109,6 +130,15 @@
     <p><a href="https://edition.cnn.com/markets/fear-and-greed" target="_blank"
         rel="noopener noreferrer">https://edition.cnn.com/markets/fear-and-greed</a></p>
     <button id="closeSource" type="button">Cerrar</button>
+  </dialog>
+  <dialog id="extra" aria-labelledby="extraTitle">
+    <h2 id="extraTitle">Extra</h2>
+    <aside class="note">
+      <p><a href="https://youtu.be/rlbbA3bNnJ4?si=xYqDatUSITT8kK2g" target="_blank" rel="noopener noreferrer">Cava</a> dice que de las 9 veces que el SP500 ha caido más del 10%, este indicador estaba por debajo de 25 las 9 veces.</p>
+      <p>Se adelanta un poco. Cuando todavía queda un 8% de caída en los siguientes 21 días, de media.</p>
+      <p>Tampoco se sabe cuánto va a caer. Puede caer hasta un 25% incluso.</p>
+    </aside>
+    <button id="closeExtra" type="button">Cerrar</button>
   </dialog>
 
   <script>
@@ -145,6 +175,12 @@
     });
     document.getElementById("closeSource").addEventListener("click", () => {
       document.getElementById("source").close();
+    });
+    document.getElementById("extraButton").addEventListener("click", () => {
+      document.getElementById("extra").showModal();
+    });
+    document.getElementById("closeExtra").addEventListener("click", () => {
+      document.getElementById("extra").close();
     });
 
     function drawGauge(score) {
