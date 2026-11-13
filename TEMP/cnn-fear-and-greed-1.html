@@ -42,6 +42,20 @@
       max-width: 420px;
       text-align: left;
     }
+
+    #explanation {
+      width: min(900px, 90vw);
+      max-width: none;
+      box-sizing: border-box;
+    }
+
+    #explanation img {
+      display: block;
+      max-width: 100%;
+      max-height: 75vh;
+      margin: 0 auto 16px;
+      object-fit: contain;
+    }
   </style>
 </head>
 
@@ -79,9 +93,7 @@
   </div>
   <dialog id="explanation" aria-labelledby="explanationTitle">
     <h2 id="explanationTitle">Indicador de miedo y codicia</h2>
-    <p>Resume siete indicadores del mercado, como el momentum, la amplitud, la volatilidad y la demanda de bonos.</p>
-    <p>Su escala va de 0 a 100: los valores bajos indican miedo y los altos, codicia. Describe el sentimiento del
-      mercado; no es una recomendación de inversión.</p>
+    <img src="../img/cnn-fear-and-greed-explicacion.png" alt="Infografía explicativa del índice CNN Fear &amp; Greed">
     <button id="closeExplanation" type="button">Cerrar</button>
   </dialog>
   <dialog id="source" aria-labelledby="sourceTitle">
