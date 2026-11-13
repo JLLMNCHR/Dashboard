@@ -152,6 +152,8 @@
       "greed": "Codicia",
       "extreme greed": "Codicia extrema"
     };
+    const gaugeBounds = [0, 25, 45, 55, 75, 100];
+    const gaugeColors = ["#e64b4b", "#f08a4b", "#edc84b", "#8dbd4a", "#35a66f"];
 
     document.getElementById("explanationButton").addEventListener("click", () => {
       document.getElementById("explanation").showModal();
@@ -186,17 +188,14 @@
     function drawGauge(score) {
       score = Math.max(0, Math.min(100, score));
 
-      const bounds = [0, 25, 45, 55, 75, 100];
-      const colors = ["#e64b4b", "#f08a4b", "#edc84b", "#8dbd4a", "#35a66f"];
-
       const point = angle => {
         const radians = angle * Math.PI / 180;
         return [150 + 115 * Math.cos(radians), 150 - 115 * Math.sin(radians)];
       };
 
-      const arcs = colors.map((color, i) => {
-        const start = point(180 - bounds[i] * 1.8 - 2.5);
-        const end = point(180 - bounds[i + 1] * 1.8 + 2.5);
+      const arcs = gaugeColors.map((color, i) => {
+        const start = point(180 - gaugeBounds[i] * 1.8 - 2.5);
+        const end = point(180 - gaugeBounds[i + 1] * 1.8 + 2.5);
 
         return `<path d="M ${start[0]} ${start[1]} A 115 115 0 0 1 ${end[0]} ${end[1]}" stroke="${color}" fill="none" />`;
       });
@@ -205,6 +204,11 @@
 
       document.getElementById("needle").setAttribute("transform", `rotate(${-90 + score * 1.8} 150 150)`);
       document.getElementById("gauge").setAttribute("aria-label", `Valor del indicador: ${Math.round(score)} de 100`);
+    }
+
+    function colorForScore(score) {
+      const segment = gaugeBounds.slice(1).findIndex(bound => score < bound);
+      return gaugeColors[segment === -1 ? gaugeColors.length - 1 : segment];
     }
 
     async function readIndex(url) {
@@ -239,8 +243,12 @@
 
         value.textContent = Math.round(index.score);
         drawGauge(index.score);
-        document.getElementById("rating").textContent = labels[index.rating] || index.rating;
+        const rating = document.getElementById("rating");
+        const currentColor = colorForScore(index.score);
+        rating.textContent = labels[index.rating] || index.rating;
+        rating.style.color = currentColor;
         status.textContent = "Actualizado: " + new Date(index.timestamp).toLocaleString("es-ES");
+        status.style.color = currentColor;
       } catch (err) {
         status.textContent = "";
         error.textContent = "No se pudo obtener el dato: " + err.message;
