@@ -43,13 +43,15 @@
       text-align: left;
     }
 
-    #explanation {
+    #explanation,
+    #interpretation {
       width: min(900px, 90vw);
       max-width: none;
       box-sizing: border-box;
     }
 
-    #explanation img {
+    #explanation img,
+    #interpretation img {
       display: block;
       max-width: 100%;
       max-height: 75vh;
@@ -89,12 +91,18 @@
   <p id="error" role="alert"></p>
   <div class="actions">
     <button id="explanationButton" type="button">Explicación</button>
+    <button id="interpretationButton" type="button">Interpretación</button>
     <button id="sourceButton" type="button">Fuente</button>
   </div>
   <dialog id="explanation" aria-labelledby="explanationTitle">
     <h2 id="explanationTitle">Indicador de miedo y codicia</h2>
     <img src="../img/cnn-fear-and-greed-explicacion.png" alt="Infografía explicativa del índice CNN Fear &amp; Greed">
     <button id="closeExplanation" type="button">Cerrar</button>
+  </dialog>
+  <dialog id="interpretation" aria-labelledby="interpretationTitle">
+    <h2 id="interpretationTitle">Interpretación del índice</h2>
+    <img src="../img/cnn-fear-and-greed-interpretacion.png" alt="Interpretación del índice CNN Fear &amp; Greed">
+    <button id="closeInterpretation" type="button">Cerrar</button>
   </dialog>
   <dialog id="source" aria-labelledby="sourceTitle">
     <h2 id="sourceTitle">Fuente</h2>
@@ -120,6 +128,12 @@
     });
     document.getElementById("closeExplanation").addEventListener("click", () => {
       document.getElementById("explanation").close();
+    });
+    document.getElementById("interpretationButton").addEventListener("click", () => {
+      document.getElementById("interpretation").showModal();
+    });
+    document.getElementById("closeInterpretation").addEventListener("click", () => {
+      document.getElementById("interpretation").close();
     });
     document.getElementById("sourceButton").addEventListener("click", () => {
       const sourceWindow = window.open(CNN_PAGE_URL, "_blank");
