@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>United States ISM PMI</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 24px;
+      background: #f2f5f8;
+      color: #183346;
+      font: 16px system-ui, sans-serif
+    }
+
+    main {
+      max-width: 900px;
+      margin: 8vh auto
+    }
+
+    h1 {
+      margin: 0 0 20px;
+      font-size: 26px
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px
+    }
+
+    .card {
+      min-width: 0;
+      padding: 24px;
+      background: #fff;
+      border: 1px solid #dfe7ed;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px #18334612
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 20px
+    }
+
+    .label {
+      margin: 8px 0 20px;
+      color: #607586
+    }
+
+    .value {
+      font-size: 58px;
+      font-weight: 700;
+      line-height: 1.1
+    }
+
+    .period,
+    .previous {
+      margin-top: 8px;
+      color: #607586
+    }
+
+    .status {
+      min-height: 24px;
+      margin-top: 22px;
+      color: #607586;
+      font-size: 14px
+    }
+
+    .status.error {
+      color: #a3332c
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 9px 14px;
+      border: 1px solid #cbd9e3;
+      border-radius: 8px;
+      background: #eef5fa;
+      color: #245b7b;
+      font: inherit;
+      cursor: pointer
+    }
+
+    .actions button {
+      margin-top: 0
+    }
+
+    button:disabled {
+      opacity: .6;
+      cursor: wait
+    }
+
+    button:focus-visible,
+    dialog button:focus-visible {
+      outline: 3px solid #307cb9;
+      outline-offset: 2px
+    }
+
+    dialog {
+      width: min(560px, calc(100% - 40px));
+      padding: 24px;
+      border: 1px solid #dfe7ed;
+      border-radius: 16px;
+      color: #183346;
+      font: inherit;
+      line-height: 1.65
+    }
+
+    dialog::backdrop {
+      background: #18334688
+    }
+
+    dialog h2 {
+      margin-bottom: 12px
+    }
+
+    dialog p {
+      margin: 0
+    }
+
+    dialog form {
+      display: flex;
+      justify-content: flex-end
+    }
+
+    a {
+      color: #245b7b
+    }
+
+    @media(max-width:600px) {
+      body {
+        padding: 14px
+      }
+
+      .card {
+        padding: 20px
+      }
+
+      h1 {
+        font-size: 23px
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <h1>United States ISM PMI</h1>
+    <div class="cards">
+      <section class="card" data-url="https://tradingeconomics.com/united-states/business-confidence"
+        data-sector="manufacturera" data-kind="manufacturing">
+        <h2>ISM Manufacturing PMI</h2>
+        <p class="label">Compras del sector manufacturero · puntos</p>
+        <div class="value" aria-live="polite">—</div>
+        <div class="period"></div>
+        <div class="previous"></div>
+        <div class="status" role="status">Cargando dato…</div>
+        <div class="actions">
+          <button type="button" class="refresh">Actualizar</button>
+          <button type="button" class="info-button" data-topic="explanation" aria-haspopup="dialog">Explicación</button>
+          <button type="button" class="info-button" data-topic="interpretation" aria-haspopup="dialog">Interpretación</button>
+        </div>
+        <p><a href="https://tradingeconomics.com/united-states/business-confidence" target="_blank"
+            rel="noopener noreferrer">Fuente: Trading Economics</a></p>
+      </section>
+      <section class="card" data-url="https://tradingeconomics.com/united-states/non-manufacturing-pmi"
+        data-sector="servicios" data-kind="services">
+        <h2>ISM Services PMI</h2>
+        <p class="label">Compras del sector servicios · puntos</p>
+        <div class="value" aria-live="polite">—</div>
+        <div class="period"></div>
+        <div class="previous"></div>
+        <div class="status" role="status">Cargando dato…</div>
+        <div class="actions">
+          <button type="button" class="refresh">Actualizar</button>
+          <button type="button" class="info-button" data-topic="explanation" aria-haspopup="dialog">Explicación</button>
+          <button type="button" class="info-button" data-topic="interpretation" aria-haspopup="dialog">Interpretación</button>
+        </div>
+        <p><a href="https://tradingeconomics.com/united-states/non-manufacturing-pmi" target="_blank"
+            rel="noopener noreferrer">Fuente: Trading Economics</a></p>
+      </section>
+    </div>
+  </main>
+  <dialog id="info-dialog" aria-labelledby="dialog-title">
+    <h2 id="dialog-title"></h2>
+    <p id="dialog-content"></p>
+    <form method="dialog"><button>Cerrar</button></form>
+  </dialog>
+  <script>
+    'use strict';
+    const CORS_PROXY = 'https://bold-moon-d548.subdominio.workers.dev/?url=';
+    const numberFormat = new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const CONTENT = {
+      manufacturing: {
+        explanation: 'El ISM Manufacturing PMI es un índice mensual elaborado por el Institute for Supply Management (ISM) de EE. UU. a partir de una encuesta a más de 300 responsables de compras de empresas manufactureras. Mide la evolución de variables como nuevos pedidos, producción, empleo, inventarios y entregas de proveedores, y se publica el primer día hábil de cada mes, lo que lo convierte en uno de los primeros indicadores en reflejar la salud del sector manufacturero (que representa en torno al 12 % de la economía estadounidense).',
+        interpretation: 'El umbral clave es 50: por encima indica expansión del sector manufacturero y por debajo señala contracción. Un dato sostenido por debajo de 50 durante varios meses suele asociarse con riesgo de recesión económica, mientras que lecturas por encima de 50 apuntan a un entorno de crecimiento. Para un inversor, el ISM es un indicador adelantado: un dato mejor de lo esperado suele interpretarse como señal positiva para la bolsa y el dólar, y uno peor de lo previsto como señal de cautela o de posible debilidad económica.'
+      },
+      services: {
+        explanation: 'El ISM Services PMI (antes llamado ISM Non-Manufacturing PMI) es un índice mensual publicado por el Institute for Supply Management que mide la actividad económica del sector servicios de EE. UU. Se elabora a partir de encuestas a más de 370 directivos de compras de empresas de servicios (finanzas, comercio, transporte, salud, tecnología, etc.) y se construye como un índice compuesto que pondera por igual cuatro componentes: actividad empresarial, nuevos pedidos, empleo y plazos de entrega de proveedores. Su relevancia es máxima porque el sector servicios representa más del 70 % del PIB estadounidense.',
+        interpretation: 'El umbral es 50: por encima indica expansión del sector servicios y por debajo señala contracción. Al ser un indicador adelantado y publicarse pocos días después del cierre del mes, el mercado reacciona con rapidez a las desviaciones frente a lo esperado: una lectura mejor de lo previsto suele ser positiva para el dólar y para los activos ligados al ciclo económico, mientras que una lectura peor de lo estimado genera cautela. Un detalle adicional para el inversor: aunque el umbral del sector es 50, históricamente se considera que lecturas por debajo de 42 implican contracción de la economía en general, no solo del sector servicios.'
+      }
+    };
+
+    const dialog = document.querySelector('#info-dialog');
+    const dialogTitle = document.querySelector('#dialog-title');
+    const dialogContent = document.querySelector('#dialog-content');
+
+    for (const button of document.querySelectorAll('.info-button')) {
+      button.addEventListener('click', () => {
+        const card = button.closest('.card');
+        const topic = button.dataset.topic;
+        dialogTitle.textContent = `${card.querySelector('h2').textContent} · ${topic === 'explanation' ? 'Explicación' : 'Interpretación'}`;
+        dialogContent.textContent = CONTENT[card.dataset.kind][topic];
+        dialog.showModal();
+      });
+    }
+
+    function readValues(html) {
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const description = doc.querySelector('meta[name="description"]')?.content || '';
+      const summary = description.match(/\bto\s+(\d+(?:\.\d+)?)\s+points?\s+in\s+([A-Za-z]+)\s+from\s+(\d+(?:\.\d+)?)\s+points?\s+in\s+[A-Za-z]+\s+of\s+(\d{4})\b/i);
+      if (summary) {
+        return { actual: Number(summary[1]), previous: Number(summary[3]), period: `${summary[2]} ${summary[4]}` };
+      }
+
+      for (const table of doc.querySelectorAll('table')) {
+        const headers = [...table.querySelectorAll('th')].map(cell => cell.textContent.trim().toLowerCase());
+        const actualIndex = headers.indexOf('actual');
+        const previousIndex = headers.indexOf('previous');
+        if (actualIndex < 0 || previousIndex < 0 || !headers.includes('highest') || !headers.includes('lowest')) continue;
+
+        for (const row of table.querySelectorAll('tr')) {
+          const cells = [...row.querySelectorAll('td')].map(cell => cell.textContent.trim());
+          const actual = cells[actualIndex];
+          const previous = cells[previousIndex];
+          if (/^\d+(?:[.,]\d+)?$/.test(actual || '') && /^\d+(?:[.,]\d+)?$/.test(previous || '')) {
+            const match = description.match(/\bpoints?\s+in\s+([A-Za-z]+)\s+from\b[\s\S]*?\bof\s+(\d{4})\b/i);
+            return { actual: Number(actual.replace(',', '.')), previous: Number(previous.replace(',', '.')), period: match ? `${match[1]} ${match[2]}` : '' };
+          }
+        }
+      }
+      throw new Error('No se encontró el dato del PMI en la página de datos.');
+    }
+
+    async function load(card) {
+      const button = card.querySelector('button');
+      const status = card.querySelector('.status');
+      button.disabled = true;
+      status.classList.remove('error');
+      status.textContent = 'Consultando el dato…';
+      try {
+        const response = await fetch(CORS_PROXY + encodeURIComponent(card.dataset.url));
+        if (!response.ok) throw new Error(`El proxy respondió con HTTP ${response.status}.`);
+        const data = readValues(await response.text());
+        card.querySelector('.value').textContent = numberFormat.format(data.actual);
+        card.querySelector('.period').textContent = data.period ? `Periodo: ${data.period}` : '';
+        card.querySelector('.previous').textContent = `Dato anterior: ${numberFormat.format(data.previous)} puntos`;
+        status.textContent = data.actual > 50 ? `Por encima de 50: expansión ${card.dataset.sector}.` : data.actual < 50 ? `Por debajo de 50: contracción ${card.dataset.sector}.` : 'En 50: sin cambios respecto al mes anterior.';
+      } catch (error) {
+        status.classList.add('error');
+        status.textContent = `No se pudo cargar el dato: ${error.message}`;
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    for (const card of document.querySelectorAll('.card')) {
+      card.querySelector('.refresh').addEventListener('click', () => load(card));
+      load(card);
+    }
+  </script>
+</body>
+
+</html>
