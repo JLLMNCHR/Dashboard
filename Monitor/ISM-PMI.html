@@ -39,6 +39,16 @@
       box-shadow: 0 8px 30px #18334612
     }
 
+    .card.expansion {
+      background: #f3fbf5;
+      border-color: #b9dfc2
+    }
+
+    .card.contraction {
+      background: #fff5f4;
+      border-color: #e8bdb8
+    }
+
     h2 {
       margin: 0;
       font-size: 20px
@@ -53,6 +63,14 @@
       font-size: 58px;
       font-weight: 700;
       line-height: 1.1
+    }
+
+    .card.expansion .value {
+      color: #20824a
+    }
+
+    .card.contraction .value {
+      color: #b43e35
     }
 
     .period,
@@ -166,7 +184,8 @@
         <div class="actions">
           <button type="button" class="refresh">Actualizar</button>
           <button type="button" class="info-button" data-topic="explanation" aria-haspopup="dialog">Explicación</button>
-          <button type="button" class="info-button" data-topic="interpretation" aria-haspopup="dialog">Interpretación</button>
+          <button type="button" class="info-button" data-topic="interpretation"
+            aria-haspopup="dialog">Interpretación</button>
         </div>
         <p><a href="https://tradingeconomics.com/united-states/business-confidence" target="_blank"
             rel="noopener noreferrer">Fuente: Trading Economics</a></p>
@@ -182,7 +201,8 @@
         <div class="actions">
           <button type="button" class="refresh">Actualizar</button>
           <button type="button" class="info-button" data-topic="explanation" aria-haspopup="dialog">Explicación</button>
-          <button type="button" class="info-button" data-topic="interpretation" aria-haspopup="dialog">Interpretación</button>
+          <button type="button" class="info-button" data-topic="interpretation"
+            aria-haspopup="dialog">Interpretación</button>
         </div>
         <p><a href="https://tradingeconomics.com/united-states/non-manufacturing-pmi" target="_blank"
             rel="noopener noreferrer">Fuente: Trading Economics</a></p>
@@ -260,6 +280,9 @@
         const response = await fetch(CORS_PROXY + encodeURIComponent(card.dataset.url));
         if (!response.ok) throw new Error(`El proxy respondió con HTTP ${response.status}.`);
         const data = readValues(await response.text());
+        card.classList.remove('expansion', 'contraction');
+        if (data.actual > 50) card.classList.add('expansion');
+        else if (data.actual < 50) card.classList.add('contraction');
         card.querySelector('.value').textContent = numberFormat.format(data.actual);
         card.querySelector('.period').textContent = data.period ? `Periodo: ${data.period}` : '';
         card.querySelector('.previous').textContent = `Dato anterior: ${numberFormat.format(data.previous)} puntos`;
