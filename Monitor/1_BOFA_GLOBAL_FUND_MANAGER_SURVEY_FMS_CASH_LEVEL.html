@@ -136,9 +136,21 @@
 
   <script>
     const CORS_PROXY = "https://bold-moon-d548.subdominio.workers.dev/?url=";
-    const SEARCHES = [
-      "BofA Global Fund Manager Survey cash level",
-      "BofA fund managers cash levels survey percent"
+    const SURVEY_FEED = "https://macenews.com/?s=BofA+Global+Research+Fund+Manager+Survey&feed=rss2";
+    const HISTORICAL_DATA = {
+      value: "3.9",
+      period: "octubre de 2026",
+      source: "https://macenews.com/bofa-global-research-fund-manager-survey-lower-growth-and-lower-inflation-expectations-lead-to-tweaking-of-asset-allocations-in-october/"
+    };
+    const MONTHS = [
+      ["january", "enero"], ["february", "febrero"], ["march", "marzo"],
+      ["april", "abril"], ["may", "mayo"], ["june", "junio"],
+      ["july", "julio"], ["august", "agosto"], ["september", "septiembre"],
+      ["october", "octubre"], ["november", "noviembre"], ["december", "diciembre"]
+    ];
+    const SPANISH_MONTHS = [
+      "enero", "febrero", "marzo", "abril", "mayo", "junio",
+      "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
     ];
 
     const valueElement = document.getElementById("value");
@@ -167,86 +179,94 @@
       return match ? match[1].replace(",", ".") : null;
     }
 
-    async function search(query) {
-      const target = "https://www.bing.com/search?format=rss&q=" + encodeURIComponent(query);
+    function getSurveyPeriod(title, dateString) {
+      const timestamp = Date.parse(dateString);
+      const articleDate = Number.isNaN(timestamp) ? null : new Date(timestamp);
+      const year = title.match(/\b20\d{2}\b/)?.[0] || articleDate?.getFullYear();
+      if (!year) return HISTORICAL_DATA.period;
+
+      const monthName = title.match(/\b(january|february|march|april|may|june|july|august|september|october|november|december|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\b/i)?.[0].toLowerCase();
+      const titleMonth = MONTHS.find(([english, spanish]) => english === monthName || spanish === monthName);
+      const month = titleMonth
+        ? titleMonth[1]
+        : articleDate ? SPANISH_MONTHS[articleDate.getMonth()] : null;
+      return month ? month + " de " + year : HISTORICAL_DATA.period;
+    }
+
+    function showHistoricalData() {
+      valueElement.textContent = HISTORICAL_DATA.value + "%";
+      statusElement.textContent = "Dato histórico de " + HISTORICAL_DATA.period + ".";
+      const link = document.createElement("a");
+      link.href = HISTORICAL_DATA.source;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = "Mace News";
+      sourceElement.replaceChildren("Fuente: ", link);
+    }
+
+    async function searchLatest() {
+      const target = SURVEY_FEED;
       const response = await fetch(CORS_PROXY + encodeURIComponent(target));
       if (!response.ok) throw new Error("Error HTTP " + response.status);
 
       const xml = new DOMParser().parseFromString(await response.text(), "application/xml");
-      if (xml.querySelector("parsererror")) throw new Error("La respuesta de búsqueda no es válida.");
+      if (xml.querySelector("parsererror")) throw new Error("El feed de encuestas no es válido.");
 
       return Array.from(xml.querySelectorAll("item")).map(item => {
         const title = cleanText(item.querySelector("title")?.textContent);
-        const description = cleanText(item.querySelector("description")?.textContent);
-        const link = item.querySelector("link")?.textContent.trim();
-        const text = title + " " + description;
-        const relevant = /cash/i.test(text) && /(bofa|bank of america|fund manager|fms|survey)/i.test(text);
+        const content = item.getElementsByTagName("content:encoded")[0]?.textContent
+          || item.querySelector("description")?.textContent
+          || "";
+        const text = cleanText(content);
+        const link = item.querySelector("link")?.textContent.trim() || "";
+        const date = item.querySelector("pubDate")?.textContent.trim() || "";
         let safeLink = "";
         try {
-          if (new URL(link).protocol === "https:") safeLink = link;
+          const url = new URL(link);
+          if (url.protocol === "https:" && /(^|\.)macenews\.com$/i.test(url.hostname)) {
+            safeLink = url.href;
+          }
         } catch (error) {
           safeLink = "";
         }
+        const relevant = /bofa|bank of america/i.test(title) && /fund manager|fms|survey/i.test(title);
         return {
           title,
-          description,
           link: safeLink,
-          date: item.querySelector("pubDate")?.textContent.trim() || "",
-          value: relevant ? findCashLevel(text) : null
+          date,
+          period: getSurveyPeriod(title, date),
+          value: relevant && safeLink ? findCashLevel(text) : null
         };
       });
     }
 
     async function loadData() {
       refreshButton.disabled = true;
-      valueElement.textContent = "—";
-      statusElement.textContent = "Buscando el dato más reciente…";
-      sourceElement.replaceChildren();
+      showHistoricalData();
+      statusElement.textContent += " Buscando un dato más reciente…";
 
       try {
-        const responses = await Promise.allSettled(SEARCHES.map(search));
-        const results = responses
-          .filter(result => result.status === "fulfilled")
-          .flatMap(result => result.value);
-        const failures = responses.filter(result => result.status === "rejected");
-        if (!results.length && failures.length) {
-          throw new Error(failures.map(result => result.reason.message).join("; "));
-        }
-        const unique = Array.from(new Map(results.filter(item => item.link).map(item => [item.link, item])).values());
-        const matches = unique.filter(item => item.value);
+        const results = await searchLatest();
+        const matches = results.filter(item => item.value);
         matches.sort((a, b) => (Date.parse(b.date) || 0) - (Date.parse(a.date) || 0));
         const match = matches[0];
 
         if (match) {
           valueElement.textContent = match.value + "%";
           const date = Date.parse(match.date);
-          statusElement.textContent = "Dato localizado en un resultado web." + (date ? " Fecha del resultado: " + new Date(date).toLocaleDateString("es-ES") + "." : "");
+          statusElement.textContent = "Dato de la encuesta de " + match.period + "." + (date ? " Publicado el " + new Date(date).toLocaleDateString("es-ES") + "." : "");
           const link = document.createElement("a");
           link.href = match.link;
           link.target = "_blank";
           link.rel = "noopener noreferrer";
-          link.textContent = match.title || "Abrir fuente";
+          link.textContent = "Mace News (también difundido en TradingView)";
+          sourceElement.replaceChildren();
           sourceElement.append("Fuente: ", link);
         } else {
-          statusElement.textContent = unique.length
-            ? "Se encontraron resultados, pero ninguno confirma explícitamente el nivel de efectivo en porcentaje."
-            : "No se encontraron resultados con el dato. Inténtalo de nuevo más tarde.";
-          if (failures.length) {
-            statusElement.textContent += " Algunas búsquedas fallaron.";
-          }
-          SEARCHES.forEach(query => {
-            const paragraph = document.createElement("p");
-            const link = document.createElement("a");
-            link.href = "https://www.bing.com/search?q=" + encodeURIComponent(query);
-            link.target = "_blank";
-            link.rel = "noopener noreferrer";
-            link.textContent = "Ver búsqueda: " + query;
-            paragraph.append(link);
-            sourceElement.append(paragraph);
-          });
+          statusElement.textContent = "Mostrando el dato histórico (" + HISTORICAL_DATA.period + "). El feed no contiene una cifra más reciente verificable.";
         }
       } catch (error) {
-        statusElement.textContent = "No se pudo completar la búsqueda: " + error.message;
+        statusElement.textContent = "Dato histórico de " + HISTORICAL_DATA.period + ". No se pudo completar la búsqueda: " + error.message;
       } finally {
         refreshButton.disabled = false;
       }
