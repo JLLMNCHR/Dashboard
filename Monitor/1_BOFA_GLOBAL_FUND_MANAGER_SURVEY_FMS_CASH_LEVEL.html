@@ -27,10 +27,39 @@
       font-size: 1.4rem;
     }
 
+    #value-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
     #value {
       margin: 20px 0 8px;
       font-size: 2.5rem;
       font-weight: bold;
+    }
+
+    #signal-legend {
+      max-width: 360px;
+      font-size: .9rem;
+      line-height: 1.35;
+    }
+
+    #value.value-low {
+      color: #c62828;
+    }
+
+    #signal-legend.legend-low {
+      color: #c62828;
+    }
+
+    #value.value-high {
+      color: #2e7d32;
+    }
+
+    #signal-legend.legend-high {
+      color: #2e7d32;
     }
 
     #status,
@@ -98,7 +127,10 @@
   <main>
     <h1>BofA Global Fund Manager Survey</h1>
     <div>FMS cash level</div>
-    <div id="value" aria-live="polite">—</div>
+    <div id="value-row">
+      <div id="value" aria-live="polite">—</div>
+      <div id="signal-legend"></div>
+    </div>
     <div id="status">Buscando el dato más reciente…</div>
     <p id="source"></p>
     <div class="actions">
@@ -127,7 +159,7 @@
     <p>La lógica es que cuando los gestores tienen muy poca caja (<strong>≤ 4%</strong>), están «casi completamente
       invertidos», el optimismo es extremo y tienen poca «munición» para seguir comprando.</p>
     <p>Esto suele generar una <strong>señal de venta</strong> (la conocida «Cash Rule» de BofA).</p>
-    <p>Por el contrario, cuando el nivel de caja es muy alto, refleja miedo y prudencia extrema, lo que históricamente
+    <p>Por el contrario, cuando el nivel de caja es alto (>= 5%), refleja miedo y prudencia, lo que históricamente
       ha coincidido con puntos de posible rebote u <strong>oportunidad de compra</strong>.</p>
     <p>En resumen: <strong>caja baja = complacencia y riesgo de corrección; caja alta = pesimismo y posible suelo de
         mercado.</strong></p>
@@ -154,6 +186,7 @@
     ];
 
     const valueElement = document.getElementById("value");
+    const legendElement = document.getElementById("signal-legend");
     const statusElement = document.getElementById("status");
     const sourceElement = document.getElementById("source");
     const refreshButton = document.getElementById("refresh");
@@ -179,6 +212,23 @@
       return match ? match[1].replace(",", ".") : null;
     }
 
+    function displayValue(value) {
+      const numericValue = Number.parseFloat(value.replace(",", "."));
+      valueElement.textContent = value + "%";
+      valueElement.classList.toggle("value-low", Number.isFinite(numericValue) && numericValue <= 4);
+      valueElement.classList.toggle("value-high", Number.isFinite(numericValue) && numericValue >= 5);
+      if (Number.isFinite(numericValue) && numericValue <= 4) {
+        legendElement.textContent = "Poca liquidez para comprar -> mercado puede caer -> cerrar posiciones";
+        legendElement.className = "legend-low";
+      } else if (Number.isFinite(numericValue) && numericValue >= 5) {
+        legendElement.textContent = "Mucha liquidez para comprar -> mercado puede subir -> abrir posiciones";
+        legendElement.className = "legend-high";
+      } else {
+        legendElement.textContent = "";
+        legendElement.className = "";
+      }
+    }
+
     function getSurveyPeriod(title, dateString) {
       const timestamp = Date.parse(dateString);
       const articleDate = Number.isNaN(timestamp) ? null : new Date(timestamp);
@@ -194,7 +244,7 @@
     }
 
     function showHistoricalData() {
-      valueElement.textContent = HISTORICAL_DATA.value + "%";
+      displayValue(HISTORICAL_DATA.value);
       statusElement.textContent = "Dato histórico de " + HISTORICAL_DATA.period + ".";
       const link = document.createElement("a");
       link.href = HISTORICAL_DATA.source;
@@ -252,7 +302,7 @@
         const match = matches[0];
 
         if (match) {
-          valueElement.textContent = match.value + "%";
+          displayValue(match.value);
           const date = Date.parse(match.date);
           statusElement.textContent = "Dato de la encuesta de " + match.period + "." + (date ? " Publicado el " + new Date(date).toLocaleDateString("es-ES") + "." : "");
           const link = document.createElement("a");
