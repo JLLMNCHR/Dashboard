@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BofA FMS — Nivel de efectivo</title>
+  <style>
+    body {
+      max-width: 640px;
+      margin: 48px auto;
+      padding: 0 16px;
+      font: 16px/1.5 Arial, sans-serif;
+      color: #222;
+      background: #f5f6f7;
+    }
+
+    main {
+      padding: 24px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 1.4rem;
+    }
+
+    #value {
+      margin: 20px 0 8px;
+      font-size: 2.5rem;
+      font-weight: bold;
+    }
+
+    #status,
+    #source {
+      color: #555;
+    }
+
+    a {
+      color: #0759a5;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    button {
+      padding: 9px 14px;
+      color: #fff;
+      background: #0759a5;
+      border: 0;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .info-dialog {
+      width: min(520px, calc(100% - 32px));
+      max-height: 80vh;
+      padding: 24px;
+      color: #222;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      line-height: 1.6;
+    }
+
+    .info-dialog::backdrop {
+      background: rgb(0 0 0 / 45%);
+    }
+
+    .info-dialog h2 {
+      margin: 0 0 12px;
+      font-size: 1.25rem;
+    }
+
+    .info-dialog p {
+      margin: 0 0 12px;
+    }
+
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 18px;
+    }
+
+    button:disabled {
+      opacity: .6;
+      cursor: wait;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <h1>BofA Global Fund Manager Survey</h1>
+    <div>FMS cash level</div>
+    <div id="value" aria-live="polite">—</div>
+    <div id="status">Buscando el dato más reciente…</div>
+    <p id="source"></p>
+    <div class="actions">
+      <button id="refresh" type="button">Actualizar</button>
+      <button type="button" aria-haspopup="dialog" aria-controls="explanation-dialog"
+        data-open="explanation-dialog">Explicación</button>
+      <button type="button" aria-haspopup="dialog" aria-controls="interpretation-dialog"
+        data-open="interpretation-dialog">Interpretación</button>
+    </div>
+  </main>
+
+  <dialog class="info-dialog" id="explanation-dialog" aria-labelledby="explanation-title">
+    <h2 id="explanation-title">Explicación</h2>
+    <p>El <strong>BofA Global Fund Manager Survey (FMS) cash level</strong> es un dato clave dentro de la encuesta
+      mensual que Bank of America realiza a gestores de fondos de todo el mundo.</p>
+    <p>Es el <strong>porcentaje promedio de los activos bajo gestión</strong> que los gestores de fondos encuestados
+      mantienen en efectivo (liquidez) en sus carteras.</p>
+    <p>Se publica mensualmente (solo para clientes) y refleja, en tiempo real, cuánto dinero tienen los profesionales
+      <strong>«guardado» sin invertir</strong> en activos de riesgo como acciones o bonos.</p>
+    <div class="dialog-actions"><button type="button" data-close>Cerrar</button></div>
+  </dialog>
+
+  <dialog class="info-dialog" id="interpretation-dialog" aria-labelledby="interpretation-title">
+    <h2 id="interpretation-title">Interpretación</h2>
+    <p>Debe interpretarse como un <strong>indicador contrario (contrarian)</strong>.</p>
+    <p>La lógica es que cuando los gestores tienen muy poca caja (<strong>≤ 4%</strong>), están «casi completamente
+      invertidos», el optimismo es extremo y tienen poca «munición» para seguir comprando.</p>
+    <p>Esto suele generar una <strong>señal de venta</strong> (la conocida «Cash Rule» de BofA).</p>
+    <p>Por el contrario, cuando el nivel de caja es muy alto, refleja miedo y prudencia extrema, lo que históricamente
+      ha coincidido con puntos de posible rebote u <strong>oportunidad de compra</strong>.</p>
+    <p>En resumen: <strong>caja baja = complacencia y riesgo de corrección; caja alta = pesimismo y posible suelo de
+        mercado.</strong></p>
+    <div class="dialog-actions"><button type="button" data-close>Cerrar</button></div>
+  </dialog>
+
+  <script>
+    const CORS_PROXY = "https://bold-moon-d548.subdominio.workers.dev/?url=";
+    const SEARCHES = [
+      "BofA Global Fund Manager Survey cash level",
+      "BofA fund managers cash levels survey percent"
+    ];
+
+    const valueElement = document.getElementById("value");
+    const statusElement = document.getElementById("status");
+    const sourceElement = document.getElementById("source");
+    const refreshButton = document.getElementById("refresh");
+
+    document.querySelectorAll("[data-open]").forEach(button => {
+      button.addEventListener("click", () => {
+        document.getElementById(button.dataset.open).showModal();
+      });
+    });
+    document.querySelectorAll("[data-close]").forEach(button => {
+      button.addEventListener("click", () => {
+        button.closest("dialog").close();
+      });
+    });
+
+    function cleanText(value) {
+      const doc = new DOMParser().parseFromString(value || "", "text/html");
+      return (doc.body.textContent || "").replace(/\s+/g, " ").trim();
+    }
+
+    function findCashLevel(text) {
+      const match = text.match(/\bcash(?:\s+(?:level|levels|position|holdings))?\b[^%]{0,100}?(\d+(?:[.,]\d+)?)\s*(?:%|\bpercent\b)/i);
+      return match ? match[1].replace(",", ".") : null;
+    }
+
+    async function search(query) {
+      const target = "https://www.bing.com/search?format=rss&q=" + encodeURIComponent(query);
+      const response = await fetch(CORS_PROXY + encodeURIComponent(target));
+      if (!response.ok) throw new Error("Error HTTP " + response.status);
+
+      const xml = new DOMParser().parseFromString(await response.text(), "application/xml");
+      if (xml.querySelector("parsererror")) throw new Error("La respuesta de búsqueda no es válida.");
+
+      return Array.from(xml.querySelectorAll("item")).map(item => {
+        const title = cleanText(item.querySelector("title")?.textContent);
+        const description = cleanText(item.querySelector("description")?.textContent);
+        const link = item.querySelector("link")?.textContent.trim();
+        const text = title + " " + description;
+        const relevant = /cash/i.test(text) && /(bofa|bank of america|fund manager|fms|survey)/i.test(text);
+        let safeLink = "";
+        try {
+          if (new URL(link).protocol === "https:") safeLink = link;
+        } catch (error) {
+          safeLink = "";
+        }
+        return {
+          title,
+          description,
+          link: safeLink,
+          date: item.querySelector("pubDate")?.textContent.trim() || "",
+          value: relevant ? findCashLevel(text) : null
+        };
+      });
+    }
+
+    async function loadData() {
+      refreshButton.disabled = true;
+      valueElement.textContent = "—";
+      statusElement.textContent = "Buscando el dato más reciente…";
+      sourceElement.replaceChildren();
+
+      try {
+        const responses = await Promise.allSettled(SEARCHES.map(search));
+        const results = responses
+          .filter(result => result.status === "fulfilled")
+          .flatMap(result => result.value);
+        const failures = responses.filter(result => result.status === "rejected");
+        if (!results.length && failures.length) {
+          throw new Error(failures.map(result => result.reason.message).join("; "));
+        }
+        const unique = Array.from(new Map(results.filter(item => item.link).map(item => [item.link, item])).values());
+        const matches = unique.filter(item => item.value);
+        matches.sort((a, b) => (Date.parse(b.date) || 0) - (Date.parse(a.date) || 0));
+        const match = matches[0];
+
+        if (match) {
+          valueElement.textContent = match.value + "%";
+          const date = Date.parse(match.date);
+          statusElement.textContent = "Dato localizado en un resultado web." + (date ? " Fecha del resultado: " + new Date(date).toLocaleDateString("es-ES") + "." : "");
+          const link = document.createElement("a");
+          link.href = match.link;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          link.textContent = match.title || "Abrir fuente";
+          sourceElement.append("Fuente: ", link);
+        } else {
+          statusElement.textContent = unique.length
+            ? "Se encontraron resultados, pero ninguno confirma explícitamente el nivel de efectivo en porcentaje."
+            : "No se encontraron resultados con el dato. Inténtalo de nuevo más tarde.";
+          if (failures.length) {
+            statusElement.textContent += " Algunas búsquedas fallaron.";
+          }
+          SEARCHES.forEach(query => {
+            const paragraph = document.createElement("p");
+            const link = document.createElement("a");
+            link.href = "https://www.bing.com/search?q=" + encodeURIComponent(query);
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.textContent = "Ver búsqueda: " + query;
+            paragraph.append(link);
+            sourceElement.append(paragraph);
+          });
+        }
+      } catch (error) {
+        statusElement.textContent = "No se pudo completar la búsqueda: " + error.message;
+      } finally {
+        refreshButton.disabled = false;
+      }
+    }
+
+    refreshButton.addEventListener("click", loadData);
+    loadData();
+  </script>
+</body>
+
+</html>
