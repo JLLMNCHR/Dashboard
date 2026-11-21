@@ -192,9 +192,9 @@
     const CORS_PROXY = "https://bold-moon-d548.subdominio.workers.dev/?url=";
     const SURVEY_FEED = "https://macenews.com/?s=BofA+Global+Research+Fund+Manager+Survey&feed=rss2";
     const HISTORICAL_DATA = {
-      value: "3.9",
-      period: "octubre de 2026",
-      source: "https://macenews.com/bofa-global-research-fund-manager-survey-lower-growth-and-lower-inflation-expectations-lead-to-tweaking-of-asset-allocations-in-october/"
+      value: "3.6",
+      period: "noviembre de 2026",
+      source: "https://macenews.com/bofa-global-research-fund-manager-survey-fading-inflation-jitters-prompt-shift-out-of-cash-into-fixed-income/"
     };
     const MONTHS = [
       ["january", "enero"], ["february", "febrero"], ["march", "marzo"],
@@ -230,7 +230,7 @@
     }
 
     function findCashLevel(text) {
-      const match = text.match(/\bcash(?:\s+(?:level|levels|position|holdings))?\b[^%]{0,100}?(\d+(?:[.,]\d+)?)\s*(?:%|\bpercent\b)/i);
+      const match = text.match(/\bcash\s+levels?\b[^%]{0,80}?(\d+(?:[.,]\d+)?)\s*(?:%|\bpercent\b)/i);
       return match ? match[1].replace(",", ".") : null;
     }
 
