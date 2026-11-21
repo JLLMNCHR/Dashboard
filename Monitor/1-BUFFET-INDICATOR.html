@@ -312,6 +312,19 @@
       margin: 0 0 12px;
     }
 
+    .dialog-copy ul {
+      margin: 0;
+      padding-left: 22px;
+    }
+
+    .dialog-copy li {
+      margin-bottom: 12px;
+    }
+
+    .dialog-copy strong {
+      color: #eef4fa;
+    }
+
     .dialog-copy a {
       color: #88ccf4;
       overflow-wrap: anywhere;
@@ -424,9 +437,19 @@
       },
       interpretation: {
         title: "Interpretación",
-        paragraphs: [
-          "Cuanto mayor sea el porcentaje, mayor es el valor bursátil en relación con la producción anual de la economía. Por debajo del 100%, la capitalización es menor que el PIB; por encima, es mayor.",
-          "La escala y sus umbrales son referencias orientativas. Un valor elevado no demuestra por sí solo que exista una burbuja ni indica cuándo cambiará el mercado."
+        items: [
+          {
+            lead: "Por debajo del 100 %:",
+            text: "El mercado cotiza a niveles moderados o bajos en relación con el tamaño de la economía."
+          },
+          {
+            lead: "Alrededor del 100 %:",
+            text: "La bolsa vale aproximadamente lo mismo que la producción económica del país."
+          },
+          {
+            lead: "Por encima del 100 % (y cerca o superando el 200 %):",
+            text: "Señala una elevada sobrevaloración histórica y una zona de mayor riesgo o menores rentabilidades esperadas a largo plazo."
+          }
         ]
       },
       limitations: {
@@ -517,10 +540,22 @@
 
       dialogTitle.textContent = content.title;
       dialogCopy.replaceChildren();
-      for (const paragraphText of content.paragraphs) {
-        const paragraph = document.createElement("p");
-        paragraph.textContent = paragraphText;
-        dialogCopy.appendChild(paragraph);
+      if (content.items) {
+        const list = document.createElement("ul");
+        for (const item of content.items) {
+          const listItem = document.createElement("li");
+          const lead = document.createElement("strong");
+          lead.textContent = item.lead;
+          listItem.append(lead, ` ${item.text}`);
+          list.appendChild(listItem);
+        }
+        dialogCopy.appendChild(list);
+      } else {
+        for (const paragraphText of content.paragraphs) {
+          const paragraph = document.createElement("p");
+          paragraph.textContent = paragraphText;
+          dialogCopy.appendChild(paragraph);
+        }
       }
       if (content.link) {
         const link = document.createElement("a");
