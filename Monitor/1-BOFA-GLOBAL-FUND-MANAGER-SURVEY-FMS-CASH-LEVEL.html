@@ -6,124 +6,320 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BofA FMS — Nivel de efectivo</title>
   <style>
+    :root {
+      font-family: Inter, "Segoe UI", system-ui, sans-serif;
+      color: #e8eef6;
+      background: #0c1420;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      --panel: #121e2c;
+      --line: #263648;
+      --muted: #91a2b5;
+      --blue: #70b7e5;
+    }
+
+    * { box-sizing: border-box; }
+
     body {
-      max-width: 640px;
-      margin: 48px auto;
-      padding: 0 16px;
-      font: 16px/1.5 Arial, sans-serif;
-      color: #222;
-      background: #f5f6f7;
+      min-height: 100vh;
+      margin: 0;
+      padding: 28px 18px;
+      background:
+        radial-gradient(ellipse at 50% -20%, #1b3851 0, transparent 55%),
+        #0c1420;
     }
 
     main {
-      box-sizing: border-box;
-      width: 100%;
-      max-width: 560px;
+      width: min(100%, 820px);
       margin: 0 auto;
-      padding: 24px;
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 10px;
+    }
+
+    header { margin-bottom: 22px; }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--blue);
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
     }
 
     h1 {
-      margin-top: 0;
-      font-size: 1.4rem;
+      margin: 0;
+      font-size: clamp(1.7rem, 5vw, 2.45rem);
+      letter-spacing: -.04em;
     }
 
-    #value-row {
+    .subtitle {
+      margin: 9px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .panel {
+      padding: clamp(20px, 5vw, 34px);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: linear-gradient(145deg, #142233, var(--panel) 62%);
+      box-shadow: 0 20px 55px #0005;
+    }
+
+    .reading-head {
       display: flex;
-      align-items: center;
-      flex-wrap: wrap;
+      align-items: flex-start;
       justify-content: space-between;
-      gap: 12px;
+      gap: 16px;
+      flex-wrap: wrap;
     }
 
-    #value {
-      margin: 20px 0 8px;
-      font-size: 2.5rem;
-      font-weight: bold;
-    }
-
-    #signal-legend {
-      max-width: 360px;
+    .reading-label {
+      margin: 0;
+      color: #b4c3d2;
       font-size: .9rem;
-      line-height: 1.35;
     }
 
-    #value.value-low {
-      color: #c62828;
+    .reading {
+      margin: 8px 0 4px;
+      font-size: clamp(3rem, 12vw, 5.7rem);
+      font-weight: 750;
+      letter-spacing: -.065em;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
     }
 
-    #signal-legend.legend-low {
-      color: #c62828;
+    .reading span {
+      margin-left: 4px;
+      color: #9fb3c7;
+      font-size: .48em;
+      letter-spacing: -.02em;
     }
 
-    #value.value-high {
-      color: #2e7d32;
+    .level {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding: 7px 11px;
+      border: 1px solid #ffffff20;
+      border-radius: 999px;
+      color: var(--level-color, #eab96f);
+      background: #ffffff08;
+      font-size: .82rem;
+      font-weight: 650;
     }
 
-    #signal-legend.legend-high {
-      color: #2e7d32;
+    .level::before {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      content: "";
     }
 
-    .threshold-legend {
-      margin: 0 0 12px;
-      color: #555;
-      font-size: .85rem;
+    .updated {
+      margin: 0;
+      color: var(--muted);
+      font-size: .84rem;
+    }
+
+    .scale-title {
+      margin: 30px 0 12px;
+      font-size: .9rem;
+      font-weight: 650;
+    }
+
+    .scale {
+      position: relative;
+      display: flex;
+      height: 12px;
+      margin: 0 7px;
+      border-radius: 999px;
+      background: #273747;
+    }
+
+    .zone { height: 100%; }
+
+    .zone-sell {
+      flex: 0 0 50%;
+      border-radius: 999px 0 0 999px;
+      background: #e47b68;
+    }
+
+    .zone-neutral {
+      flex: 0 0 12.5%;
+      background: #e8bd59;
+    }
+
+    .zone-buy {
+      flex: 1;
+      border-radius: 0 999px 999px 0;
+      background: #45b982;
+    }
+
+    .marker {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 18px;
+      height: 18px;
+      border: 3px solid #f4f8fc;
+      border-radius: 50%;
+      background: #192738;
+      box-shadow: 0 0 0 3px #0e1925a8;
+      transform: translate(-50%, -50%);
+      transition: left 300ms ease;
+    }
+
+    .scale-ticks {
+      position: relative;
+      height: 1.2em;
+      margin: 9px 7px 0;
+      color: #8699ad;
+      font-size: .72rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .scale-ticks span {
+      position: absolute;
+      transform: translateX(-50%);
+    }
+
+    .scale-ticks span:first-child {
+      left: 0;
+      transform: none;
+    }
+
+    .scale-ticks span:nth-child(2) { left: 50%; }
+    .scale-ticks span:nth-child(3) { left: 62.5%; }
+
+    .scale-ticks span:last-child {
+      right: 0;
+      transform: none;
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px 16px;
+      margin: 21px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .legend li {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      color: #c0ccd8;
+      font-size: .78rem;
+      line-height: 1.5;
+    }
+
+    .swatch {
+      flex: 0 0 9px;
+      width: 9px;
+      height: 9px;
+      margin-top: 4px;
+      border-radius: 50%;
+      background: var(--swatch);
+    }
+
+    .legend strong {
+      display: block;
+      color: #eef4fa;
+      font-size: .79rem;
+    }
+
+    .caveat {
+      margin: 19px 0 0;
+      color: var(--muted);
+      font-size: .76rem;
+      line-height: 1.55;
     }
 
     #status,
     #source {
-      color: #555;
-    }
-
-    a {
-      color: #0759a5;
-    }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 16px;
-    }
-
-    button {
-      padding: 9px 14px;
-      color: #fff;
-      background: #0759a5;
-      border: 0;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .info-dialog {
-      width: min(520px, calc(100% - 32px));
-      max-height: 80vh;
-      padding: 24px;
-      color: #222;
-      border: 1px solid #ccc;
-      border-radius: 10px;
+      color: var(--muted);
+      font-size: .8rem;
       line-height: 1.6;
     }
 
+    #status {
+      min-height: 1.3em;
+      margin: 14px 0 0;
+    }
+
+    #status.error { color: #ff9a91; }
+    #source { margin: 9px 0 0; }
+    #source a { color: #88ccf4; }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 25px;
+    }
+
+    button {
+      min-height: 43px;
+      padding: 9px 12px;
+      border: 1px solid #34495e;
+      border-radius: 10px;
+      color: #dce8f3;
+      background: #1a2a3b;
+      font: inherit;
+      font-size: .84rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 150ms ease, background 150ms ease;
+    }
+
+    button:hover {
+      border-color: var(--blue);
+      background: #21384d;
+    }
+
+    button:focus-visible,
+    a:focus-visible {
+      outline: 3px solid var(--blue);
+      outline-offset: 3px;
+    }
+
+    .info-dialog {
+      width: min(540px, calc(100% - 28px));
+      padding: 24px;
+      border: 1px solid #34495e;
+      border-radius: 16px;
+      color: #e8eef6;
+      background: #142131;
+      box-shadow: 0 25px 80px #0009;
+      line-height: 1.7;
+    }
+
     .info-dialog::backdrop {
-      background: rgb(0 0 0 / 45%);
+      background: #030912bd;
+      backdrop-filter: blur(3px);
     }
 
     .info-dialog h2 {
-      margin: 0 0 12px;
+      margin: 0 0 14px;
       font-size: 1.25rem;
     }
 
     .info-dialog p {
       margin: 0 0 12px;
+      color: #c0ccd8;
+      font-size: .92rem;
+    }
+
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 20px;
     }
 
     .image-dialog {
-      box-sizing: border-box;
       width: min(1100px, calc(100vw - 32px));
       max-height: calc(100vh - 32px);
       overflow: auto;
@@ -136,39 +332,70 @@
       object-fit: contain;
     }
 
-    .dialog-actions {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 18px;
+    button:disabled { opacity: .6; cursor: wait; }
+
+    @media (max-width: 520px) {
+      body { padding: 20px 12px; }
+      .actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
-    button:disabled {
-      opacity: .6;
-      cursor: wait;
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
     }
   </style>
 </head>
 
 <body>
   <main>
-    <h1>BofA Global Fund Manager Survey</h1>
-    <div>FMS cash level</div>
-    <div id="value-row">
-      <div id="value" aria-live="polite">—</div>
-      <div id="signal-legend"></div>
-    </div>
-    <p class="threshold-legend"><strong>Umbrales:</strong> venta ≤ 4% · compra ≥ 5% · entre ambos: neutral</p>
-    <div id="status">Buscando el dato más reciente…</div>
-    <p id="source"></p>
-    <div class="actions">
-      <button id="refresh" type="button">Actualizar</button>
-      <button type="button" aria-haspopup="dialog" aria-controls="explanation-dialog"
-        data-open="explanation-dialog">Explicación</button>
-      <button type="button" aria-haspopup="dialog" aria-controls="interpretation-dialog"
-        data-open="interpretation-dialog">Interpretación</button>
-      <button type="button" aria-haspopup="dialog" aria-controls="images-dialog"
-        data-open="images-dialog">Imágenes</button>
-    </div>
+    <header>
+      <p class="eyebrow">Sentimiento de gestores de fondos</p>
+      <h1>BofA Global Fund Manager Survey</h1>
+      <p class="subtitle">Nivel de efectivo de los gestores (FMS cash level), publicado mensualmente por Bank of America.</p>
+    </header>
+
+    <section class="panel" aria-labelledby="latest-title">
+      <div class="reading-head">
+        <div>
+          <p class="reading-label" id="latest-title">Último nivel de efectivo publicado</p>
+          <p class="reading" id="value" aria-live="polite">—<span>%</span></p>
+          <span class="level" id="signal-level" hidden></span>
+        </div>
+        <p class="updated" id="period">Consultando la fuente…</p>
+      </div>
+
+      <h2 class="scale-title">Referencias orientativas</h2>
+      <div class="scale" role="img" aria-label="Escala de interpretación del nivel de efectivo de BofA FMS">
+        <span class="zone zone-sell"></span>
+        <span class="zone zone-neutral"></span>
+        <span class="zone zone-buy"></span>
+        <span class="marker" id="pointer"></span>
+      </div>
+      <div class="scale-ticks" aria-hidden="true">
+        <span>0%</span><span>4%</span><span>5%</span><span>8%+</span>
+      </div>
+
+      <ul class="legend" aria-label="Umbrales de interpretación">
+        <li><span class="swatch" style="--swatch:#e47b68"></span><span><strong>Hasta 4%</strong>Señal contraria de venta</span></li>
+        <li><span class="swatch" style="--swatch:#e8bd59"></span><span><strong>Más de 4% y menos de 5%</strong>Zona neutral</span></li>
+        <li><span class="swatch" style="--swatch:#45b982"></span><span><strong>Desde 5%</strong>Señal contraria de compra</span></li>
+      </ul>
+      <p class="caveat">La escala aplica la «Cash Rule» de BofA: poca caja indica optimismo extremo y mucha caja, mayor prudencia. Es una referencia histórica, no una recomendación de inversión.</p>
+
+      <div class="actions">
+        <button id="refresh" type="button">Actualizar</button>
+        <button type="button" aria-haspopup="dialog" aria-controls="explanation-dialog"
+          data-open="explanation-dialog">Explicación</button>
+        <button type="button" aria-haspopup="dialog" aria-controls="interpretation-dialog"
+          data-open="interpretation-dialog">Interpretación</button>
+        <button type="button" aria-haspopup="dialog" aria-controls="images-dialog"
+          data-open="images-dialog">Imágenes</button>
+      </div>
+      <div id="status" role="status">Buscando el dato más reciente…</div>
+      <p id="source"></p>
+    </section>
   </main>
 
   <dialog class="info-dialog" id="explanation-dialog" aria-labelledby="explanation-title">
@@ -219,9 +446,12 @@
       "enero", "febrero", "marzo", "abril", "mayo", "junio",
       "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
     ];
+    const MAX_SCALE = 8;
 
     const valueElement = document.getElementById("value");
-    const legendElement = document.getElementById("signal-legend");
+    const levelElement = document.getElementById("signal-level");
+    const pointerElement = document.getElementById("pointer");
+    const periodElement = document.getElementById("period");
     const statusElement = document.getElementById("status");
     const sourceElement = document.getElementById("source");
     const refreshButton = document.getElementById("refresh");
@@ -248,20 +478,34 @@
     }
 
     function displayValue(value) {
-      const numericValue = Number.parseFloat(value.replace(",", "."));
-      valueElement.textContent = value + "%";
-      valueElement.classList.toggle("value-low", Number.isFinite(numericValue) && numericValue <= 4);
-      valueElement.classList.toggle("value-high", Number.isFinite(numericValue) && numericValue >= 5);
-      if (Number.isFinite(numericValue) && numericValue <= 4) {
-        legendElement.textContent = "Poca liquidez para comprar -> mercado puede caer -> cerrar posiciones";
-        legendElement.className = "legend-low";
-      } else if (Number.isFinite(numericValue) && numericValue >= 5) {
-        legendElement.textContent = "Mucha liquidez para comprar -> mercado puede subir -> abrir posiciones";
-        legendElement.className = "legend-high";
+      const numericValue = Number.parseFloat(String(value).replace(",", "."));
+      if (!Number.isFinite(numericValue)) throw new Error("El nivel de efectivo no es válido.");
+
+      const formattedValue = numericValue.toLocaleString("es-ES", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 1
+      });
+      valueElement.replaceChildren(
+        document.createTextNode(formattedValue),
+        Object.assign(document.createElement("span"), { textContent: "%" })
+      );
+
+      let label;
+      let color;
+      if (numericValue <= 4) {
+        label = "Señal contraria de venta";
+        color = "#e47b68";
+      } else if (numericValue >= 5) {
+        label = "Señal contraria de compra";
+        color = "#45b982";
       } else {
-        legendElement.textContent = "";
-        legendElement.className = "";
+        label = "Zona neutral";
+        color = "#e8bd59";
       }
+      levelElement.textContent = label;
+      levelElement.style.setProperty("--level-color", color);
+      levelElement.hidden = false;
+      pointerElement.style.left = `${Math.max(0, Math.min(numericValue / MAX_SCALE * 100, 100))}%`;
     }
 
     function getSurveyPeriod(title, dateString) {
@@ -280,6 +524,8 @@
 
     function showHistoricalData() {
       displayValue(HISTORICAL_DATA.value);
+      periodElement.textContent = "Dato disponible: " + HISTORICAL_DATA.period;
+      statusElement.classList.remove("error");
       statusElement.textContent = "Dato histórico de " + HISTORICAL_DATA.period + ".";
       const link = document.createElement("a");
       link.href = HISTORICAL_DATA.source;
@@ -338,7 +584,9 @@
 
         if (match) {
           displayValue(match.value);
+          periodElement.textContent = "Encuesta: " + match.period;
           const date = Date.parse(match.date);
+          statusElement.classList.remove("error");
           statusElement.textContent = "Dato de la encuesta de " + match.period + "." + (date ? " Publicado el " + new Date(date).toLocaleDateString("es-ES") + "." : "");
           const link = document.createElement("a");
           link.href = match.link;
@@ -351,6 +599,8 @@
           statusElement.textContent = "Mostrando el dato histórico (" + HISTORICAL_DATA.period + "). El feed no contiene una cifra más reciente verificable.";
         }
       } catch (error) {
+        statusElement.classList.add("error");
+        periodElement.textContent = "Dato disponible: " + HISTORICAL_DATA.period;
         statusElement.textContent = "Dato histórico de " + HISTORICAL_DATA.period + ". No se pudo completar la búsqueda: " + error.message;
       } finally {
         refreshButton.disabled = false;
