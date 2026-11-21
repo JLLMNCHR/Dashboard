@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Indicador Buffett</title>
+  <style>
+    :root {
+      font-family: Inter, "Segoe UI", system-ui, sans-serif;
+      color: #e8eef6;
+      background: #0c1420;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      --panel: #121e2c;
+      --line: #263648;
+      --muted: #91a2b5;
+      --blue: #70b7e5;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 28px 18px;
+      background:
+        radial-gradient(ellipse at 50% -20%, #1b3851 0, transparent 55%),
+        #0c1420;
+    }
+
+    main {
+      width: min(100%, 820px);
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--blue);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.7rem, 5vw, 2.45rem);
+      letter-spacing: -0.04em;
+    }
+
+    .subtitle {
+      margin: 9px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .panel {
+      padding: clamp(20px, 5vw, 34px);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: linear-gradient(145deg, #142233, var(--panel) 62%);
+      box-shadow: 0 20px 55px #0005;
+    }
+
+    .reading-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .reading-label {
+      margin: 0;
+      color: #b4c3d2;
+      font-size: 0.9rem;
+    }
+
+    .reading {
+      margin: 8px 0 4px;
+      font-size: clamp(3rem, 12vw, 5.7rem);
+      font-weight: 750;
+      letter-spacing: -0.065em;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .reading span {
+      margin-left: 4px;
+      color: #9fb3c7;
+      font-size: 0.48em;
+      letter-spacing: -0.02em;
+    }
+
+    .level {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding: 7px 11px;
+      border: 1px solid #ffffff20;
+      border-radius: 999px;
+      color: var(--level-color, #eab96f);
+      background: #ffffff08;
+      font-size: 0.82rem;
+      font-weight: 650;
+    }
+
+    .level::before {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      content: "";
+    }
+
+    .updated {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .scale-title {
+      margin: 30px 0 12px;
+      font-size: 0.9rem;
+      font-weight: 650;
+    }
+
+    .scale {
+      position: relative;
+      display: flex;
+      height: 12px;
+      margin: 0 7px;
+      border-radius: 999px;
+      background: #273747;
+    }
+
+    .zone {
+      height: 100%;
+    }
+
+    .zone:first-child {
+      flex: 0 0 40%;
+      border-radius: 999px 0 0 999px;
+      background: #45b982;
+    }
+
+    .zone:nth-child(2) {
+      flex: 0 0 10%;
+      background: #8dbf70;
+    }
+
+    .zone:nth-child(3) {
+      flex: 0 0 10%;
+      background: #e8bd59;
+    }
+
+    .zone:nth-child(4) {
+      flex: 1;
+      border-radius: 0 999px 999px 0;
+      background: #e47b68;
+    }
+
+    .marker {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 18px;
+      height: 18px;
+      border: 3px solid #f4f8fc;
+      border-radius: 50%;
+      background: #192738;
+      box-shadow: 0 0 0 3px #0e1925a8;
+      transform: translate(-50%, -50%);
+      transition: left 300ms ease;
+    }
+
+    .scale-ticks {
+      display: flex;
+      justify-content: space-between;
+      margin: 9px 0 0;
+      color: #8699ad;
+      font-size: 0.72rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px 16px;
+      margin: 21px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .legend li {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      color: #c0ccd8;
+      font-size: 0.78rem;
+      line-height: 1.5;
+    }
+
+    .swatch {
+      flex: 0 0 9px;
+      width: 9px;
+      height: 9px;
+      margin-top: 4px;
+      border-radius: 50%;
+      background: var(--swatch);
+    }
+
+    .legend strong {
+      display: block;
+      color: #eef4fa;
+      font-size: 0.79rem;
+    }
+
+    .caveat {
+      margin: 19px 0 0;
+      color: #91a2b5;
+      font-size: 0.76rem;
+      line-height: 1.55;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 25px;
+    }
+
+    button {
+      min-height: 43px;
+      padding: 9px 12px;
+      border: 1px solid #34495e;
+      border-radius: 10px;
+      color: #dce8f3;
+      background: #1a2a3b;
+      font: inherit;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 150ms ease, background 150ms ease;
+    }
+
+    button:hover {
+      border-color: #70b7e5;
+      background: #21384d;
+    }
+
+    button:focus-visible,
+    a:focus-visible {
+      outline: 3px solid #70b7e5;
+      outline-offset: 3px;
+    }
+
+    #status {
+      min-height: 1.3em;
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    #status.error {
+      color: #ff9a91;
+    }
+
+    footer {
+      margin: 16px 3px 0;
+      color: #71859a;
+      font-size: 0.72rem;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    dialog {
+      width: min(540px, calc(100% - 28px));
+      padding: 24px;
+      border: 1px solid #34495e;
+      border-radius: 16px;
+      color: #e8eef6;
+      background: #142131;
+      box-shadow: 0 25px 80px #0009;
+    }
+
+    dialog::backdrop {
+      background: #030912bd;
+      backdrop-filter: blur(3px);
+    }
+
+    dialog h2 {
+      margin: 0 0 14px;
+      font-size: 1.25rem;
+    }
+
+    .dialog-copy {
+      color: #c0ccd8;
+      font-size: 0.92rem;
+      line-height: 1.7;
+    }
+
+    .dialog-copy p {
+      margin: 0 0 12px;
+    }
+
+    .dialog-copy a {
+      color: #88ccf4;
+      overflow-wrap: anywhere;
+    }
+
+    .dialog-close {
+      display: block;
+      min-width: 100px;
+      margin: 20px 0 0 auto;
+    }
+
+    @media (max-width: 520px) {
+      body {
+        padding: 20px 12px;
+      }
+
+      .actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Valoración del mercado estadounidense</p>
+      <h1>Indicador Buffett</h1>
+      <p class="subtitle">Capitalización total del mercado de acciones de EE. UU. en relación con su PIB anual.</p>
+    </header>
+
+    <section class="panel" aria-labelledby="latest-title">
+      <div class="reading-head">
+        <div>
+          <p class="reading-label" id="latest-title">Último dato publicado</p>
+          <p class="reading" id="reading" aria-live="polite">—<span>%</span></p>
+          <span class="level" id="level" hidden></span>
+        </div>
+        <p class="updated" id="updated">Consultando la fuente…</p>
+      </div>
+
+      <h2 class="scale-title">Referencias orientativas</h2>
+      <div class="scale" role="img" aria-label="Escala de interpretación del indicador">
+        <span class="zone"></span>
+        <span class="zone"></span>
+        <span class="zone"></span>
+        <span class="zone"></span>
+        <span class="marker" id="marker"></span>
+      </div>
+      <div class="scale-ticks" aria-hidden="true">
+        <span>0%</span><span>80%</span><span>100%</span><span>120%</span><span>200%+</span>
+      </div>
+
+      <ul class="legend" aria-label="Umbrales de interpretación">
+        <li><span class="swatch" style="--swatch:#45b982"></span><span><strong>Hasta 80%</strong>Valoración baja</span></li>
+        <li><span class="swatch" style="--swatch:#8dbf70"></span><span><strong>Más de 80%–100%</strong>Próximo al PIB</span></li>
+        <li><span class="swatch" style="--swatch:#e8bd59"></span><span><strong>Más de 100%–120%</strong>Por encima del PIB</span></li>
+        <li><span class="swatch" style="--swatch:#e47b68"></span><span><strong>Más de 120%</strong>Muy por encima del PIB</span></li>
+      </ul>
+      <p class="caveat">Los umbrales son una guía visual, no categorías universales ni una señal de compra o venta.</p>
+
+      <nav class="actions" aria-label="Información del indicador">
+        <button type="button" data-info="explanation">Explicación</button>
+        <button type="button" data-info="interpretation">Interpretación</button>
+        <button type="button" data-info="limitations">Limitaciones</button>
+        <button type="button" data-info="source">Fuente</button>
+      </nav>
+      <p id="status" role="status">Cargando el dato más reciente…</p>
+    </section>
+
+    <footer>La fecha corresponde a la última actualización publicada por la fuente; el indicador no es una herramienta de predicción del mercado.</footer>
+  </main>
+
+  <dialog id="info-dialog" aria-labelledby="dialog-title">
+    <h2 id="dialog-title"></h2>
+    <div class="dialog-copy" id="dialog-copy"></div>
+    <form method="dialog">
+      <button class="dialog-close">Cerrar</button>
+    </form>
+  </dialog>
+
+  <script>
+    const SOURCE_URL = "https://www.longtermtrends.com/market-cap-to-gdp-the-buffett-indicator/";
+    const CORS_PROXY = "https://bold-moon-d548.subdominio.workers.dev/?url=";
+    const MAX_SCALE = 200;
+    const reading = document.getElementById("reading");
+    const level = document.getElementById("level");
+    const updated = document.getElementById("updated");
+    const marker = document.getElementById("marker");
+    const status = document.getElementById("status");
+    const dialog = document.getElementById("info-dialog");
+    const dialogTitle = document.getElementById("dialog-title");
+    const dialogCopy = document.getElementById("dialog-copy");
+
+    const info = {
+      explanation: {
+        title: "Explicación",
+        paragraphs: [
+          "El Indicador Buffett compara el valor total de las acciones cotizadas de Estados Unidos con el producto interior bruto (PIB) anual del país.",
+          "Se calcula así: capitalización total del mercado ÷ PIB anual × 100. Un resultado del 100% significa que ambas magnitudes son iguales."
+        ]
+      },
+      interpretation: {
+        title: "Interpretación",
+        paragraphs: [
+          "Cuanto mayor sea el porcentaje, mayor es el valor bursátil en relación con la producción anual de la economía. Por debajo del 100%, la capitalización es menor que el PIB; por encima, es mayor.",
+          "La escala y sus umbrales son referencias orientativas. Un valor elevado no demuestra por sí solo que exista una burbuja ni indica cuándo cambiará el mercado."
+        ]
+      },
+      limitations: {
+        title: "Limitaciones",
+        paragraphs: [
+          "El PIB se publica con retraso y puede revisarse, mientras que la capitalización bursátil cambia continuamente. El resultado depende de la cobertura y metodología de ambas series.",
+          "Las empresas cotizadas generan ingresos en distintos países, por lo que compararlas solo con el PIB de EE. UU. no refleja perfectamente su actividad. El indicador tampoco incorpora por sí solo tipos de interés, beneficios ni el momento adecuado para invertir."
+        ]
+      },
+      source: {
+        title: "Fuente",
+        paragraphs: [
+          "El dato y la fecha de publicación se leen de LongtermTrends. La página puede actualizarse con una frecuencia distinta a la de la cotización diaria."
+        ],
+        link: SOURCE_URL
+      }
+    };
+
+    function classify(value) {
+      if (value <= 80) return { text: "Valoración baja", color: "#45b982" };
+      if (value <= 100) return { text: "Próximo al PIB", color: "#8dbf70" };
+      if (value <= 120) return { text: "Por encima del PIB", color: "#e8bd59" };
+      return { text: "Muy por encima del PIB", color: "#e47b68" };
+    }
+
+    function formatDate(dateText) {
+      const timestamp = Date.parse(`${dateText} UTC`);
+      if (!Number.isFinite(timestamp)) return dateText;
+      return new Intl.DateTimeFormat("es-ES", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        timeZone: "UTC"
+      }).format(timestamp);
+    }
+
+    async function loadLatestValue() {
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 15000);
+
+      try {
+        const response = await fetch(CORS_PROXY + encodeURIComponent(SOURCE_URL), {
+          cache: "no-store",
+          signal: controller.signal
+        });
+        if (!response.ok) throw new Error(`La fuente respondió con HTTP ${response.status}.`);
+
+        const html = await response.text();
+        const page = new DOMParser().parseFromString(html, "text/html");
+        const valueText = page.getElementById("buffett-ratio")?.textContent.trim();
+        const conclusion = page.getElementById("quantitative-conclusion")?.textContent.trim();
+        const value = Number(valueText);
+        const dateMatch = conclusion?.match(/As of\s+(.+?),\s+the Buffett Indicator stands at/i);
+
+        if (!Number.isFinite(value) || value <= 0 || !dateMatch) {
+          throw new Error("La página de origen no contiene el valor o la fecha esperados.");
+        }
+
+        const classification = classify(value);
+        reading.replaceChildren(
+          document.createTextNode(value.toLocaleString("es-ES", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 1
+          })),
+          Object.assign(document.createElement("span"), { textContent: "%" })
+        );
+        level.textContent = classification.text;
+        level.style.setProperty("--level-color", classification.color);
+        level.hidden = false;
+        marker.style.left = `${Math.min(value / MAX_SCALE * 100, 100)}%`;
+        updated.textContent = `Actualizado: ${formatDate(dateMatch[1])}`;
+        status.classList.remove("error");
+        status.textContent = "Dato cargado desde LongtermTrends.";
+      } catch (error) {
+        status.classList.add("error");
+        status.textContent = error.name === "AbortError"
+          ? "La consulta ha superado el tiempo de espera. Inténtalo de nuevo más tarde."
+          : `No se pudo cargar el indicador: ${error.message}`;
+        updated.textContent = "Dato no disponible";
+      } finally {
+        window.clearTimeout(timeout);
+      }
+    }
+
+    function openInfo(key) {
+      const content = info[key];
+      if (!content) return;
+
+      dialogTitle.textContent = content.title;
+      dialogCopy.replaceChildren();
+      for (const paragraphText of content.paragraphs) {
+        const paragraph = document.createElement("p");
+        paragraph.textContent = paragraphText;
+        dialogCopy.appendChild(paragraph);
+      }
+      if (content.link) {
+        const link = document.createElement("a");
+        link.href = content.link;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = content.link;
+        dialogCopy.appendChild(link);
+      }
+      dialog.showModal();
+    }
+
+    document.querySelectorAll("[data-info]").forEach(button => {
+      button.addEventListener("click", () => openInfo(button.dataset.info));
+    });
+
+    dialog.addEventListener("click", event => {
+      if (event.target === dialog) dialog.close();
+    });
+
+    loadLatestValue();
+  </script>
+</body>
+</html>
