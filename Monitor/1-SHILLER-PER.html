@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>PER de Shiller (CAPE)</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, "Segoe UI", system-ui, sans-serif;
+      color: #e7edf7;
+      background: #0b1120;
+      font-synthesis: none;
+      --muted: #9aa8bd;
+      --line: #28354b;
+      --card: #121c2d;
+      --blue: #70b7ff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      margin: 0;
+      padding: 24px;
+      background:
+        radial-gradient(ellipse at 50% 0, #172b49 0, transparent 55%),
+        #0b1120;
+    }
+
+    main {
+      width: min(100%, 620px);
+      padding: clamp(22px, 5vw, 38px);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: color-mix(in srgb, var(--card) 94%, transparent);
+      box-shadow: 0 24px 70px #0006;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--blue);
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    h1 { margin: 0; font-size: clamp(1.45rem, 4vw, 1.9rem); }
+
+    .subtitle {
+      margin: 8px 0 28px;
+      color: var(--muted);
+      font-size: .92rem;
+      line-height: 1.55;
+    }
+
+    .value-panel {
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #0c1524;
+      text-align: center;
+    }
+
+    .value-label {
+      color: var(--muted);
+      font-size: .82rem;
+    }
+
+    #value {
+      display: block;
+      margin: 5px 0 7px;
+      font-size: clamp(3.2rem, 14vw, 5rem);
+      font-weight: 750;
+      letter-spacing: -.06em;
+      line-height: 1.1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    #assessment {
+      display: inline-flex;
+      min-height: 30px;
+      align-items: center;
+      padding: 5px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: .82rem;
+      font-weight: 650;
+    }
+
+    #assessment[data-level="low"] { color: #55d6a2; border-color: #287b60; }
+    #assessment[data-level="mid"] { color: #91c9ff; border-color: #396d9e; }
+    #assessment[data-level="high"] { color: #ffc66d; border-color: #92703c; }
+    #assessment[data-level="extreme"] { color: #ff8585; border-color: #914e56; }
+
+    #observation, #status {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: .82rem;
+    }
+
+    #status { min-height: 1.25em; }
+    #status[data-error="true"] { color: #ff9696; }
+
+    .legend {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+    }
+
+    .legend h2 {
+      margin: 0 0 12px;
+      font-size: .9rem;
+    }
+
+    .legend-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(205px, 1fr));
+      gap: 9px 16px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      color: #c4cede;
+      font-size: .82rem;
+    }
+
+    .legend-list li { display: flex; align-items: center; gap: 9px; }
+
+    .swatch {
+      width: 9px;
+      height: 9px;
+      flex: 0 0 9px;
+      border-radius: 50%;
+      background: var(--swatch);
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 9px;
+      margin-top: 25px;
+    }
+
+    button {
+      min-height: 42px;
+      padding: 9px 8px;
+      border: 1px solid #35445c;
+      border-radius: 9px;
+      background: #18263a;
+      color: #e7edf7;
+      font: inherit;
+      font-size: .83rem;
+      cursor: pointer;
+    }
+
+    button:hover { border-color: var(--blue); background: #1d3049; }
+    button:focus-visible, a:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+
+    dialog {
+      width: min(calc(100% - 32px), 480px);
+      padding: 24px;
+      border: 1px solid #35445c;
+      border-radius: 16px;
+      background: #121c2d;
+      color: #e7edf7;
+      box-shadow: 0 24px 80px #000b;
+    }
+
+    dialog::backdrop { background: #050912c9; }
+    dialog h2 { margin: 0 0 12px; font-size: 1.2rem; }
+    dialog p { color: #c4cede; font-size: .92rem; line-height: 1.65; }
+    dialog a { color: var(--blue); overflow-wrap: anywhere; }
+    .dialog-footer { display: flex; justify-content: flex-end; margin-top: 20px; }
+    .dialog-footer button { min-width: 90px; }
+
+    @media (max-width: 440px) {
+      .actions { grid-template-columns: repeat(2, 1fr); }
+      .value-panel { padding: 20px 12px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Valoración del mercado estadounidense</p>
+      <h1>PER de Shiller <span aria-hidden="true">(CAPE)</span></h1>
+      <p class="subtitle">Ratio precio-beneficio ajustado cíclicamente del S&amp;P 500</p>
+    </header>
+
+    <section class="value-panel" aria-label="Último dato disponible">
+      <span class="value-label">Último PER de Shiller</span>
+      <strong id="value" aria-live="polite">—</strong>
+      <span id="assessment" data-level="">Esperando dato</span>
+      <p id="observation">Fecha de observación: —</p>
+      <p id="status" role="status">Cargando dato más reciente…</p>
+    </section>
+
+    <section class="legend" aria-labelledby="legend-title">
+      <h2 id="legend-title">Guía orientativa de valoración</h2>
+      <ul class="legend-list">
+        <li><span class="swatch" style="--swatch:#55d6a2"></span>Menos de 15: valoración baja</li>
+        <li><span class="swatch" style="--swatch:#91c9ff"></span>15–25: zona intermedia</li>
+        <li><span class="swatch" style="--swatch:#ffc66d"></span>25–30: valoración elevada</li>
+        <li><span class="swatch" style="--swatch:#ff8585"></span>Más de 30: valoración muy elevada</li>
+      </ul>
+    </section>
+
+    <nav class="actions" aria-label="Información sobre el indicador">
+      <button type="button" data-info="explanation">Explicación</button>
+      <button type="button" data-info="interpretation">Interpretación</button>
+      <button type="button" data-info="limitations">Limitaciones</button>
+      <button type="button" data-info="source">Fuente</button>
+    </nav>
+  </main>
+
+  <dialog id="info-dialog" aria-labelledby="dialog-title">
+    <h2 id="dialog-title"></h2>
+    <div id="dialog-content"></div>
+    <div class="dialog-footer">
+      <button type="button" id="close-dialog">Cerrar</button>
+    </div>
+  </dialog>
+
+  <script>
+    const SOURCE_URL = "https://www.multpl.com/shiller-pe/table/by-month";
+    const CORS_PROXY = "https://bold-moon-d548.subdominio.workers.dev/?url=";
+    const info = {
+      explanation: {
+        title: "Explicación",
+        text: "El PER de Shiller, también llamado CAPE (Cyclically Adjusted Price-to-Earnings), compara el precio del S&P 500 con el promedio de los beneficios reales por acción de los diez años anteriores. Los beneficios se ajustan por inflación para reducir el efecto del ciclo económico."
+      },
+      interpretation: {
+        title: "Interpretación",
+        text: "Un valor alto indica que el precio es elevado respecto a los beneficios reales medios de la última década; uno bajo, que es relativamente bajo. Los umbrales de esta página son orientativos, no señales de compra o venta. El indicador se interpreta mejor frente a su propia historia y no predice el momento de los cambios del mercado."
+      },
+      limitations: {
+        title: "Limitaciones",
+        text: "Es una medida de valoración de largo plazo, no una herramienta de sincronización del mercado. Puede permanecer alto o bajo durante años; sus resultados dependen de la metodología, la inflación y los datos de beneficios históricos. Además, es un indicador agregado del S&P 500 y no describe por sí solo cada empresa ni garantiza rendimientos futuros."
+      },
+      source: {
+        title: "Fuente",
+        text: "El dato y la fecha de observación se leen de la tabla mensual de Multpl:"
+      }
+    };
+
+    const valueElement = document.getElementById("value");
+    const assessmentElement = document.getElementById("assessment");
+    const observationElement = document.getElementById("observation");
+    const statusElement = document.getElementById("status");
+    const dialog = document.getElementById("info-dialog");
+    const dialogTitle = document.getElementById("dialog-title");
+    const dialogContent = document.getElementById("dialog-content");
+
+    function setAssessment(value) {
+      let label;
+      let level;
+      if (value < 15) {
+        label = "Valoración baja";
+        level = "low";
+      } else if (value < 25) {
+        label = "Zona intermedia";
+        level = "mid";
+      } else if (value <= 30) {
+        label = "Valoración elevada";
+        level = "high";
+      } else {
+        label = "Valoración muy elevada";
+        level = "extreme";
+      }
+      assessmentElement.textContent = label;
+      assessmentElement.dataset.level = level;
+    }
+
+    async function loadLatestValue() {
+      try {
+        const response = await fetch(CORS_PROXY + encodeURIComponent(SOURCE_URL));
+        if (!response.ok) {
+          throw new Error(`La fuente respondió con HTTP ${response.status}.`);
+        }
+
+        const html = await response.text();
+        const documentData = new DOMParser().parseFromString(html, "text/html");
+        const rows = documentData.querySelectorAll("#datatable tr");
+        let latest = null;
+
+        for (const row of rows) {
+          const cells = row.querySelectorAll("td");
+          if (cells.length < 2) continue;
+
+          const dateText = cells[0].textContent.trim();
+          const value = Number(cells[1].textContent.replace(/,/g, "").trim());
+          const timestamp = Date.parse(dateText);
+          if (Number.isFinite(value) && Number.isFinite(timestamp)) {
+            latest = { date: new Date(timestamp), value };
+            break;
+          }
+        }
+
+        if (!latest) throw new Error("La tabla no contiene una observación válida.");
+
+        valueElement.textContent = latest.value.toFixed(2);
+        setAssessment(latest.value);
+        observationElement.textContent = `Fecha de observación: ${latest.date.toLocaleDateString("es-ES", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+          timeZone: "UTC"
+        })}`;
+        statusElement.textContent = "Dato más reciente disponible en la fuente.";
+      } catch (error) {
+        statusElement.textContent = `No se pudo cargar el dato: ${error.message}`;
+        statusElement.dataset.error = "true";
+        assessmentElement.textContent = "Dato no disponible";
+      }
+    }
+
+    function showInfo(key) {
+      const content = info[key];
+      dialogTitle.textContent = content.title;
+      dialogContent.replaceChildren();
+
+      const paragraph = document.createElement("p");
+      paragraph.textContent = content.text;
+      dialogContent.appendChild(paragraph);
+      if (key === "source") {
+        const link = document.createElement("a");
+        link.href = SOURCE_URL;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = SOURCE_URL;
+        dialogContent.appendChild(link);
+      }
+
+      dialog.showModal();
+    }
+
+    document.querySelectorAll("[data-info]").forEach(button => {
+      button.addEventListener("click", () => showInfo(button.dataset.info));
+    });
+    document.getElementById("close-dialog").addEventListener("click", () => dialog.close());
+    dialog.addEventListener("click", event => {
+      if (event.target === dialog) dialog.close();
+    });
+
+    loadLatestValue();
+  </script>
+</body>
+</html>
